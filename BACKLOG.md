@@ -358,3 +358,5 @@ Line-by-line check of PROMPT.md against the live app (v0.7.6). Covered and verif
 ## Done 06:34 order
 - ✅ **R9-10b** veg ingredient reuse in selectWeek (REUSE_WINDOW 5), budget overshoot revert; pasta 169736 / sweetPotato 168482 FDC-verified (v0.10.7).
 - ✅ **WALK-1** 375px new-user walkthrough: onboarding goal suggestion (was demo 58 kg), select-on-focus, 44px checkbox/radio rows (v0.10.8).
+- ✅ **PERF-1** planWeek median ~7 ms (A32 < 60 ms); 龙利鱼 (sole) in PROTEINS (v0.10.9).
+- ✅ **WALK-2** returning-user walkthrough: BMR-safe review decision, import counts as backup; round-trip verified (v0.10.10).

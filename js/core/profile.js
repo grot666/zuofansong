@@ -18,7 +18,7 @@ export function normalizeProfile(p = {}) {
   if (!['fixed', 'bw', 'ffm'].includes(out.proteinMode)) out.proteinMode = DEFAULT_PROFILE.proteinMode;
   return out;
 }
-const dayNum = s => { const [y, m, d] = String(s).split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; };
+import { dayNum } from './dates.js';
 // Pure; dates are local 'YYYY-MM-DD'.
 export function paceCheck({ currentKg, goalKg, today, goalDate }) {
   if (!(currentKg > 0) || !(goalKg > 0) || !goalDate || !today) return { status: 'incomplete' };
@@ -30,4 +30,13 @@ export function paceCheck({ currentKg, goalKg, today, goalDate }) {
   const kgPerWeek = (currentKg - goalKg) / weeks;
   const pctPerWeek = kgPerWeek / currentKg * 100;
   return { status: pctPerWeek > 1 ? 'fast' : pctPerWeek < 0.25 ? 'slow' : 'ok', days, weeks, kgPerWeek, pctPerWeek };
+}
+// A21: merge user edits into the *stored* profile only (never freeze defaults). Unknown keys dropped, numbers coerced.
+export function mergeProfileEdit(stored = {}, edits = {}) {
+  const out = { ...stored };
+  for (const [k, v] of Object.entries(edits)) {
+    if (!(k in DEFAULT_PROFILE)) continue;
+    if (NUM.includes(k)) { const n = Number(v); if (Number.isFinite(n)) out[k] = n; } else if (typeof DEFAULT_PROFILE[k] === 'boolean') out[k] = v === true || v === 'true' || v === 'on'; else out[k] = String(v);
+  }
+  return out;
 }

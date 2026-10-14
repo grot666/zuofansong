@@ -12,3 +12,10 @@ test('A15 ASSETS covers every shipped file, no dups, all exist', () => {
   for (const a of ASSETS) if (a !== './') assert.ok(statSync(a).isFile(), a);
 });
 test('SW revalidation kept alive with waitUntil', () => assert.match(s, /e\.waitUntil\(net/));
+test('A20 precache bypasses HTTP cache; every page has escape hatch without storage access', () => {
+  assert.match(s, /cache: 'reload'/);
+  for (const f of readdirSync('.').filter(f => f.endsWith('.html'))) {
+    const h = readFileSync(f, 'utf8'); const m = h.match(/<script data-zfs-hatch>([\s\S]*?)<\/script>/);
+    assert.ok(m, f); assert.doesNotMatch(m[1], /localStorage/);
+  }
+});

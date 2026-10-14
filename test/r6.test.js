@@ -82,3 +82,14 @@ test('N-03 portion chips', () => {
   assert.deepEqual(scaleItems([['egg', 100]], 1.5), [['egg', 150]]);
   assert.deepEqual(scaleItems([['egg', 100]], 7), [['egg', 100]]);
 });
+import { mergeProfileEdit } from '../js/core/profile.js';
+test('A21 mergeProfileEdit does not freeze defaults', () => {
+  assert.deepEqual(Object.keys(mergeProfileEdit({}, { weight: '73' })), ['weight']);
+  assert.deepEqual(mergeProfileEdit({ bedtime: '23:00' }, { evil: 1, weight: 'x', usesPowder: 'on' }), { bedtime: '23:00', usesPowder: true });
+});
+import { localDate, addDays } from '../js/core/dates.js';
+test('A22 dates', () => {
+  assert.equal(addDays('2026-10-31', 1), '2026-11-01'); assert.equal(addDays('2026-12-31', 1), '2027-01-01');
+  assert.equal(addDays('2028-02-28', 1), '2028-02-29'); assert.equal(addDays('2026-10-15', -15), '2026-09-30');
+  assert.equal(localDate(new Date(2026, 9, 15, 23, 59)), '2026-10-15'); assert.equal(localDate(new Date(2026, 9, 16, 0, 1)), '2026-10-16');
+});

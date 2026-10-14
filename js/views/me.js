@@ -11,7 +11,7 @@ import { FOODS2 } from '../../data/foods2.js';
 import { FOODS3 } from '../../data/foods3.js';
 import { RECIPES } from '../../data/recipes.js';
 import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
+import { mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
@@ -70,7 +70,7 @@ export const view = () => {
   <section class="card"><h2>体重记录</h2><form id="wf" class="row"><input type="number" step="0.1" name="w" inputmode="decimal" placeholder="今日体重 kg" aria-label="今日体重" value="${weights.length ? weights[weights.length - 1].weight : ''}"><input type="date" name="d" value="${today()}" aria-label="日期"><button>记录</button></form>
   ${weightChart(weights, p.goalWeight)}
   <ul class="list">${weights.slice(-5).reverse().map(w => `<li>${w.date} · ${w.weight} kg</li>`).join('') || '<li class="mut">还没有记录</li>'}</ul></section>
-  <section class="card"><h2>数据</h2><div class="row"><button id="exp" class="sec">导出备份</button><label style="margin:0">导入备份<input type="file" id="imp" accept="application/json"></label><button id="rst" class="sec">清空数据</button></div></section>
+  <section class="card"><h2>数据</h2><div class="row"><button id="exp" class="sec">导出备份</button><label style="margin:0">导入备份<input type="file" id="imp" accept="application/json"></label>${S.get('backup.preImport', null) ? '<button id="undoImp" class="sec">撤销上次导入</button>' : ''}<button id="rst" class="sec">清空数据</button></div></section>
   <section class="card"><h2>更新日志</h2><ul class="list">${CHANGELOG.map(([v, d]) => `<li><b>v${v}</b> ${d}</li>`).join('')}</ul></section>`;
 };
 function goalPace(p) {
@@ -83,16 +83,17 @@ function goalPace(p) {
 view.bind = () => {
   const p = profile(); const f = $('#pf');
   for (const [k, v] of Object.entries(p)) { const el = f.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }
-  f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode', 'bedtime'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; d.sleepNudges = f.elements.sleepNudges.checked; S.set('profile', { ...p, ...d }); rerender(); };
+  f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode', 'bedtime'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; d.sleepNudges = f.elements.sleepNudges.checked; S.set('profile', mergeProfileEdit(S.get('profile', {}), d)); rerender(); };
   $('#wf').onsubmit = e => {
     e.preventDefault(); const w = +e.target.w.value; const date = e.target.d.value || today(); if (!w) return;
     const old = S.get('weights', []); if (old.some(x => x.date === date) && !confirm(`${date} 已有记录，覆盖？`)) return;
     const ws = old.filter(x => x.date !== date); ws.push({ date, weight: w }); ws.sort((a, b) => a.date.localeCompare(b.date)); S.set('weights', ws);
-    if (date === ws[ws.length - 1].date) S.set('profile', { ...p, weight: w });
+    if (date === ws[ws.length - 1].date) S.set('profile', mergeProfileEdit(S.get('profile', {}), { weight: w }));
     rerender();
   };
   $('#exp').onclick = () => { const blob = new Blob([JSON.stringify(S.exportAll(), null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zuofansong-backup-${today()}.json`; a.click(); };
-  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); const n = S.importAll(o); alert('导入成功：' + n + ' 项'); rerender(); } catch (err) { alert(err.message || '文件格式不正确'); } };
+  const ui = $('#undoImp'); if (ui) ui.onclick = () => { if (confirm('恢复到导入前的数据？')) { S.undoImport(); rerender(); } };
+  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); if (!confirm('导入会替换当前全部数据（可撤销一次）。继续？')) return; const n = S.importAll(o); alert('导入成功：' + n + ' 项'); rerender(); } catch (err) { alert(err.message || '文件格式不正确'); } };
   $('#rst').onclick = () => { if (confirm('确定清空所有本地数据？建议先导出备份。')) { S.resetAll(); rerender(); } };
 };
 

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.6.4 — 2026-10-15
+- A17 导入=替换+撤销；A18 迁移失败/非持久存储提示；A20 离线缓存逃生按钮、更新提示、预缓存绕过 HTTP 缓存；A21 资料保存不再固化默认值；A22 core/dates.js。
+
 ## 0.6.3 — 2026-10-15
 - A6：app.js 拆为 js/ui.js + js/views/{today,plate,veg,rice,foods,me}.js（46 行路由）。
 

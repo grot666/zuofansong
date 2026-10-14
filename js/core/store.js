@@ -1,4 +1,5 @@
 // localStorage wrapper: prefix, schema version + migrations registry, injectable backend, no DOM/alert.
+import { localDate } from './dates.js';
 export const PREFIX = 'culiang.v1.';
 export const SCHEMA_VERSION = 2;
 const mem = new Map();
@@ -31,7 +32,7 @@ export function keys() {
   for (let i = 0; i < b.length; i++) { const k = b.key(i); if (k && k.startsWith(PREFIX)) out.push(k.slice(PREFIX.length)); }
   return out;
 }
-export const KNOWN_KEYS = ['profile', 'weights', 'customFoods', 'recents', 'riceCurrent', 'riceFavs', 'templates', 'templateUse', 'tplMult', 'undo', 'planSeed', 'weeklyBudget', 'reviews', 'breakFrom', 'breakState', 'version', 'sleepNoteDay'];
+export const KNOWN_KEYS = ['profile', 'weights', 'customFoods', 'recents', 'riceCurrent', 'riceFavs', 'templates', 'templateUse', 'tplMult', 'undo', 'planSeed', 'weeklyBudget', 'reviews', 'breakFrom', 'breakState', 'version'];
 const isKnown = k => KNOWN_KEYS.includes(k) || /^log\.\d{4}-\d{2}-\d{2}$/.test(k) || /^logArchive\.\d{4}-\d{2}$/.test(k);
 // key = target version. Each migration idempotent.
 export const MIGRATIONS = {
@@ -42,9 +43,8 @@ export const MIGRATIONS = {
     remove('breakFrom');
   },
 };
-const localToday = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 // A13: one backup copy (overwritten); if the backup cannot be written, abort without bumping version.
-export function migrate({ today = localToday() } = {}) {
+export function migrate({ today = localDate() } = {}) {
   let v = Number(get('version', 0)) || 0;
   if (v >= 1 && v < SCHEMA_VERSION && !set('backup.preMigration', exportAll())) return v;
   while (v < SCHEMA_VERSION) { v++; if (MIGRATIONS[v]) MIGRATIONS[v]({ today }); set('version', v); }
@@ -55,16 +55,42 @@ export function exportAll() {
   for (const k of keys()) { if (k.startsWith('backup.')) continue; try { data[k] = JSON.parse(be().getItem(PREFIX + k)); } catch { /* skip corrupted */ } }
   return { app: 'zuofansong', schema: Number(get('version', SCHEMA_VERSION)) || SCHEMA_VERSION, exportedAt: new Date().toISOString(), data };
 }
-// Accepts envelope or legacy flat object. Returns number of keys imported. Throws on newer schema.
+// A17: replace-mode import. Accepts envelope or legacy flat object; returns keys imported.
+// Throws on newer schema (envelope or legacy) or if the pre-import backup cannot be written.
 export function importAll(obj, opts = {}) {
-  if (!obj || typeof obj !== 'object') throw new Error('备份格式不正确');
-  let data = obj;
-  if (obj.app && obj.data) { if (Number(obj.schema) > SCHEMA_VERSION) throw new Error('备份来自更新的版本，请先更新应用'); data = obj.data; }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('备份格式不正确');
+  const env = obj.app && obj.data && typeof obj.data === 'object';
+  const data = env ? obj.data : obj;
+  const incoming = Number(env ? obj.schema : data.version) || 1;
+  if (incoming > SCHEMA_VERSION) throw new Error('备份来自更新的版本，请先更新应用');
+  if (!set('backup.preImport', exportAll())) throw new Error('存储空间不足，无法备份当前数据，已取消导入');
+  for (const k of keys()) if (!k.startsWith('backup.')) remove(k);
   let n = 0;
-  for (const [k, v] of Object.entries(data)) if (k !== 'version' && isKnown(k) && set(k, v)) n++;
-  // A13: payload without a version is schema 1 so later migrations run on it.
-  set('version', Number(data.version) || Number(obj.app && obj.schema) || 1);
+  for (const [k, v] of Object.entries(data)) {
+    if (k === 'version' || !isKnown(k) || !validValue(k, v)) continue;
+    if (set(k, v)) n++;
+  }
+  set('version', incoming);
   migrate(opts);
   return n;
+}
+const ARRAY_KEYS = new Set(['weights', 'customFoods', 'recents', 'riceFavs', 'templates']);
+function validValue(k, v) {
+  if (ARRAY_KEYS.has(k)) return Array.isArray(v);
+  if (k.startsWith('log.')) return v && typeof v === 'object' && Array.isArray(v.items);
+  return v !== undefined;
+}
+export function undoImport() {
+  const b = get('backup.preImport', null); if (!b) return false;
+  for (const k of keys()) if (!k.startsWith('backup.')) remove(k);
+  for (const [k, v] of Object.entries(b.data || {})) if (isKnown(k)) set(k, v);
+  remove('backup.preImport');
+  return true;
+}
+// A18: true only for real, writable localStorage.
+export function isPersistent() {
+  let b; try { b = backend || globalThis.localStorage; } catch { return false; }
+  if (!b || b === memoryBackend) return false;
+  try { b.setItem(PREFIX + '__probe', '1'); b.removeItem(PREFIX + '__probe'); return true; } catch { return false; }
 }
 export function resetAll() { const b = be(); for (const k of keys()) b.removeItem(PREFIX + k); }

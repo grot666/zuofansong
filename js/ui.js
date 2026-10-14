@@ -1,5 +1,6 @@
 // Shared UI helpers for index views (A6). Browser-only.
 import * as S from './core/store.js';
+import { localDate, addDays } from './core/dates.js';
 import { normalizeProfile } from './core/profile.js';
 import { MULTS } from './core/portion.js';
 import { makeIndex, totals as sumTotals } from './core/foods.js';
@@ -12,8 +13,8 @@ export const rerender = () => renderFn();
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const r1 = n => Math.round(n * 10) / 10;
-const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
-const dayOffset = n => { const d = new Date(Date.now() + n * 86400000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const today = () => localDate();
+const dayOffset = n => addDays(localDate(), n);
 
 // Owner's plan doc: 1700-2000 kcal, protein 130-160 g, fat 50-70 g.
 // Owner's sample day (research R4.2): ≈1782 kcal / 149 g P / 62 g F / 15 g fiber.

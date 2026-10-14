@@ -16,6 +16,24 @@
 <nav class="tabs" aria-label="主导航">
   <a href="./#today">今日</a><a href="plan.html" class="on">菜单</a><a href="./#veg">蔬菜</a><a href="./#rice">杂粮饭</a><a href="./#foods">食材</a><a href="./#me">我的</a>
 </nav>
+<script data-zfs-hatch>
+// A20 escape hatch (non-module, no storage access): if the app fails to load, offer to clear offline cache.
+(function () {
+  var shown = false;
+  function show() {
+    if (shown) return; shown = true;
+    var b = document.createElement('button'); b.className = 'card warn'; b.textContent = '加载失败 · 清除离线缓存并重新加载';
+    b.onclick = function () {
+      var p1 = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }) : Promise.resolve();
+      var p2 = window.caches ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : Promise.resolve();
+      Promise.all([p1, p2]).then(function () { location.reload(); }, function () { location.reload(); });
+    };
+    document.body.prepend(b);
+  }
+  window.addEventListener('error', function (e) { if (e.target && e.target.tagName === 'SCRIPT') show(); }, true);
+  window.addEventListener('load', function () { setTimeout(function () { var v = document.getElementById('view'); if (!v || !v.children.length) show(); }, 4000); });
+})();
+</script>
 <script type="module" src="js/plan-page.js"></script>
 </body>
 </html>

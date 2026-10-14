@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.12
+- R-01 remainder: %BW/week pace in onboarding, fast-loss review warning
+
 ## v0.10.11
 - BACKLOG Next line refreshed
 

@@ -93,3 +93,9 @@ export function suggestGoal({ weight, goalWeight, goalDate }, today) {
   const g = Math.round(weight * 0.93 * 2) / 2;
   return { goalWeight: g, goalDate: addDays(today, Math.ceil((weight - g) / 0.5) * 7) };
 }
+// R-01 remainder: onboarding step 2 shows pace as kg/week and % body weight/week; >1%/week is flagged.
+export function paceLine(r) {
+  if (!PACE_TEXT[r.status]) return '';
+  const n = x => Math.round(x * 10) / 10;
+  return '减重速度：' + PACE_TEXT[r.status] + (r.kgPerWeek > 0 ? `（约 ${n(r.kgPerWeek)} kg/周，${n(r.pctPerWeek)}% 体重/周${r.status === 'fast' ? '，建议 ≤1%' : ''}）` : '');
+}

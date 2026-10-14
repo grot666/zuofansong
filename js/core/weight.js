@@ -20,3 +20,5 @@ export function weeklyStatus(entries) {
   const status = pct > 1 ? 'fast' : pct >= 0.25 ? 'ok' : Math.abs(deltaKg) < 0.1 ? 'flat' : pct < 0 ? 'up' : 'slow';
   return { deltaKg, pct, status };
 }
+// R-01 remainder: review warning when the measured loss is > 1% body weight per week.
+export const fastNote = st => (st && st.status === 'fast' ? `最近每周减重约 ${Math.round(st.pct * 10) / 10}% 体重，超过 1%/周：容易掉肌肉、难坚持。建议把缺口调小（“我的”页）或选“维持周”。` : '');

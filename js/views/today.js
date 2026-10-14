@@ -4,7 +4,7 @@ import { fatWallet } from '../core/fat.js';
 import { proteinFill, proteinGap, gutRisk } from '../core/protein.js';
 import { suggestFiber } from '../core/fiber.js';
 import * as S from '../core/store.js';
-import { paceCheck, onboardStep, saveOnboardStep, PACE_TEXT, suggestGoal } from '../core/profile.js';
+import { paceCheck, onboardStep, saveOnboardStep, PACE_TEXT, suggestGoal, paceLine } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { quickChips, matchFoods, gramsFor } from '../core/foods.js';
@@ -78,7 +78,7 @@ view.bind = () => {
   if (obf) {
     obf.querySelectorAll('input[type=number]').forEach(i => { i.onfocus = () => i.select(); }); // typing replaces a prefilled value
     const step = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: false, savedStep: S.get('onboardStep', null) });
-    const pace = () => { const p = profile(); const el = $('#obpace'); if (!el) return; const r = paceCheck({ currentKg: p.weight, goalKg: +obf.goalWeight.value, today: today(), goalDate: obf.goalDate.value }); el.textContent = PACE_TEXT[r.status] ? '减重速度：' + PACE_TEXT[r.status] + (r.kgPerWeek ? `（约 ${r1(r.kgPerWeek)} kg/周）` : '') : ''; };
+    const pace = () => { const p = profile(); const el = $('#obpace'); if (!el) return; const r = paceCheck({ currentKg: p.weight, goalKg: +obf.goalWeight.value, today: today(), goalDate: obf.goalDate.value }); el.textContent = paceLine(r); };
     if (step === 2) { const p = profile(); const sg = suggestGoal(p, today()); obf.goalWeight.value = sg.goalWeight; obf.goalDate.value = sg.goalDate; obf.oninput = pace; pace(); }
     obf.onsubmit = e => { e.preventDefault(); const r = saveOnboardStep(S.get('profile', null), step, Object.fromEntries(new FormData(obf)));
       if (!r.ok) { const m = $('#obmsg'); if (m) m.textContent = r.errors.join('；'); return; }

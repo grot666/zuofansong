@@ -38,7 +38,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - `test/fiber-share.test.js` over the 8-target × seeds 0–5 × budget {none, .8} grid asserts overall ≥ 85% and each target ≥ 70%, printing the per-target table.
     - Change user-facing copy (version.js/CHANGELOG) to "约 85–90% 的日子" (about 85–90% of days), or the measured figure.
     - 1500/140 gets a follow-up note: the high protein/kcal ratio crowds out staple and veg, so the next lever is oats or the peas side first. Investigate; don't change behaviour in this item.
-- **A62 Breakfast mode in plangrid and snapshots (P2)**
+- ✅ **A62 Breakfast mode in plangrid and snapshots (P2)**
   - Why: see (d). `opts.breakfast` multiplies the plan space but is only tested in `oats.test.js`.
   - AC: the plangrid determinism and invariant loops (pairing, sweet-potato cap, no 3-run, batch kept, no silent non-ok) iterate `breakfast ∈ {rotate, oats}`, and the A44 snapshot adds seed-0 oats at 1800/140 (staple, fiberSide, breakfast name per day).
   - Tests: plangrid runtime stays ≤ 4 s. If it doesn't, sample oats on seeds 0–2 only.

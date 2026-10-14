@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.24
+- R10-D1: data fixes and citations, verified chip twins, Atwater test
+
 ## v0.10.23
 - CI runs tests serially so perf guards measure the planner
 

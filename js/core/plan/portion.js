@@ -10,6 +10,7 @@ export const KIWI_G = [100, 0, 200];
 export const MAX_PROTEIN_G_PER_MEAL = 300;
 // Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
 export const MEAT_W = 0.5;
+export const SG_MAX = 350; // staple g per meal
 export const TUNA_ADDON_G = 100;
 export const TUNA_MAX_PER_WEEK = Math.floor(TUNA.tunaLight.max / TUNA_ADDON_G); // 3 × 100 g ≤ 339 g
 export const ADDON_REPEAT_W = 15;
@@ -53,14 +54,18 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
     const base = { kcal: vegT.kcal + bfT[bi].kcal + kiwiT[ki].kcal + addT[ai].kcal, protein: vegT.protein + bfT[bi].protein + kiwiT[ki].protein + addT[ai].protein };
     const rep = addon.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W;
-    for (let sg = 30; sg <= 350; sg += 10) {
+    for (let sg = 30; sg <= SG_MAX; sg += 10) {
       const pgMin = Math.max(60, Math.ceil((protein - base.protein - sg * sP) / pP / 5) * 5);
-      const pg = Math.min(MAX_PROTEIN_G_PER_MEAL, pgMin);
-      const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
-      const short = Math.max(0, protein - P);
-      // lexicographic: protein floor, then kcal distance, then prefer default knobs
-      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W + rep;
-      if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
+      // R10-D1 follow-up: at the staple cap, a low-density staple + lean protein can leave kcal short; then also try more protein.
+      const pgs = [Math.min(MAX_PROTEIN_G_PER_MEAL, pgMin)];
+      if (sg === SG_MAX) pgs.push(Math.min(MAX_PROTEIN_G_PER_MEAL, Math.max(pgs[0], Math.ceil((kcal - base.kcal - sg * sK) / pK / 5) * 5)));
+      for (const pg of pgs) {
+        const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
+        const short = Math.max(0, protein - P);
+        // lexicographic: protein floor, then kcal distance, then prefer default knobs
+        const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W + rep;
+        if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
+      }
     }
   })));
   const r = build(best.sg, best.pg, best.bm, best.kiwi, best.addon);

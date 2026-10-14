@@ -9,8 +9,8 @@ const genIds = [...new Set([...P.PROTEINS, ...P.STAPLES, ...P.BREAKFASTS.flatMap
 test('R9-4 generator foods: verified with a table+id source, or shown with ≈ on the plan', () => {
   const page = readFileSync('js/plan-page.js', 'utf8');
   assert.match(page, /food\(id\)\?\.verified \? '' : '≈'/); assert.match(page, /food\(x\.id\)\?\.verified \? '' : '≈'/);
-  for (const id of genIds) { const f = food(id); assert.ok(f, id); if (f.verified) assert.match(f.source, /USDA FDC \d+|CFCT .+/, id); }
-  for (const f of ALL) if (f.verified) assert.match(String(f.source), /USDA FDC \d+|CFCT .+|上海|label/, f.id);
+  for (const id of genIds) { const f = food(id); assert.ok(f, id); if (f.verified) assert.match(f.source, /USDA FDC \d+|CFCT .+|营养所查询平台 #\d+/, id); }
+  for (const f of ALL) if (f.verified) assert.match(String(f.source), /USDA FDC \d+|CFCT .+|营养所查询平台 #\d+|上海|label/, f.id);
   for (const id of ['tofuFirm', 'qianzhang', 'doufugan', 'basa', 'yogurt']) assert.doesNotMatch(String(food(id).source), /USDA/, id);
   assert.equal(food('milk').source, 'USDA FDC 171265'); assert.equal(food('seabass').source, 'USDA FDC 175142');
 });

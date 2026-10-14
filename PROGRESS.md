@@ -129,3 +129,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:53 v0.10.22 plangrid time guard for slower CI runners
 
 - 06:56 v0.10.23 CI runs tests serially so perf guards measure the planner
+
+- 06:59 v0.10.24 R10-D1: data fixes and citations, verified chip twins, Atwater test

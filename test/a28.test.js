@@ -7,8 +7,8 @@ import { RECIPES } from '../data/recipes.js';
 const food = makeIndex(FOODS, FOODS2, FOODS3);
 test('A28 protein-short days are protein-low', () => {
   // Since v0.8.8 add-ons close the gap on some days; every short day must still read 'protein-low'.
-  const w = generateWeek({ kcal: 1400, protein: 220 }, food, RECIPES, { seed: 0, proteins: ['tofuFirm'] });
-  const short = w.filter(d => d.tot.protein < 219.5);
+  const w = generateWeek({ kcal: 1400, protein: 260 }, food, RECIPES, { seed: 0, proteins: ['tofuFirm'] });
+  const short = w.filter(d => d.tot.protein < 259.5);
   assert.ok(short.length >= 3);
   for (const d of short) assert.equal(d.fit, 'protein-low');
 });

@@ -67,7 +67,7 @@ export function priceOf(food, id) {
   return { rawId, rawPrice: (raw && raw.priceCNYPer500g) || 0 };
 }
 // UX-12: quick-add chips under the search box. Recents (≤8) first, then most-used (≤8); empty or thin history is padded with curated up to 8.
-export const CURATED_CHIPS = ['egg', 'riceCooked', 'thighRoasted', 'broccoli', 'oats', 'tofuFirm', 'milk', 'tunaLight'];
+export const CURATED_CHIPS = ['eggUSDA', 'riceCooked', 'thighRoasted', 'broccoliUSDA', 'oatsDry', 'tofuFirm', 'milk', 'tunaLight']; // R10-D1: verified twins
 export function quickChips(recents = [], useCount = {}, has = () => true) {
   const out = [];
   const add = id => { if (has(id) && !out.includes(id)) out.push(id); };

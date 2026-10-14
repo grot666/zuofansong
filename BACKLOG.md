@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:10): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A50** extract TUNA → A51/A52 → **A53** export twin map + re-split portion.js. Shipped since last arch review: A40–A46 ✅, R-01/R-11/VER-10/R10-D1 ✅, R10-F1/F2/S1/S2 ✅ (v0.10.25–0.10.28; S1 closes A49 behaviour).
+Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0–2) → verify batch of the next 10–15 most-used unverified foods (VER-15) → new R11/A54+ items → oats breakfast option (opts.breakfast) toward 80% fiber days. Shipped since 07:10: A47 v0.10.29 · A48 v0.10.30 · A50 v0.10.31 · A51 v0.10.32 · A52 v0.10.33 · A53 v0.10.34 · 烤红薯 cap v0.10.35 · VER-20 v0.10.36.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 

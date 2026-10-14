@@ -78,3 +78,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:19 v0.9.8 R9-1 (P0): budget loop on real regenerated cost (≤7 rounds); A34: unfit days reported + ⚠ tip.
 
 - 06:20 v0.9.9 R9-2 plan uses kiwiUSDA; R9-3 eggWhite = FDC 172183 verified.
+
+- 06:22 A35 budget-score fixtures (real data pin, tie-break, final-swap-only, monotonic, price→score) — tests only.

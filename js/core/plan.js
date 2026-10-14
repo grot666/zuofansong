@@ -113,7 +113,8 @@ export function generateWeek(targets, food, recipes, opts = {}) {
 
 // RESEARCH-R6 §R6.3 greedy. slots: protein id per slot; slotCost(id, i): CNY for slot i with id (protein held constant).
 // options: candidate ids. Returns { slots, cost, swaps, overBudget, steps }.
-// score(id) (optional): among cheaper candidates that bring the week within budget, take the best-scoring; else the cheapest.
+// score(id) (optional): among cheaper candidates that alone bring the week within budget, take the best-scoring; else the cheapest.
+// Ties: candidates are pre-sorted by cost (stable, options order), so equal scores → cheaper first, then options order.
 export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap = 3, score }) {
   const cur = [...slots]; const steps = [];
   const total = () => fixed + cur.reduce((s, id, i) => s + slotCost(id, i), 0);

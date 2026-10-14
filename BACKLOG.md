@@ -34,7 +34,7 @@ Probes (node against core with PRICE_REFS; scripts not committed): the numbers b
   - Tests:
     - That fixture yields either all-`ok` days or `unfit` non-empty plus a visible notice.
     - Grid {1617/160, 1800/140} × seeds 0–2 × budgets {0.95, 0.85, 0.7}×free: `checkWeek` all ok, OR `unfit`/`overBudget` is set. Never a silent fail.
-- **A35 applyBudget score-selection fixtures in real data (P1)**
+- **A35 applyBudget score-selection fixtures in real data (P1)** ✅
   - Why: the score path is only tested with synthetic A/B/C. Real protein scores are clustered (16–19: thigh, tofu and pork 19; breast, seabass and basa 18; shrimp and beef 17; tuna 16), so a data or price change can silently flip choices.
   - Tests (`budgetscore.test.js`):
     - (a) Real-data fixture at 1800/140 seed 0, budget 0.85×free: pin `r.slots`, `swaps` and cost (±¥0.05).

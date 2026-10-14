@@ -149,3 +149,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 07:10 v0.10.32 A51 plangrid determinism on every cell (split file)
 
 - 07:10 v0.10.33 A52 remove orphan applyBudget comment and unused sum helper
+
+- 07:11 v0.10.34 A53 export SHOP_ALIAS/twinOf; split fiber preference (plan/fiber.js, plan/day.js)

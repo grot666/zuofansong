@@ -1,7 +1,7 @@
 // A45: split from js/core/plan.js (portion). Import via js/core/plan.js (facade).
 import { TUNA } from '../tuna.js';
 import { totals } from '../foods.js';
-import { selectWeek } from './select.js';
+import { VEG_MULTS, FIBER_MIN, FIBER_W, fiberNote } from './fiber.js';
 const sum = (items, food) => totals(items, food);
 export const FITS = ['ok', 'kcal-high', 'kcal-low', 'protein-low'];
 export const BF_MULTS = [1, 0.75, 1.25, 0.5];
@@ -13,11 +13,6 @@ export const MEAT_W = 0.5;
 export const SG_MAX = 350; // staple g per meal
 export const MEAT_OVER_G = 250; // = MEAT_NOTE_G (shopping.js)
 export const MEAT_OVER_W = 3;
-// R10-F1: prefer variants reaching 25 g fiber (veg portion ×1/×1.5/×2, kiwi, staple) when kcal/protein still fit.
-export const VEG_MULTS = [1, 1.5, 2];
-export const FIBER_MIN = 25;
-export const FIBER_W = 10;
-export const fiberNote = f => `膳食纤维约 ${Math.round(f)} g（目标 25–30 g）：可把白米换成糙米/杂粮，或加一份蔬菜/猕猴桃。`;
 export const TUNA_ADDON_G = 100;
 export const TUNA_MAX_PER_WEEK = Math.floor(TUNA.tunaLight.max / TUNA_ADDON_G); // 3 × 100 g ≤ 339 g
 export const ADDON_REPEAT_W = 15;
@@ -34,27 +29,7 @@ export function powderAddons(n) {
   for (let k = 1; k <= n; k++) out.push([['whey', SCOOP_G * k]], [['yogurt', 300], ['eggBoiled', 100], ['whey', SCOOP_G * k]]);
   return out;
 }
-// R10-F1: when a day still misses fiber, also try higher-fiber staples in order (STAPLE_ALT_W penalty) and keep the better score.
-export const FIBER_ALT = { riceCooked: ['brownRiceCooked', 'sweetPotatoBaked'], brownRiceCooked: ['sweetPotatoBaked'], milletCooked: ['sweetPotatoBaked'] };
-export const STAPLE_ALT_W = 20;
-export function portionDay(sk, targets, food, opts = {}) {
-  // A47: no usable protein → a day without meat items, flagged protein-low (never throws).
-  if (!food(sk.pLunch) || !food(sk.pDinner)) {
-    const veg = r => (r ? [...r.items.map(([id, g]) => [id, g / 2]), ['oil', r.oil / 2]] : []);
-    const st = food(sk.staple) ? [[sk.staple, 150]] : [];
-    const meals = [{ name: '早餐', title: sk.bf.name, items: sk.bf.items }, { name: '午餐', title: '主食 + 蔬菜', items: [...st, ...veg(sk.vegL)] }, { name: '晚餐', title: '主食 + 蔬菜', items: [...st, ...veg(sk.vegD)] }];
-    const tot = sum(meals.flatMap(m => m.items), food);
-    return { day: sk.day, meals, tot, dinnerProtein: null, staple: sk.staple, proteinG: 0, stapleG: 150, bfMult: 1, kiwiG: 0, vegMult: 1, addon: [], score: Infinity, fit: 'protein-low', fiberNote: null };
-  }
-  let best = portionCore(sk, targets, food, opts);
-  for (const alt of FIBER_ALT[sk.staple] || []) {
-    if (!best.fiberNote || !food(alt)) break;
-    const b = portionCore({ ...sk, staple: alt }, targets, food, opts);
-    if (b.score + STAPLE_ALT_W < best.score) best = { ...b, stapleSwap: sk.staple };
-  }
-  return best;
-}
-function portionCore(sk, { kcal, protein }, food, opts = {}) {
+export function portionCore(sk, { kcal, protein }, food, opts = {}) {
   const { bf, pDinner, pLunch, staple, vegL, vegD } = sk;
   const r5 = x => Math.round(x / 5) * 5;
   const build = (sg, pg, bm, kiwi, addon = [], vm = 1) => {
@@ -116,19 +91,3 @@ function portionCore(sk, { kcal, protein }, food, opts = {}) {
   return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, vegMult: best.vm, addon: best.addon, score: best.score, fit, fiberNote: r.tot.fiber < FIBER_MIN ? fiberNote(r.tot.fiber) : null };
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
-export function generateWeek(targets, food, recipes, opts = {}) {
-  // A33: tuna grams across all meals and add-ons stay within TUNA.tunaLight.max (core/tuna.js).
-  // Snack variety: each add-on item costs ADDON_REPEAT_W × (days it was already used this week).
-  let tunaG = 0; const used = {};
-  return selectWeek(food, recipes, opts).map(sk => {
-    const noTuna = tunaG + TUNA_ADDON_G > TUNA.tunaLight.max;
-    // Perf: planWeek passes opts.memo (one Map per planWeek call) so budget rounds reuse days whose inputs did not change.
-    const key = opts.memo && [sk.bf.name, sk.pLunch, sk.pDinner, sk.staple, sk.vegL?.id, sk.vegD?.id, noTuna, JSON.stringify(used)].join('|');
-    let d = key && opts.memo.get(key);
-    if (!d) { d = portionDay(sk, targets, food, { ...opts, noTuna, addonUse: used }); if (key) opts.memo.set(key, d); }
-    d = { ...d, day: sk.day };
-    tunaG += d.meals.flatMap(m => m.items).filter(([id]) => id === 'tunaLight').reduce((t, [, g]) => t + g, 0);
-    for (const id of new Set(d.addon.map(([id]) => id))) used[id] = (used[id] || 0) + 1;
-    return d;
-  });
-}

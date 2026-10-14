@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.34
+- A53 export SHOP_ALIAS/twinOf; split fiber preference (plan/fiber.js, plan/day.js)
+
 ## v0.10.33
 - A52 remove orphan applyBudget comment and unused sum helper
 

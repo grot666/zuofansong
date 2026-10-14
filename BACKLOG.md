@@ -52,7 +52,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
   - Why: `plan/portion.js` still ends with a 4-line comment documenting `applyBudget` (now in `budget.js`). `plan/select.js` defines unused `const sum = …`. Harmless, but it confuses the next editor and undoes the "each file owns one concern" goal of A45.
   - AC: remove the orphan comment and the unused `sum`; no behaviour change; A44 snapshots still green.
 
-- **A53 Export shopping twin map + re-split portion.js after R10-F1 (P2)**
+- **A53 Export shopping twin map + re-split portion.js after R10-F1 (P2)** ✅
   - Why: (a) R10-S1's `TWIN`/`twinOf` are private inside `shopping.js`; `totals().cost` and any future export of raw grams still won't share the same alias table as `COOKED_TO_RAW`. (b) A45 AC was each plan/* file < 100 lines; R10-F1 pushed `portion.js` to 125 lines (fiber preference, vegMult, stapleSwap, fiberNote).
   - AC:
     - Exported `SHOP_ALIAS` / `twinOf` from `core/foods.js` (next to `COOKED_TO_RAW`) or `core/plan/shopping.js` re-exported through the facade; `shoppingList` uses it; text/data test: every generator `*USDA` id either aliases or is allowlisted.

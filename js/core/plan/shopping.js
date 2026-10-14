@@ -1,10 +1,8 @@
 // A45: split from js/core/plan.js (shopping). Import via js/core/plan.js (facade).
-import { COOKED_TO_RAW, priceOf } from '../foods.js';
+import { COOKED_TO_RAW, priceOf, twinOf } from '../foods.js';
 // R10-S1: shelf-stable staples and condiments go to one "常备" line; verified twins merge under the everyday name.
 export const PANTRY_IDS = new Set(['rice', 'brownRice', 'millet', 'oats', 'oatsDry', 'tunaLight', 'tunaAlbacore', 'soy', 'oyster', 'oil', 'oliveOil', 'garlic', 'ginger', 'whey']);
 export const SMALL_G = 50;
-const TWIN = { eggWhite: ['egg', 0.6], oatsDry: ['oats', 1] }; // [base id, g of item per g of base]
-const twinOf = (id, food) => { if (TWIN[id] && food(TWIN[id][0])) return TWIN[id]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
 export function shoppingList(days, food) {
   const agg = {};
   for (const d of days) for (const m of d.meals) for (const [id, g] of m.items) {

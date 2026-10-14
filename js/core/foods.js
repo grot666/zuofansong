@@ -5,6 +5,9 @@ import { PRICE_REFS } from '../../data/prices.js';
 // A5: shared food index + nutrient totals. Pure.
 // raw-purchase conversion: cooked id -> [raw id, cooked g per raw g]
 export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['brownRice', 2.4], milletCooked: ['millet', 2.6], thighRoasted: ['chickenThigh', 0.75], breastRoasted: ['chickenBreast', 0.75], shrimpCooked: ['shrimp', 0.85], sweetPotatoBaked: ['sweetPotato', 0.85], eggUSDA: ['egg', 1], eggBoiled: ['egg', 1] };
+// R10-S1/A53: shopping alias map (verified twins merge under the everyday name); shared next to COOKED_TO_RAW.
+export const SHOP_ALIAS = { eggWhite: ['egg', 0.6], oatsDry: ['oats', 1] }; // [base id, g of item per g of base]
+export const twinOf = (id, food) => { if (SHOP_ALIAS[id] && food(SHOP_ALIAS[id][0])) return SHOP_ALIAS[id]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
 
 const OIL_IDS = new Set(['oil', 'oliveOil']);
 // A24: makeIndex({ base: [lists…], partials: [lists…] }) — base entries create/merge foods; partials only

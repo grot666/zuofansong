@@ -1,7 +1,8 @@
 // A45: split from js/core/plan.js (budget). Import via js/core/plan.js (facade).
 import { COOKED_TO_RAW, priceOf } from '../foods.js';
 import { PROTEINS, proteinScore } from './select.js';
-import { feasibility, generateWeek } from './portion.js';
+import { feasibility } from './portion.js';
+import { generateWeek } from './day.js';
 import { shoppingList } from './shopping.js';
 // Ties: candidates are pre-sorted by cost (stable, options order), so equal scores → cheaper first, then options order.
 export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap = 3, score }) {

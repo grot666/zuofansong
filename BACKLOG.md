@@ -41,7 +41,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
     - Text test: no file under `js/core/plan/` imports `review.js`.
   - Tests: existing A33 / tunaNotes tests still pass; new import-graph text test.
 
-- **A51 Restore full plangrid determinism coverage under serial CI (P2)**
+- ✅ **A51 Restore full plangrid determinism coverage under serial CI (P2)**
   - Why: v0.10.22 thinned deep-equal re-checks to ~⅓ of the grid to stay under the wall-clock budget. CI is now serial and the 4 s guard has headroom (~1.5 s locally @ review). A non-deterministic path that only hits the skipped cells would slip through.
   - AC:
     - `plangrid.test.js` deep-equals **every** (target × seed × budget) cell again, or documents a fixed sample with ≥ 80% coverage and why.

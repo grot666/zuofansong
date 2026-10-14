@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.32
+- A51 plangrid determinism on every cell (split file)
+
 ## v0.10.31
 - A50: TUNA extracted to core/tuna.js
 

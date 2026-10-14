@@ -10,7 +10,7 @@ export const BREAKFASTS = [
   { name: '水煮蛋 + 玉米 + 无糖酸奶', items: [['eggBoiled', 100], ['corn', 200], ['yogurt', 150]] },
   { name: '全麦面包 + 鸡蛋 + 牛奶', items: [['wwBread', 70], ['eggUSDA', 100], ['milk', 250]] },
 ];
-export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seabass', 'tofuFirm', 'porkLoin', 'basa', 'leanBeef'];
+export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seabass', 'tofuFirm', 'porkLoin', 'basa', 'leanBeef', 'sole'];
 // A33: canned tuna is an add-on only (100 g), never a main; one weekly gram budget shared with review.js.
 export const STAPLES = ['riceCooked', 'brownRiceCooked', 'milletCooked', 'sweetPotatoBaked'];
 // raw-purchase conversion: shopping list buys raw; cooked weight / factor = raw
@@ -102,15 +102,22 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   const pK = (pl.kcal * pm(pLunch) + pd.kcal * pm(pDinner)) / 100, pP = (pl.protein * pm(pLunch) + pd.protein * pm(pDinner)) / 100;
   let best = null;
   const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)) && !(opts.noTuna && a.some(([id]) => id === 'tunaLight' || id === 'tunaAlbacore')));
+  // Perf: the zero-staple/zero-protein base is additive over its parts, so sum the parts once instead of build()+totals per knob.
+  const kp = items => { const t = sum(items, food); return { kcal: t.kcal, protein: t.protein }; };
+  const z = build(0, 0, 1, 0, []).meals.slice(1, 3).flatMap(m => m.items);
+  const vegT = kp(z), bfT = BF_MULTS.map(bm => kp(bf.items.map(([id, g]) => [id, Math.round(g * bm)])));
+  const kiwiT = KIWI_G.map(kiwi => kp(kiwi ? [[food('kiwiUSDA') ? 'kiwiUSDA' : 'kiwi', kiwi]] : []));
+  const addT = addons.map(kp);
   BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
-    const base = build(0, 0, bm, kiwi, addon).tot;
+    const base = { kcal: vegT.kcal + bfT[bi].kcal + kiwiT[ki].kcal + addT[ai].kcal, protein: vegT.protein + bfT[bi].protein + kiwiT[ki].protein + addT[ai].protein };
+    const rep = addon.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W;
     for (let sg = 30; sg <= 350; sg += 10) {
       const pgMin = Math.max(60, Math.ceil((protein - base.protein - sg * sP) / pP / 5) * 5);
       const pg = Math.min(MAX_PROTEIN_G_PER_MEAL, pgMin);
       const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
       const short = Math.max(0, protein - P);
       // lexicographic: protein floor, then kcal distance, then prefer default knobs
-      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W + addon.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W;
+      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W + rep;
       if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
     }
   })));

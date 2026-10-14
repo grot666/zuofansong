@@ -7,7 +7,7 @@ export const PRICE_REFS = [
   { id: 'eggUSDA', priceCNYPer500g: 5.89, priceSource: SH, priceDate: '2026-10-14' },
   { id: 'rice', priceCNYPer500g: 2.81, priceSource: SH, priceDate: '2026-10-14' },
   // R9-6: no official price for these; keep the food's own estimate but label it explicitly.
-  ...['thighRoasted', 'breastRoasted', 'chickenThigh', 'chickenBreast', 'tofuFirm', 'seabass', 'basa', 'tunaLight', 'shrimp', 'shrimpCooked']
+  ...['thighRoasted', 'breastRoasted', 'chickenThigh', 'chickenBreast', 'tofuFirm', 'seabass', 'basa', 'sole', 'tunaLight', 'shrimp', 'shrimpCooked']
     .map(id => ({ id, priceEstimate: true, priceNote: EST })),
   { id: 'leanBeef', priceEstimate: true, priceNote: '估算；官方均价 腱子 52.29、牛腩 44.70 元/斤，本应用取值更低（瘦肉价差大）' },
 ];

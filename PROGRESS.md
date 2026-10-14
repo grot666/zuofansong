@@ -99,3 +99,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:37 v0.10.7 Weekly plan reuses vegetables (shorter shopping list); pasta/sweet potato FDC ids confirmed; budget overshoot revert
 
 - 06:39 v0.10.8 Walkthrough fixes: onboarding goal suggestion, select-on-focus, 44px checkbox/radio rows
+
+- 06:42 v0.10.9 planWeek ~10x faster (precomputed base); sole (龙利鱼) added to PROTEINS

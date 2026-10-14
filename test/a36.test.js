@@ -9,7 +9,7 @@ const food = makeIndex(FOODS, FOODS2, FOODS3);
 const MSG = 'scores changed: update golden + DECISIONS';
 test('A36 golden: protein ranking, top-14 veg, add-on food scores', () => {
   assert.deepEqual(rankProteins(PROTEINS, food).map(id => [id, proteinScore(id, food)]),
-    [['thighRoasted', 19], ['tofuFirm', 19], ['porkLoin', 19], ['breastRoasted', 18], ['seabass', 18], ['basa', 18], ['shrimpCooked', 17], ['leanBeef', 17]], MSG);
+    [['thighRoasted', 19], ['tofuFirm', 19], ['porkLoin', 19], ['breastRoasted', 18], ['seabass', 18], ['basa', 18], ['sole', 18], ['shrimpCooked', 17], ['leanBeef', 17]], MSG);
   assert.deepEqual(rankVeg(RECIPES, food).slice(0, 14).map(r => r.id), ['r16', 'r5', 'r15', 'r14', 'r18', 'r19', 'r23', 'r26', 'r27', 'r31', 'r32', 'r2', 'r3', 'r6'], MSG);
   const four = m => { const { health, easy, cheap, tasty } = mealScores(m, food); return [health, easy, cheap, tasty]; };
   const exp = { shrimpCooked: [[100], [3, 4, 5, 4]], eggWhite: [[99], [3, 4, 5, 3]], yogurt: [[300], [3, 4, 5, 3]], tofuFirm: [[150], [3, 5, 5, 3]], eggBoiled: [[100], [3, 5, 5, 3]], tunaLight: [[100], [3, 5, 5, 3]] };

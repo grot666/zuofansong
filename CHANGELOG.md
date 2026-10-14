@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.9
+- planWeek ~10x faster (precomputed base); sole (龙利鱼) added to PROTEINS
+
 ## v0.10.8
 - Walkthrough fixes: onboarding goal suggestion, select-on-focus, 44px checkbox/radio rows
 

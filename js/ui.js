@@ -7,6 +7,7 @@ import { makeIndex, totals as sumTotals, priceOverrides } from './core/foods.js'
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
+import { PRICE_REFS } from '../data/prices.js';
 let renderFn = () => {};
 export const setRender = f => { renderFn = f; };
 export const rerender = () => renderFn();
@@ -27,7 +28,7 @@ const PRESET_TEMPLATES = [
 ];
 const profile = () => normalizeProfile(S.get('profile', {}));
 let foodIdx = null;
-const refreshFoods = () => { foodIdx = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []), priceOverrides(S.get('prices', {}))); };
+const refreshFoods = () => { foodIdx = makeIndex(FOODS, FOODS2, FOODS3, PRICE_REFS, S.get('customFoods', []), priceOverrides(S.get('prices', {}))); };
 const allFoods = () => (foodIdx || refreshFoods(), foodIdx.all());
 const food = id => (foodIdx || refreshFoods(), foodIdx(id));
 const logKey = d => 'log.' + d;

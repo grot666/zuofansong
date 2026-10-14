@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.6.9';
+export const VERSION = '0.7.0';
 export const CHANGELOG = [
+  ['0.7.0', '菜单页新增“工作日 30 分钟一盘烤晚餐”：6 步、护腕友好、6 种低油酱汁按天轮换（可排除过敏/不喜欢的）；猪里脊、鸡蛋、大米采用上海官方零售价，其余标“估算”。'],
   ['0.6.9', '首次使用提示“示例目标”；资料留空不再变成 0（必填项会提示）；快速记录支持拼音/模糊匹配并给出候选，无单位的食材不再默默按 100 g 记。'],
   ['0.6.8', '体重图可选 4周/8周/12周/全部；今日页显示烹调油克数（对比膳食指南 25–30 g）。'],
   ['0.6.7', '食材页可修改价格（“改价”，留空恢复估价）；菜单花费、预算换菜、复盘花费都用你的价格。'],

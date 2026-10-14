@@ -1,6 +1,8 @@
 import { computeTargets } from './core/targets.js';
 import { planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
+import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
+import { sauceNutrition, rotateSauces } from './core/sauces.js';
 import { bootStore, registerSW, getProfile } from './boot.js';
 import * as S from './core/store.js';
 import { localDate } from './core/dates.js';
@@ -8,14 +10,28 @@ import { makeIndex, priceOverrides } from './core/foods.js';
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
+import { PRICE_REFS } from '../data/prices.js';
 import { RECIPES } from '../data/recipes.js';
 
 bootStore();
-const food = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []), priceOverrides(S.get('prices', {})));
+const food = makeIndex(FOODS, FOODS2, FOODS3, PRICE_REFS, S.get('customFoods', []), priceOverrides(S.get('prices', {})));
 const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
 const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
+function trayCard() {
+  const off = new Set(S.get('sauceOff', []));
+  const rot = rotateSauces(SAUCES.filter(x => !off.has(x.id)), 7);
+  const mins = TRAY_STEPS.reduce((a, x) => a + x.min, 0);
+  return `<section class="card"><h2>工作日 30 分钟一盘烤晚餐</h2>
+  <p class="mut">动手约 ${mins} 分钟 · 3 件设备（电饭煲、烤盘/空气炸锅、微波碗）· 护腕友好。</p>
+  <ol>${TRAY_STEPS.map(x => `<li>${x.text}（${x.min} 分钟）${x.wrist ? ' ✅护腕' : ''}${x.tip ? `<br><span class="mut">${x.tip}</span>` : ''}</li>`).join('')}</ol>
+  <p><b>熟没熟以中心温度为准：禽肉 74 °C</b>（USDA FSIS）。烤制时间以自家设备为准。</p>
+  <h3>本周酱汁轮换</h3><ol>${rot.out.map((x, i) => { const n = sauceNutrition(x); return `<li>${DAYS[i]}：${x.name}（${x.items.map(([id, g]) => SAUCE_ING[id].name + ' ' + g + ' g').join(' + ')}）≈${Math.round(n.kcal)} kcal · 脂肪 ${n.fat} g${x.allergen ? ' · 含' + x.allergen.join('、') : ''}</li>`; }).join('') || '<li class="mut">请至少选一种酱汁</li>'}</ol>
+  ${rot.repeatWarning ? '<p class="mut">只选了一类口味，会每天重复。</p>' : ''}
+  <div>${SAUCES.map(x => `<label style="display:inline-block;margin-right:8px"><input type="checkbox" data-sauce="${x.id}" ${off.has(x.id) ? '' : 'checked'} style="width:auto;min-height:auto"> ${x.name}</label>`).join('')}</div>
+  <p class="mut">酱油、蚝油含盐高，可换低钠酱油。护腕：不颠锅、不用力剁切，重物双手端。若手腕疼痛请遵医生/康复师建议。</p></section>`;
+}
 function render() {
   const p = getProfile();
   const t = computeTargets(p);
@@ -37,11 +53,13 @@ function render() {
   <ul class="list">${list.map(x => `<li><label style="margin:0"><input type="checkbox" style="width:auto;min-height:auto"> ${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'} <span class="mut">≈¥${r1(x.cost)}</span></label></li>`).join('')}</ul><p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>
   <section class="card"><h2>周日备餐（约 60 分钟）</h2><ol>
   <li>电饭煲煮 2–3 天的杂粮饭；煮好 1 小时内分盒冷藏，第 3 天及以后的分份直接冷冻。</li>
-  <li>本周蛋白：${proteinsUsed.join('、')}。鸡腿/鸡胸一次腼好（生抽+料酒+姜），分成前 3 天的量。</li>
+  <li>本周蛋白：${proteinsUsed.join('、')}。鸡腿/鸡胸一次腌好（生抽+料酒+姜），分成前 3 天的量。</li>
   <li>绿叶菜洗净沥干装保鲜袋；西兰花/胡萝卜切好块。</li>
   <li>煮一锅水煮蛋（6–8 个），冷藏 4–5 天内吃完。</li>
   <li>工作日晚上：热饭 + 空气炸锅/烤箱烤蛋白和蔬菜，多做一份装明天午餐。</li></ol>
-  <p class="mut">米饭安全：冷藏 24 小时内吃完、只加热一次并热透；冷冻的分份当天取出微波。</p></section>`;
+  <p class="mut">米饭安全：冷藏 24 小时内吃完、只加热一次并热透；冷冻的分份当天取出微波。</p></section>
+  ${trayCard()}`;
+  document.querySelectorAll('[data-sauce]').forEach(c => c.onchange = () => { const off = new Set(S.get('sauceOff', [])); c.checked ? off.delete(c.dataset.sauce) : off.add(c.dataset.sauce); S.set('sauceOff', [...off]); render(); });
   $('#regen').onclick = () => { S.set('planSeed', seed + 1); render(); };
   $('#budget').onchange = e => { S.set('weeklyBudget', +e.target.value || 300); render(); };
   document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => {

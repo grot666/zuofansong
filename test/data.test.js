@@ -54,3 +54,14 @@ test('UX-3 matchFoods / gramsFor', () => {
   assert.equal(gramsFor({ unit: { g: 50 } }, 2, 'unit'), 100);
   assert.equal(gramsFor({}, 120, 'g'), 120);
 });
+import { PRICE_REFS } from '../data/prices.js';
+test('R7.3 protein per yuan fixtures + refs merge', () => {
+  for (const [P, price, exp] of [[21.0, 17.55, 5.983], [12.6, 5.91, 10.660], [7.13, 3.00, 11.883], [20.1, 23.00, 4.370]]) assert.ok(Math.abs(proteinPerYuan({ protein: P, priceCNYPer500g: price }) - exp) < 1e-3);
+  const f = makeIndex(ALL, PRICE_REFS, priceOverrides({ egg: 7 }));
+  assert.equal(f('porkLoin').priceCNYPer500g, 17.55); assert.ok(f('porkLoin').priceSource);
+  assert.equal(f('egg').priceCNYPer500g, 7); assert.equal(f.all().length, ALL.length);
+});
+test('N-07 kiwi FDC 168153', () => {
+  const k = food('kiwiUSDA'); assert.equal(k.source, 'USDA FDC 168153'); assert.equal(k.verified, true);
+  assert.deepEqual([k.kcal, k.protein, k.fat, k.fiber], [61, 1.14, 0.52, 3.0]); assert.ok(Math.abs(k.carbs - 14.7) < 0.05);
+});

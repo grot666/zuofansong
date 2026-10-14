@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (06:15): no open P0/P1. Done since v0.7.5: A23–A32 ✅, G1–G4 ✅, UX-4–UX-14 ✅, meat-lean + snack variety + score-weighted budget swaps ✅. Open: R-15 (unscoped), more verified food data (113/137 unverified), base protein rotation by score (tried, broke grids — see DECISIONS).
+Next (06:45): no open P0/P1. Shipped v0.10.0–v0.10.10: R9-4…R9-10 ✅, A36–A39 ✅, veg reuse ✅, PERF-1 (planWeek ~7 ms) ✅, 龙利鱼 in PROTEINS ✅, WALK-1/2 ✅. Open in order: R-01 remainder (pace %/wk in onboarding + review warning), R-11 remainder (30-min evening one-tray variant), verify batch (10 most-used unverified generator foods; 110/137 foods unverified), R-15 (ranked fiber swaps, unscoped).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 

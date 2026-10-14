@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.11
+- BACKLOG Next line refreshed
+
 ## v0.10.10
 - Review: no deeper deficit below BMR; no backup nag right after import
 

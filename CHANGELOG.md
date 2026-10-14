@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.19
+- A44: veg-reuse snapshots, revert fixture, plangrid invariants
+
 ## v0.10.18
 - A43: perf guard median<25 ms, grid p95<40 ms
 

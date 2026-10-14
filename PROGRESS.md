@@ -119,3 +119,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:50 v0.10.17 A42: canDeepen {ok, reason} with per-reason copy; hidden during 维持周
 
 - 06:50 v0.10.18 A43: perf guard median<25 ms, grid p95<40 ms
+
+- 06:50 v0.10.19 A44: veg-reuse snapshots, revert fixture, plangrid invariants

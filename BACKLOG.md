@@ -54,7 +54,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - Add a grid-wide p95 < 40 ms over 30 mixed runs (budgets incl. .5×).
     - Keep the messages printing the measured values.
     - If CI flakes, raise to 30/50 ms and record that in DECISIONS rather than deleting.
-- **A44 Pin the veg-reuse and budget-revert behaviour (P2)**
+- ✅ **A44 Pin the veg-reuse and budget-revert behaviour (P2)**
   - Why: `REUSE_WINDOW` and the revert are only covered indirectly. A change to `rankVeg` or the tie-break silently changes menus.
   - Tests:
     - (a) Snapshot of the 14 veg ids for seed 0 and seed 1.

@@ -189,7 +189,7 @@ export function planWeek(targets, food, recipes, opts = {}) {
   if (stalled && total > opts.budget && opts.budget > 0) { const m = planWeek(targets, food, recipes, { ...opts, budget: 0 }); if (m.cost < total) { week = m.week; total = m.cost; swaps = m.swaps; } }
   // Still over budget: the greedy can overshoot (estimate vs real portions). Try reverting the 1 slot changed in the
   // last round with the smallest estimated revert penalty; keep it only if the real cost drops (one extra regeneration).
-  if (total > opts.budget && !stalled) {
+  if (total > opts.budget && !stalled && opts.revert !== false) {
     const pG = week.map((d, i) => (d.proteinG + week[(i + 1) % 7].proteinG));
     const est = (id, i) => proteinCost(food, id, pG[i] * food(id).protein / 100);
     const cand = week.map((d, i) => i).filter(i => week[i].dinnerProtein !== prev[i].dinnerProtein)

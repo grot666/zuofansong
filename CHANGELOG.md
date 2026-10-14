@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.48
+- A59 sweet potato on ≤1 batch by construction (test); staple swaps 0 on grid
+
 ## v0.10.47
 - A56 perf guards calibrated under parallel runs; CI strict
 

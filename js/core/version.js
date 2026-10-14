@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.47';
+export const VERSION = '0.10.48';
 export const CHANGELOG = [
+  ['0.10.48', '测试：确认菜单每周最多一批烤红薯'],
   ['0.10.47', '测试：性能检查在并行运行时更稳定（CI 仍严格）'],
   ['0.10.46', '测试：烤红薯上限、加青豆、早餐模式纳入全网格检查'],
   ['0.10.45', '测试修正：恢复被注释掉的烤红薯占比检查'],

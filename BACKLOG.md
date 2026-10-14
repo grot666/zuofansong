@@ -114,7 +114,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
   - Why: (a). The cap is only checked in `spcap.test.js`. The plangrid invariants (determinism, pairing, no silent non-ok) and the A44 snapshots don't cover `stapleSwap`/`spCap`/`fiberSide`, so a refactor could drop the cap on budget paths not in spcap's {none, ¥200}.
   - AC: plangrid asserts the sweet-potato cap and `spCap ⇒ staple !== SP_ID` for every run (incl. .5× budgets). The A44 snapshot gains the per-day `staple` + `fiberSide` sequence for seed 0 and seed 1 at 1800/140.
   - Tests: as stated; runtime of plangrid stays ≤ 4 s (DE guard).
-- **A59 select.js aware of the sweet-potato cap (P3, rank 6 @07:45)**
+- ✅ **A59 select.js aware of the sweet-potato cap (P3, rank 6 @07:45)**
   - Why: scheduling sweet potato blindly and then overriding it later in day.js makes the cap position-dependent (the first 3 sweet-potato days win) and wastes portion evaluations.
   - AC: `selectWeek` rotates STAPLES so the sweet-potato batch count ≤ cap/2 by construction; `day.js` keeps the guard as a backstop.
   - Tests: `stapleSwap` count on the spcap grid drops (pin the new number), with no change in the fiber share assertion.

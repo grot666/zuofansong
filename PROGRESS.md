@@ -60,3 +60,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 06:09 v0.9.0 A29: persist onboarding step (onboardStep key); resumes at step 2/3 after reload.
 
 - 06:10 v0.9.1 A28: fit 'protein-high' → 'protein-low'; export FITS.
+
+- 06:11 v0.9.2 A30: drop dead data/makeIndex imports from views/app; review.js dates via dayNum/addDays; guard test.

@@ -1,21 +1,7 @@
 // View: rice (A6). Browser-only.
-import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
 import { blend } from '../core/grains.js';
-import { fatWallet, TSP_OIL_G } from '../core/fat.js';
-import { proteinGap, gutRisk } from '../core/protein.js';
-import { suggestFiber } from '../core/fiber.js';
-import { ma7, weeklyStatus } from '../core/weight.js';
 import * as S from '../core/store.js';
-import { FOODS } from '../../data/foods.js';
-import { FOODS2 } from '../../data/foods2.js';
-import { FOODS3 } from '../../data/foods3.js';
-import { RECIPES } from '../../data/recipes.js';
-import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
-import { MULTS, scaleItems } from '../core/portion.js';
-import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
-import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { rerender, $, r1, food } from '../ui.js';
 
 const GRAINS = ['rice', 'millet', 'cornGrits', 'oatRice', 'brownRice', 'blackRice', 'buckwheat'];
 export const view = () => `<section class="card"><h2>杂粮饭配比器</h2><form id="rf">${GRAINS.map(id => { const f = food(id); return `<label>${f.name}${f.soak ? '（需浸泡）' : ''} <span id="pv-${id}"></span>%<input type="range" min="0" max="100" step="5" name="${id}"></label>`; }).join('')}

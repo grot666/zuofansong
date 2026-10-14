@@ -1,22 +1,8 @@
 // View: foods (A6). Browser-only.
 import { toast } from '../boot.js';
-import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
-import { blend } from '../core/grains.js';
-import { fatWallet, TSP_OIL_G } from '../core/fat.js';
-import { proteinGap, gutRisk } from '../core/protein.js';
-import { suggestFiber } from '../core/fiber.js';
-import { ma7, weeklyStatus } from '../core/weight.js';
 import * as S from '../core/store.js';
-import { FOODS } from '../../data/foods.js';
-import { FOODS2 } from '../../data/foods2.js';
-import { FOODS3 } from '../../data/foods3.js';
-import { RECIPES } from '../../data/recipes.js';
-import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
-import { MULTS, scaleItems } from '../core/portion.js';
-import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan, COOKED_TO_RAW } from '../core/foods.js';
-import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { proteinPerYuan, COOKED_TO_RAW } from '../core/foods.js';
+import { $, esc, refreshFoods, allFoods, food, getLog, setLog, approx } from '../ui.js';
 
 export const view = () => `<section class="card"><h2>食材库（${allFoods().length}）</h2><input id="q" placeholder="搜索：中文 / 拼音 / 标签（如 外卖、高纤）" aria-label="搜索食材"><p class="mut">每 100 g 可食部。名称带“熟”的为熟重，其余为生重。≈ 表示估算/未核实；✓ 表示已按 USDA FDC 核实。价格为上海估价。外卖数据误差可达 10–20% 甚至更多。</p><label style="display:inline-block"><input type="checkbox" id="pysort" style="width:auto;min-height:auto"> 按“每元蛋白”排序（估算，生重）</label><ul class="list" id="fl"></ul></section>
 <section class="card"><h3>添加自定义食材</h3><form id="cf"><input name="name" placeholder="名称" required aria-label="名称"><div class="row"><input name="kcal" type="number" step="any" placeholder="kcal" required aria-label="热量"><input name="protein" type="number" step="any" placeholder="蛋白 g" aria-label="蛋白"><input name="fat" type="number" step="any" placeholder="脂肪 g" aria-label="脂肪"><input name="carbs" type="number" step="any" placeholder="碳水 g" aria-label="碳水"><input name="fiber" type="number" step="any" placeholder="纤维 g" aria-label="纤维"></div><button>添加</button></form></section>`;

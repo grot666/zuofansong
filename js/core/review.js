@@ -1,4 +1,4 @@
-import { dayNum } from './dates.js';
+import { dayNum, addDays } from './dates.js';
 // Weekly review math (research R5.4, R3.3, R3.4, R3.6). Pure.
 // logs: { 'YYYY-MM-DD': {items:[{id,g}], water} }, food: id -> food
 import { totals } from './foods.js';
@@ -32,11 +32,11 @@ export function weekReview(dates, logs, food, targets) {
 // R-10 (Rulings R8): window (today−14, today]; ≥10 weigh-ins and ≥3 per 7-day half; delta = mean(B) − mean(A).
 // reason: 'sparse' | 'flat' (|Δ|<0.1) | 'up' (Δ≥0.1) | 'down'. Pure.
 export function plateau(weights, todayStr) {
-  const end = new Date(todayStr).getTime(); const start = end - 14 * 86400000;
-  const win = weights.filter(w => { const t = new Date(w.date).getTime(); return t > start && t <= end; });
+  const end = dayNum(todayStr); const start = end - 14;
+  const win = weights.filter(w => { const t = dayNum(w.date); return t > start && t <= end; });
   if (win.length < 10) return { plateau: false, reason: 'sparse' };
-  const half = start + 7 * 86400000;
-  const a = win.filter(w => new Date(w.date).getTime() <= half), b = win.filter(w => new Date(w.date).getTime() > half);
+  const half = start + 7;
+  const a = win.filter(w => dayNum(w.date) <= half), b = win.filter(w => dayNum(w.date) > half);
   if (a.length < 3 || b.length < 3) return { plateau: false, reason: 'sparse' };
   const m = arr => arr.reduce((s, w) => s + w.weight, 0) / arr.length;
   const delta = m(b) - m(a);
@@ -54,7 +54,7 @@ export function reviewDue(today, reviews = {}) {
 export function plateauAdvice(weights, todayStr, ctx = {}) {
   const r = plateau(weights, todayStr);
   if (!r.plateau) return { ...r, show: false, actions: [] };
-  const dn = s => new Date(s).getTime() / 86400000; const t = dn(todayStr);
+  const dn = dayNum; const t = dn(todayStr);
   const recent = Object.entries(ctx.reviews || {}).some(([d, v]) => ['minus', 'break'].includes(v && v.decision) && t - dn(d) < 14 && t >= dn(d));
   const winStart = t - 13;
   const inBreak = ctx.breakState && ctx.breakState.until && dn(ctx.breakState.until) >= winStart;
@@ -64,7 +64,7 @@ export function plateauAdvice(weights, todayStr, ctx = {}) {
 }
 
 export function lastNDates(todayStr, n = 7) {
-  const out = []; const t = new Date(todayStr + 'T00:00:00Z').getTime();
-  for (let i = n - 1; i >= 0; i--) out.push(new Date(t - i * 86400000).toISOString().slice(0, 10));
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) out.push(addDays(todayStr, -i));
   return out;
 }

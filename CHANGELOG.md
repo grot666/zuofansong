@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.2
+- A30: drop dead data/makeIndex imports from views/app; review.js dates via dayNum/addDays; guard test.
+
 ## v0.9.1
 - A28: fit 'protein-high' → 'protein-low'; export FITS.
 

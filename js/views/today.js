@@ -1,23 +1,16 @@
 // View: today (A6). Browser-only.
-import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
-import { blend } from '../core/grains.js';
-import { fatWallet, TSP_OIL_G } from '../core/fat.js';
+import { computeTargets } from '../core/targets.js';
+import { fatWallet } from '../core/fat.js';
 import { proteinFill, proteinGap, gutRisk } from '../core/protein.js';
 import { suggestFiber } from '../core/fiber.js';
-import { ma7, weeklyStatus } from '../core/weight.js';
 import * as S from '../core/store.js';
-import { FOODS } from '../../data/foods.js';
-import { FOODS2 } from '../../data/foods2.js';
-import { FOODS3 } from '../../data/foods3.js';
-import { RECIPES } from '../../data/recipes.js';
-import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck, onboardStep, saveOnboardStep, PACE_TEXT } from '../core/profile.js';
+import { paceCheck, onboardStep, saveOnboardStep, PACE_TEXT } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan, quickChips, matchFoods, gramsFor } from '../core/foods.js';
+import { quickChips, matchFoods, gramsFor } from '../core/foods.js';
 import { addDays, backupDue } from '../core/dates.js';
 import { reviewDue } from '../core/review.js';
-import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, allFoods, food, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
 function sleepHtml(l, p) {
   const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };

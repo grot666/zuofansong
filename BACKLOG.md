@@ -13,7 +13,7 @@ Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R
 - **A28 `fit: 'protein-high'` means protein short (P2, naming)** ✅
   - Why: since v0.7.5 `portionDay` returns `'protein-high'` when `tot.protein < protein − 0.5`. Same string as `feasibility().reason`, which means "target too high for the kcal". Today the UI only checks `fit !== 'ok'`, but any future copy keyed on `fit` will say the wrong thing.
   - AC: `fit ∈ {'ok','kcal-high','kcal-low','protein-low'}`; export `FITS`. Tests: `generateWeek({kcal:1400, protein:220}, food, RECIPES, {seed:0, proteins:['tofuFirm']})` (probe @be96ed1: all 7 days protein-short, currently labelled `'protein-high'`) gives `fit === 'protein-low'` on every day; every `fit` in the A19 grid is in `FITS`.
-- **A30 Views never build a food index (P3, A24 guard)**
+- **A30 Views never build a food index (P3, A24 guard)** ✅
   - Why: `views/today.js`, `views/veg.js`, `views/rice.js` still import `makeIndex` and `FOODS/FOODS2/FOODS3` but don't use them (dead since A24). `review.js` mixes `new Date(str)` and `dayNum` for the same dates.
   - AC: remove the dead imports. `review.js` uses `dayNum` only. Text test: no file under `js/views/`, `js/plan-page.js` or `js/review-page.js` imports `data/foods*.js` or `data/prices.js` or calls `makeIndex(`; only `core/foods.js` imports those data files.
 - **A32 Plan search perf guard (P3)**

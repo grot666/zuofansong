@@ -1,22 +1,9 @@
 // View: plate (A6). Browser-only.
-import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
-import { blend } from '../core/grains.js';
-import { fatWallet, TSP_OIL_G } from '../core/fat.js';
-import { proteinGap, gutRisk } from '../core/protein.js';
-import { suggestFiber } from '../core/fiber.js';
-import { ma7, weeklyStatus } from '../core/weight.js';
+import { computeTargets } from '../core/targets.js';
+import { TSP_OIL_G } from '../core/fat.js';
 import * as S from '../core/store.js';
-import { FOODS } from '../../data/foods.js';
-import { FOODS2 } from '../../data/foods2.js';
-import { FOODS3 } from '../../data/foods3.js';
-import { RECIPES } from '../../data/recipes.js';
-import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
-import { MULTS, scaleItems } from '../core/portion.js';
-import { sleepNotes } from '../core/sleep.js';
 import { mealScores } from '../core/scores.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
-import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { $, esc, r1, today, profile, allFoods, food, getLog, setLog, templates, bar } from '../ui.js';
 
 export const view = () => {
   const t = computeTargets(profile()); const per = { kcal: t.kcal / 3, protein: t.protein / 3, fat: t.fat / 3 };

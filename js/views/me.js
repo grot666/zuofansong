@@ -1,23 +1,12 @@
 // View: me (A6). Browser-only.
 import { toast } from '../boot.js';
 import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
-import { blend } from '../core/grains.js';
-import { fatWallet, TSP_OIL_G } from '../core/fat.js';
-import { proteinGap, gutRisk } from '../core/protein.js';
-import { suggestFiber } from '../core/fiber.js';
 import { ma7, weeklyStatus } from '../core/weight.js';
 import * as S from '../core/store.js';
 import { addDays, localDate } from '../core/dates.js';
-import { FOODS } from '../../data/foods.js';
-import { FOODS2 } from '../../data/foods2.js';
-import { FOODS3 } from '../../data/foods3.js';
-import { RECIPES } from '../../data/recipes.js';
-import { VERSION, CHANGELOG } from '../core/version.js';
-import { saveProfile, parseProfileForm, mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
-import { MULTS, scaleItems } from '../core/portion.js';
-import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
-import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { CHANGELOG } from '../core/version.js';
+import { saveProfile, mergeProfileEdit, paceCheck } from '../core/profile.js';
+import { rerender, $, r1, today, profile } from '../ui.js';
 
 const RANGES = [[4, '4周'], [8, '8周'], [12, '12周'], [0, '全部']];
 function weightChart(ws, goal) {

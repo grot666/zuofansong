@@ -69,9 +69,10 @@ export function saveProfile(stored = {}, form = {}, bools = {}) {
 }
 // UX-10: 3-step onboarding. Returns the step to show (1-3) or 0 when hidden.
 export const ONBOARD_FIELDS = { 1: ['sex', 'birth', 'height', 'weight'], 2: ['goalWeight', 'goalDate'] };
-export function onboardStep({ storedProfile, onboardSeen, step = 1 }) {
+// A29: savedStep is the persisted `onboardStep` key, so a reload resumes at step 2/3.
+export function onboardStep({ storedProfile, onboardSeen, savedStep }) {
   if (onboardSeen) return 0;
-  if (step > 1) return Math.min(3, step);
+  if (savedStep === 2 || savedStep === 3) return savedStep;
   return storedProfile == null ? 1 : 0;
 }
 // Save only the fields of this step (A21: never freeze defaults).

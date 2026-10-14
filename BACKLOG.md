@@ -6,7 +6,7 @@ Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 
 ### Arch review @be96ed1 (v0.8.7), 2026-10-15 ~06:05 SGT — 123/123 tests on a clean clone; A23–A27, G1–G4, UX-4…14 verified
-- **A29 Onboarding progress lost on reload (P1, UX-10 follow-up)**
+- **A29 Onboarding progress lost on reload (P1, UX-10 follow-up)** ✅
   - Why: `obStep` in `views/today.js` is a module variable. Step 1 writes `profile`, so after a reload (or the iOS PWA being killed between steps) `onboardStep({storedProfile: non-null, step: 1})` returns 0. Steps 2 (goal + pace) and 3 (first meal) are silently skipped, and `onboardSeen` stays false.
   - AC: persist the step in a new key `onboardStep` (1–3; add to KNOWN_KEYS + ARCHITECTURE §3). `onboardStep({storedProfile, onboardSeen, savedStep})` → savedStep when 2–3 and !onboardSeen; 1 when no profile; 0 otherwise. Skip/完成 sets `onboardSeen = true` and removes `onboardStep`. Existing users (profile set, no `onboardStep`) still see nothing.
   - Tests: pure: (no profile) → 1; (profile, savedStep 2) → 2; (profile, no savedStep) → 0; (onboardSeen) → 0 for any savedStep. keys.test passes with the new key.

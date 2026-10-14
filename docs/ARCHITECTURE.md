@@ -74,6 +74,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `backupSnooze` | 'YYYY-MM-DD' until which the backup hint is hidden (G3) | today |
 | `updateSeen` | VERSION whose update toast was already shown (UX-8, v0.8.4) | all pages |
 | `foodUse` | {id: count} quick-add use counts for chips (UX-12, v0.8.6) | today, foods |
+| `onboardStep` | 2–3, onboarding step to resume after reload; removed on skip/完成 (A29, v0.9.0) | today |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
 | `sauceOff` | `[sauceId]` excluded from rotation (R-11b, v0.7.0) | plan |
 

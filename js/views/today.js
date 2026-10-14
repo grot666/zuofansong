@@ -32,7 +32,6 @@ function slipNote(t) {
   const avg = days.reduce((a, lg) => a + totals(lg.items).kcal, 0) / days.length;
   return `<p class="mut">没关系，继续。近 7 天有记录的 ${days.length} 天平均 <b>${Math.round(avg)} kcal</b>（目标 ${t.kcal}）${avg <= t.kcal * 1.05 ? '，整体仍在计划内' : ''}。明天照常吃，不用节食补救。</p>`;
 }
-let obStep = 1; // UX-10: session-only onboarding step
 export const view = () => {
   const p = profile(); const t = computeTargets(p); const l = getLog(); const x = totals(l.items);
   const fw = fatWallet(t.fat, l.items.map(i => { const f = food(i.id); return f ? { fat: f.fat * i.g / 100, fatClass: f.fatClass || 'neutral' } : { fat: 0 }; }));
@@ -45,7 +44,7 @@ export const view = () => {
   const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
   const undo = S.get('undo', null);
   const demo = S.get('profile', null) == null;
-  const ob = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: S.get('onboardSeen', false), step: obStep });
+  const ob = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: S.get('onboardSeen', false), savedStep: S.get('onboardStep', null) });
   const skip = '<button type="button" class="sec" id="obSkip">跳过，先看看</button>';
   const onboard = !ob ? '' : `<section class="card" id="onboard" aria-label="新手引导"><h2>开始使用 · 第 ${ob}/3 步</h2>${ob === 1 ? `<p class="mut">目前显示的是示例数据。填 4 项（1 分钟）即可算出你的每日目标。</p><form id="obf">
   <div class="row"><label>性别<select name="sex"><option value="male">男</option><option value="female">女</option></select></label><label>出生日期<input type="date" name="birth" required></label></div>
@@ -81,17 +80,17 @@ export const view = () => {
 };
 view.bind = () => {
   const bs = $('#bkSnooze'); if (bs) bs.onclick = () => { S.set('backupSnooze', addDays(today(), 7)); rerender(); };
-  const obs = $('#obSkip'); if (obs) obs.onclick = () => { S.set('onboardSeen', true); obStep = 1; rerender(); };
+  const obs = $('#obSkip'); if (obs) obs.onclick = () => { S.set('onboardSeen', true); S.remove('onboardStep'); rerender(); };
   const obf = $('#obf');
   if (obf) {
-    const step = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: false, step: obStep });
+    const step = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: false, savedStep: S.get('onboardStep', null) });
     const pace = () => { const p = profile(); const el = $('#obpace'); if (!el) return; const r = paceCheck({ currentKg: p.weight, goalKg: +obf.goalWeight.value, today: today(), goalDate: obf.goalDate.value }); el.textContent = PACE_TEXT[r.status] ? '减重速度：' + PACE_TEXT[r.status] + (r.kgPerWeek ? `（约 ${r1(r.kgPerWeek)} kg/周）` : '') : ''; };
     if (step === 2) { const p = profile(); obf.goalWeight.value = p.goalWeight; obf.goalDate.value = p.goalDate; obf.oninput = pace; pace(); }
     obf.onsubmit = e => { e.preventDefault(); const r = saveOnboardStep(S.get('profile', null), step, Object.fromEntries(new FormData(obf)));
       if (!r.ok) { const m = $('#obmsg'); if (m) m.textContent = r.errors.join('；'); return; }
-      S.set('profile', r.profile); obStep = step + 1; rerender(); };
+      S.set('profile', r.profile); S.set('onboardStep', step + 1); rerender(); };
   }
-  document.querySelectorAll('[data-obtpl]').forEach(b => b.onclick = () => { const tp = PRESET_TEMPLATES.find(x => x.id === b.dataset.obtpl); const l = getLog(); l.items.push(...tp.items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('onboardSeen', true); obStep = 1; rerender(); });
+  document.querySelectorAll('[data-obtpl]').forEach(b => b.onclick = () => { const tp = PRESET_TEMPLATES.find(x => x.id === b.dataset.obtpl); const l = getLog(); l.items.push(...tp.items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('onboardSeen', true); S.remove('onboardStep'); rerender(); });
   const pushItems = (items, name) => { const l = getLog(); const n0 = l.items.length; l.items.push(...items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('undo', { date: today(), from: n0, name }); rerender(); };
   const addItem = (id, g) => { const u = S.get('foodUse', {}); u[id] = (u[id] || 0) + 1; S.set('foodUse', u); S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
   const afMsg = t => { $('#afmsg').innerHTML = t; };

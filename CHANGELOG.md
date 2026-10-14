@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.0
+- A29: persist onboarding step (onboardStep key); resumes at step 2/3 after reload.
+
 ## v0.8.9
 - Meal scores steer plan: rankVeg by mealScores; seed 0 = 14 top recipes, seeds rotate by 14.
 

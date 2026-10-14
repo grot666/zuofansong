@@ -43,10 +43,11 @@ export const MAX_PROTEIN_G_PER_MEAL = 300;
 // Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
 export const MEAT_W = 0.5;
 export const TUNA_MAX_PER_WEEK = 2;
+export const ADDON_REPEAT_W = 15;
 // Plant mains are less protein-dense; a 450 g block of firm tofu is still a normal portion.
 export const PORTION_MULT = { tofuFirm: 1.5 };
 const pm = id => PORTION_MULT[id] || 1;
-export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 99], ['tofuFirm', 150]], [['tunaLight', 100]], [['tunaLight', 100], ['eggWhite', 99]], [['tunaLight', 100], ['yogurt', 150]]];
+export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 99], ['tofuFirm', 150]], [['tunaLight', 100]], [['tunaLight', 100], ['eggWhite', 99]], [['tunaLight', 100], ['yogurt', 150]], [['milk', 250]], [['milk', 250], ['eggWhite', 99]], [['milk', 250], ['tofuFirm', 150]], [['qianzhang', 50]], [['qianzhang', 50], ['eggWhite', 99]], [['shrimpCooked', 100]], [['shrimpCooked', 100], ['tofuFirm', 150]], [['doufugan', 80], ['eggWhite', 99]]];
 // A19: closed-form search. Totals are linear in staple g (sg, per meal) and protein g (pg, per meal),
 // so for each breakfast×snack knob and sg we solve the best pg ≥ protein floor directly (no iteration loops).
 // G2: opts.powderScoops > 0 (profile.usesPowder) appends whey add-ons after every whole-food add-on.
@@ -82,7 +83,7 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
       const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
       const short = Math.max(0, protein - P);
       // lexicographic: protein floor, then kcal distance, then prefer default knobs
-      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W;
+      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W + addon.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W;
       if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
     }
   })));
@@ -94,10 +95,12 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
   // Canned tuna add-on ≤ TUNA_MAX_PER_WEEK days (mercury; matches review tunaNotes).
-  let tuna = 0;
+  // Snack variety: each add-on item costs ADDON_REPEAT_W × (days it was already used this week).
+  let tuna = 0; const used = {};
   return selectWeek(food, recipes, opts).map(sk => {
-    const d = portionDay(sk, targets, food, { ...opts, noTuna: tuna >= TUNA_MAX_PER_WEEK });
+    const d = portionDay(sk, targets, food, { ...opts, noTuna: tuna >= TUNA_MAX_PER_WEEK, addonUse: used });
     if (d.addon.some(([id]) => id === 'tunaLight')) tuna++;
+    for (const id of new Set(d.addon.map(([id]) => id))) used[id] = (used[id] || 0) + 1;
     return d;
   });
 }

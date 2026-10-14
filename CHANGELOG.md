@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.4
+- Snack variety: per-week repeat penalty on add-on items (≤4 days each), new add-ons milk/千张/虾/豆干.
+
 ## v0.9.3
 - A31: tasty flag in data (incl. canteen meat sets), scores.js reads it; golden score test.
 

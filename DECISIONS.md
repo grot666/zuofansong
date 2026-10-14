@@ -32,3 +32,5 @@
 - 06:04 Meat-lean planner: meat portion = protein floor only (was kcal filler); score += 0.5×meat g, add-on order penalty 8→2; new add-ons egg-white+tofu, tuna can (≤2 days/week). Grid avg meat 258→146 g/meal; 1617/160 283→233 g; all grid days still fit.
 
 - 06:04 Scores steer plan: veg recipes ranked by mealScores sum (health+easy+cheap+tasty, recipe + its oil); seed 0 = top 14, each 换一套 rotates 14 further (seed*14 mod 34) so variety is kept. Proteins stay on the budget-driven rotation.
+
+- 06:12 Snack variety: add-on items penalised 15 per earlier day used this week (sequential within generateWeek; week stays a pure f(targets, seed, opts)). New add-ons: milk, 千张, 熟虾, 豆干. Max days per add-on item 7→4; 1617/160 meat 233→238 g; grid meat limit relaxed to ≤180 g (now 171).

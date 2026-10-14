@@ -14,6 +14,7 @@ import { VERSION, CHANGELOG } from '../core/version.js';
 import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
+import { mealScores } from '../core/scores.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
@@ -28,16 +29,7 @@ export const view = () => {
   <p class="mut">注意生重/熟重：名称带“熟”的按熟重称。每餐目标约 ${Math.round(per.kcal)} kcal / 蛋白 ${Math.round(per.protein)} g / 脂肪 ${Math.round(per.fat)} g。</p><div id="plout"></div><div class="row"><button id="pllog">记入今日</button><button id="plsave" class="sec">存为模板</button></div></section>`;
 };
 function plateItems(f) { return [{ id: f.s.value, g: +f.sg.value }, { id: f.p.value, g: +f.pg.value }, { id: f.v.value, g: +f.vg.value }, { id: 'oil', g: +f.oil.value * TSP_OIL_G }].filter(i => i.g > 0); }
-function plateScores(items) {
-  const fs = items.map(i => food(i.id)).filter(Boolean);
-  const tot = totals(items);
-  const cost = tot.cost;
-  const health = Math.max(1, Math.min(5, 1 + (tot.fiber >= 6 ? 1.5 : tot.fiber / 4) + (tot.protein >= 25 ? 1.5 : tot.protein / 17) + (tot.fat <= 20 ? 1 : 0) - (fs.some(f => f.fatClass === 'low') ? 1 : 0)));
-  const easy = Math.round(fs.reduce((s, f) => s + (f.ease || 3), 0) / (fs.length || 1));
-  const cheap = cost < 8 ? 5 : cost < 12 ? 4 : cost < 18 ? 3 : cost < 25 ? 2 : 1;
-  const tasty = Math.min(5, 2 + ((items.find(i => i.id === 'oil')?.g || 0) >= 6 ? 1 : 0) + (fs.some(f => ['seabass', 'shrimp', 'shrimpCooked', 'leanBeef', 'chickenThigh', 'thighRoasted', 'egg', 'eggUSDA', 'porkLoin', 'salmon', 'hairtail', 'pomfret'].includes(f.id)) ? 1 : 0) + (fs.some(f => (f.tags || []).includes('杂粮')) ? 0.5 : 1));
-  return { health: Math.round(health), easy, cheap, tasty: Math.round(tasty), cost: r1(cost), tot };
-}
+const plateScores = items => mealScores(items, food);
 view.bind = () => {
   const f = $('#plf'); f.s.value = 'riceCooked'; f.p.value = 'thighRoasted'; f.v.value = 'shanghaiQing';
   const t = computeTargets(profile());

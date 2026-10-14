@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.7.6';
+export const VERSION = '0.7.7';
 export const CHANGELOG = [
+  ['0.7.7', '一周菜单的午餐、晚餐也显示 健康/好做/便宜/好吃 四项评分（与一餐搭配同一算法）。'],
   ['0.7.6', '导入备份后、撤销导入之前，不再整理旧记录，保证“撤销导入”能完整恢复原数据。'],
   ['0.7.5', '每餐肉类最多 300 克；蛋白不够时先加鸡蛋白、酸奶、鸡蛋或豆腐作加餐，不再一味加肉。'],
   ['0.7.4', '修改熟食价格（如烤鸡腿）现在也会影响一周菜单花费和预算换菜；今日花费与菜单花费算法统一。'],

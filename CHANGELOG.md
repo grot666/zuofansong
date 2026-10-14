@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.7.7
+- G1: shared core mealScores; plan page shows 4-dimension scores per lunch/dinner.
+
 ## v0.7.6
 - A26: compactStore is a no-op while backup.preImport exists; import→compact→undo round-trip test. Archives are not re-priced.
 

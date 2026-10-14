@@ -30,3 +30,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:45 v0.7.6 A26 import/compact/undo safety.
 
 - 05:46 a11y form-label audit (375px, empty + seeded, 8 views): 0 unlabeled inputs/selects, 0 empty buttons/links. Static scan: no unlabeled markup.
+
+- 05:49 v0.7.7 G1: shared core mealScores; plan page shows 4-dimension scores per lunch/dinner.

@@ -16,5 +16,8 @@ test('SP cap: ≤3 烤红薯 days/week, fiber ≥25 g on ≥75% of grid days, ev
       for (const d of w) { n++; if (d.staple === SP_ID) sp++; if (d.tot.fiber >= FIBER_MIN) hi++; else assert.ok(d.fiberNote); if (d.spCap) assert.notEqual(d.staple, SP_ID); }
     }
   }
-  console.log('spcap fiber share', (hi / n).toFixed(3)); assert.ok(hi / n >= 0.8, String(hi / n)); // A55 batch staple + R11-2 peas side on any short day: ~89% on this grid assert.ok(sp / n <= 3 / 7 + 1e-9, String(sp / n));
+  // A55 batch staple + R11-2 peas side on any short day: 88.6% on this grid (v0.10.43)
+  console.log('spcap fiber share', (hi / n).toFixed(3));
+  assert.ok(hi / n >= 0.8, String(hi / n));
+  assert.ok(sp / n <= 3 / 7 + 1e-9, String(sp / n)); // A60: restored
 });

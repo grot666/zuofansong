@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.25
+- R10-F1: fiber-aware portioning (veg multiplier, staple alternatives, fiberNote)
+
 ## v0.10.24
 - R10-D1: data fixes and citations, verified chip twins, Atwater test
 

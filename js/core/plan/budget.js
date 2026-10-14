@@ -25,6 +25,7 @@ export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap =
 const proteinCost = (food, id, proteinG) => { const f = food(id); const [, k] = COOKED_TO_RAW[id] || [id, 1]; return proteinG / (f.protein / 100) / k * priceOf(food, id).rawPrice / 500; };
 // Full weekly plan with optional budget: swaps a dinner(d)+lunch(d+1) protein pair together.
 export function planWeek(targets, food, recipes, opts = {}) {
+  if (!opts.memo) opts = { ...opts, memo: new Map() };
   let week = generateWeek(targets, food, recipes, opts);
   const cost = w => shoppingList(w, food).reduce((s, x) => s + x.cost, 0);
   let total = cost(week);

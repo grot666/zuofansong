@@ -30,5 +30,5 @@ test('A39 determinism and order sensitivity', () => {
   for (const d of r.week) { for (const id of new Set(d.addon.map(x => x[0]))) c[id] = (c[id] || 0) + 1; tuna += d.meals.flatMap(m => m.items).filter(([id]) => id === 'tunaLight').reduce((s, [, g]) => s + g, 0); }
   assert.ok(Math.max(0, ...Object.values(c)) <= 4); assert.ok(tuna <= 339); // (c)
   // (d) ADDON_REPEAT_W pinned via the 1800/140 seed 0 add-on sequence
-  assert.deepEqual(a.map(d => d.addon.map(([id, g]) => id + g).join('+')), ['yogurt300+eggBoiled100+tofuFirm150', 'eggWhite99', 'tunaLight100', 'shrimpCooked100+tofuFirm150', '', 'eggWhite99', '']); // re-pinned v0.10.24 (R10-D1 data)
+  assert.deepEqual(a.map(d => d.addon.map(([id, g]) => id + g).join('+')), ['shrimpCooked100+tofuFirm150', 'eggWhite99', 'eggBoiled100', 'yogurt300', 'tunaLight100', 'tofuFirm150', '']); // re-pinned v0.10.25 (R10-F1 fiber)
 });

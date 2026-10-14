@@ -9,7 +9,7 @@ import { RECIPES } from '../data/recipes.js';
 const food = makeIndex(FOODS, FOODS2, FOODS3);
 test('A32/A43 planWeek median of 7 < 25 ms (default profile, 3 scoops, tight budget)', () => {
   const t = computeTargets(normalizeProfile({}));
-  planWeek(t, food, RECIPES, { seed: 0, budget: 150, powderScoops: 3 }); // warm-up
+  for (let i = 0; i < 3; i++) planWeek(t, food, RECIPES, { seed: 10 + i, budget: 150, powderScoops: 3 }); // JIT warm-up (steady-state timing)
   const ms = [];
   for (let i = 0; i < 7; i++) { const t0 = performance.now(); planWeek(t, food, RECIPES, { seed: i, budget: 150, powderScoops: 3 }); ms.push(performance.now() - t0); }
   ms.sort((a, b) => a - b); console.log('planWeek ms', ms.map(x => x.toFixed(1)).join(' '));

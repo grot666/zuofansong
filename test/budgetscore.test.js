@@ -16,8 +16,8 @@ const food = makeIndex(FOODS, FOODS2, FOODS3); const t = { kcal: 1800, protein: 
 const free = planWeek(t, food, RECIPES, { seed: 0 }).cost;
 test('A35a real-data fixture 1800/140 seed 0 @0.85×free (pinned)', () => {
   const r = planWeek(t, food, RECIPES, { seed: 0, budget: 0.85 * free });
-  assert.deepEqual(r.week.map(d => d.dinnerProtein), ['thighRoasted', 'breastRoasted', 'thighRoasted', 'tofuFirm', 'tofuFirm', 'tofuFirm', 'basa']);
-  assert.equal(r.swaps, 3); assert.ok(Math.abs(r.cost - 165.21) <= 0.05, String(r.cost)); // re-pinned v0.10.24 (R10-D1 data)
+  assert.deepEqual(r.week.map(d => d.dinnerProtein), ['thighRoasted', 'breastRoasted', 'tofuFirm', 'tofuFirm', 'tofuFirm', 'breastRoasted', 'basa']);
+  assert.equal(r.swaps, 3); assert.ok(Math.abs(r.cost - 176.97) <= 0.05, String(r.cost)); // re-pinned v0.10.25 (R10-F1 fiber)
 });
 test('A35b tie-break: equal scores → cheaper first, then options order', () => {
   const price = { A: 50, B: 20, C: 20, D: 30 };

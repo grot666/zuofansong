@@ -1,3 +1,4 @@
+import { TUNA } from './review.js';
 import { mealScores } from './scores.js';
 import { totals, COOKED_TO_RAW, priceOf } from './foods.js';
 // Weekly plan generator. Pure; takes food lookup fn so it is testable.
@@ -9,7 +10,8 @@ export const BREAKFASTS = [
   { name: '水煮蛋 + 玉米 + 无糖酸奶', items: [['eggBoiled', 100], ['corn', 200], ['yogurt', 150]] },
   { name: '全麦面包 + 鸡蛋 + 牛奶', items: [['wwBread', 70], ['eggUSDA', 100], ['milk', 250]] },
 ];
-export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seabass', 'tofuFirm', 'porkLoin', 'basa', 'leanBeef', 'tunaLight'];
+export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seabass', 'tofuFirm', 'porkLoin', 'basa', 'leanBeef'];
+// A33: canned tuna is an add-on only (100 g), never a main; one weekly gram budget shared with review.js.
 export const STAPLES = ['riceCooked', 'brownRiceCooked', 'milletCooked', 'sweetPotatoBaked'];
 // raw-purchase conversion: shopping list buys raw; cooked weight / factor = raw
 export { COOKED_TO_RAW };
@@ -45,7 +47,8 @@ export const KIWI_G = [100, 0, 200];
 export const MAX_PROTEIN_G_PER_MEAL = 300;
 // Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
 export const MEAT_W = 0.5;
-export const TUNA_MAX_PER_WEEK = 2;
+export const TUNA_ADDON_G = 100;
+export const TUNA_MAX_PER_WEEK = Math.floor(TUNA.tunaLight.max / TUNA_ADDON_G); // 3 × 100 g ≤ 339 g
 export const ADDON_REPEAT_W = 15;
 // Plant mains are less protein-dense; a 450 g block of firm tofu is still a normal portion.
 export const PORTION_MULT = { tofuFirm: 1.5 };
@@ -77,7 +80,7 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   const sK = 2 * st.kcal / 100, sP = 2 * st.protein / 100;
   const pK = (pl.kcal * pm(pLunch) + pd.kcal * pm(pDinner)) / 100, pP = (pl.protein * pm(pLunch) + pd.protein * pm(pDinner)) / 100;
   let best = null;
-  const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)) && !(opts.noTuna && a.some(([id]) => id === 'tunaLight')));
+  const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)) && !(opts.noTuna && a.some(([id]) => id === 'tunaLight' || id === 'tunaAlbacore')));
   BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
     const base = build(0, 0, bm, kiwi, addon).tot;
     for (let sg = 30; sg <= 350; sg += 10) {
@@ -97,12 +100,12 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
-  // Canned tuna add-on ≤ TUNA_MAX_PER_WEEK days (mercury; matches review tunaNotes).
+  // A33: tuna grams across all meals and add-ons stay within TUNA.tunaLight.max (review.js).
   // Snack variety: each add-on item costs ADDON_REPEAT_W × (days it was already used this week).
-  let tuna = 0; const used = {};
+  let tunaG = 0; const used = {};
   return selectWeek(food, recipes, opts).map(sk => {
-    const d = portionDay(sk, targets, food, { ...opts, noTuna: tuna >= TUNA_MAX_PER_WEEK, addonUse: used });
-    if (d.addon.some(([id]) => id === 'tunaLight')) tuna++;
+    const d = portionDay(sk, targets, food, { ...opts, noTuna: tunaG + TUNA_ADDON_G > TUNA.tunaLight.max, addonUse: used });
+    tunaG += d.meals.flatMap(m => m.items).filter(([id]) => id === 'tunaLight').reduce((t, [, g]) => t + g, 0);
     for (const id of new Set(d.addon.map(([id]) => id))) used[id] = (used[id] || 0) + 1;
     return d;
   });

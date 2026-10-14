@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.7
+- A33 (P0): one weekly tuna gram budget shared with review; tuna add-on only; grid test incl. 0.8× budget.
+
 ## v0.9.6
 - Plan tips (planTips): budget swaps by score, add-on rotation; BACKLOG Next / PROGRESS gaps refreshed.
 

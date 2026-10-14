@@ -72,3 +72,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:13 v0.9.5 Budget swaps weigh meal scores (best-scoring protein that fits budget; else cheapest).
 
 - 06:15 v0.9.6 Plan tips (planTips): budget swaps by score, add-on rotation; BACKLOG Next / PROGRESS gaps refreshed.
+
+- 06:18 v0.9.7 A33 (P0): one weekly tuna gram budget shared with review; tuna add-on only; grid test incl. 0.8× budget.

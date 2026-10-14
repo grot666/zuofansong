@@ -36,3 +36,5 @@
 - 06:12 Snack variety: add-on items penalised 15 per earlier day used this week (sequential within generateWeek; week stays a pure f(targets, seed, opts)). New add-ons: milk, 千张, 熟虾, 豆干. Max days per add-on item 7→4; 1617/160 meat 233→238 g; grid meat limit relaxed to ≤180 g (now 171).
 
 - 06:13 Protein vs scores: budget swaps (applyBudget) now pick the best-scoring cheaper protein that brings the week within budget (fallback: cheapest). Tried ranking the base protein rotation by score too: it clustered tofu/pork and broke A19/A23/G2 grids, so the base rotation stays seed-only.
+
+- 06:18 A33: tunaLight removed from main-protein rotation (a dinner+lunch pair alone nears the 339 g/week reference); tuna is a 100 g add-on gated by one weekly gram budget (TUNA from review.js, ≤3 add-ons). G2 rescue test relaxed to b ≤ a/2 and ≤3 (baseline improved 18→8).

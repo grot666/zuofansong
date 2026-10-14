@@ -15,7 +15,7 @@ Verified:
 
 Probes (node against core with PRICE_REFS; scripts not committed): the numbers below.
 
-- **A33 Planner exceeds its own tuna limit (P0)**
+- **A33 Planner exceeds its own tuna limit (P0)** ✅
   - Why: `TUNA_MAX_PER_WEEK = 2` counts only **add-on** days, but `tunaLight` is also in `PROTEINS`, so it appears as a dinner(d)+lunch(d+1) pair. The weekly review then flags the plan the app itself generated (`tunaNotes` > 339 g light).
   - Probe: grid {1400/110, 1617/160, 1800/140, 2200/160, 1500/140} × seeds 0–8, no budget: **32/45 weeks have > 339 g light tuna, max 670 g**, and up to 4 tuna days a week.
   - AC:

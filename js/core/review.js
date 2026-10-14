@@ -28,16 +28,17 @@ export function weekReview(dates, logs, food, targets) {
 }
 
 // Plateau (R3.6): MA change < 0.1 kg over >= 14 days with >= 5 logs/week on average.
+// Plateau: |Δ| < 0.1 kg or a gain, only with dense data. Pure.
 export function plateau(weights, todayStr) {
   const end = new Date(todayStr).getTime(); const start = end - 14 * 86400000;
   const win = weights.filter(w => { const t = new Date(w.date).getTime(); return t > start && t <= end; });
-  if (win.length < 10) return { plateau: false, reason: 'sparse' };
   const half = start + 7 * 86400000;
   const a = win.filter(w => new Date(w.date).getTime() <= half), b = win.filter(w => new Date(w.date).getTime() > half);
-  if (a.length < 3 || b.length < 3) return { plateau: false, reason: 'sparse' };
+  // R-10 AC: ≥5 weigh-ins in each of the two weeks; change = mean(week2) − mean(week1) (7-day means 7 d apart over a 14-d window).
+  if (a.length < 5 || b.length < 5) return { plateau: false, reason: 'sparse' };
   const m = arr => arr.reduce((s, w) => s + w.weight, 0) / arr.length;
   const delta = m(b) - m(a);
-  return { plateau: Math.abs(delta) < 0.1 || delta > 0, delta };
+  return { plateau: Math.abs(delta) < 0.1 || delta > 0, delta, trend: Math.abs(delta) < 0.1 ? 'flat' : delta > 0 ? 'up' : 'down' };
 }
 
 export function lastNDates(todayStr, n = 7) {

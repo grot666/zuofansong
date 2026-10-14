@@ -73,7 +73,7 @@ export const view = () => {
   ${goalPace(p)}<p class="mut">若肌肉完全保留，${p.goalWeight} kg 时体脂约 ${r1(pbf)}%${pbf < 12 ? '，已非常精瘦；建议到 62–64 kg 时结合腰围/照片重新评估目标' : ''}。</p></section>
   <section class="card"><h2>体重记录</h2><form id="wf" class="row"><input type="number" step="0.1" name="w" inputmode="decimal" placeholder="今日体重 kg" aria-label="今日体重" value="${weights.length ? weights[weights.length - 1].weight : ''}"><input type="date" name="d" value="${today()}" aria-label="日期"><button>记录</button></form>
   ${weightChart(weights, p.goalWeight)}
-  <ul class="list">${weights.slice(-5).reverse().map(w => `<li>${w.date} · ${w.weight} kg</li>`).join('') || '<li class="mut">还没有记录</li>'}</ul></section>
+  <ul class="list">${weights.slice(-5).reverse().map(w => `<li>${w.date} · ${w.weight} kg</li>`).join('') || '<li class="mut">还没有体重记录。早上空腹、如厕后称一次，填在上面。</li>'}</ul></section>
   <section class="card"><h2>数据</h2><div class="row"><button id="exp" class="sec">导出备份</button><label style="margin:0">导入备份<input type="file" id="imp" accept="application/json"></label>${S.get('backup.preImport', null) ? '<button id="undoImp" class="sec">撤销上次导入</button>' : ''}<button id="rst" class="sec">清空数据</button></div></section>
   <section class="card"><h2>更新日志</h2><ul class="list">${CHANGELOG.map(([v, d]) => `<li><b>v${v}</b> ${d}</li>`).join('')}</ul></section>`;
 };

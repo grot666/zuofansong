@@ -49,17 +49,17 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
     - No protein appears in more than 3 slots.
     - At 0.5×free: `overBudget === (cost > budget)`, and cost is non-increasing as the budget tightens.
     - Determinism: the same seed and budget give a deep-equal week.
-- ✅ v0.6.6 **A8 core test gaps (P1)**. Still open:
-  - female BMR; TDEE for each activity factor
-  - warning when kcal < BMR
-  - BMI ≥30 uses goal-weight protein
-  - multi-grain blend: needsSoak and waterRatio
-  - fatWallet over budget
-  - gutRisk low case, and monotonic in fiber
-  - shoppingList raw grams: rice = cooked/2.3, exact
-  - review: the ±10% boundary, lowFatPct, plateau on rising weight labelled 上升, window edges, month-end dates
-  - new: `normalizeProfile` clamps and fills defaults (fatPct <20 → 20; strings → numbers)
-  - new: `sleep.js` midnight wrap is covered by r6; add the `sleepNoteDay` once-per-day rule
+- ✅ v0.6.6 **A8 core test gaps (P1)**. All bullets ✅ (v0.6.6 test/a8.test.js + v0.7.2 test/a8b.test.js):
+  - ✅ female BMR; TDEE for each activity factor
+  - ✅ warning when kcal < BMR
+  - ✅ BMI ≥30 uses goal-weight protein
+  - ✅ multi-grain blend: needsSoak and waterRatio
+  - ✅ fatWallet over budget
+  - ✅ gutRisk low case, and monotonic in fiber
+  - ✅ shoppingList raw grams: rice = cooked/2.3, exact
+  - ✅ review: the ±10% boundary, lowFatPct, plateau on rising weight labelled 上升, window edges, month-end dates
+  - ✅ new: `normalizeProfile` clamps and fills defaults (fatPct <20 → 20; strings → numbers)
+  - ✅ new: `sleep.js` midnight wrap is covered by r6; `sleepNoteDay` moot — key dropped v0.6.4; notes are derived from the day's own log so they are once-per-day by construction (asserted)
   - AC: one test per bullet; total test count ≥ 60.
 - ✅ v0.6.3 **A6 split app.js (P2, sequenced after A5)**
   - Why: `app.js` is 35 KB. A5 has landed, so views import `makeIndex`/`totals` from core. Do A15 first so every new view file is forced into ASSETS. One view per commit keeps every step green.

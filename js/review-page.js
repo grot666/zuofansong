@@ -2,6 +2,7 @@ import { computeTargets } from './core/targets.js';
 import { weekReview, plateau, lastNDates } from './core/review.js';
 import { weeklyStatus } from './core/weight.js';
 import * as S from './core/store.js';
+import { VERSION } from './core/version.js';
 import { localDate } from './core/dates.js';
 import { makeIndex, priceOverrides } from './core/foods.js';
 import { startBreak } from './core/breaks.js';
@@ -51,7 +52,7 @@ function render() {
   <tr><td>金枪鱼</td><td>淡 ${Math.round(r.tuna.light)} g · 白 ${Math.round(r.tuna.albacore)} g</td><td class="mut">保守参考：淡 ≤339 g/周，白 ≤113 g/周</td></tr>
   </table>
   ${r.tunaNotes.map(x => `<p class="warn">${x}。可换成虾、三文鱼、鲳鱼等低汞鱼类（FDA/EPA 对敏感人群的建议，作保守参考）。</p>`).join('')}
-  ${pl.plateau ? '<p class="warn">最近 2 周体重均值基本持平，且记录充分。可以选“热量再减约 125 kcal”、“多走步”或 1–2 周“维持周”。</p>' : ''}</section>
+  ${pl.plateau ? `<p class="warn">最近 2 周体重均值${pl.trend === 'up' ? '上升' : '基本持平'}，且记录充分。可以选“热量再减约 125 kcal”、“多走步”或 1–2 周“维持周”。</p>` : ''}</section>
   <section class="card"><h2>下周只做一个决定</h2><form id="df">${DECISIONS.map(([id, label]) => `<label><input type="radio" name="d" value="${id}" style="width:auto;min-height:auto" ${saved?.decision === id ? 'checked' : ''}> ${label}</label>`).join('')}
   <label>备注<input name="note" value="${saved?.note ? String(saved.note).replace(/"/g, '&quot;') : ''}"></label><button>保存</button></form><p id="dmsg" class="mut"></p></section>`;
   $('#df').onsubmit = e => {
@@ -64,4 +65,5 @@ function render() {
   };
 }
 try { render(); } catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${e.message}</p></section>`; }
+{ const v = document.getElementById('ver'); if (v) v.textContent = 'v' + VERSION; }
 registerSW();

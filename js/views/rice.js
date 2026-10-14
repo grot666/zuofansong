@@ -38,7 +38,7 @@ view.bind = () => {
     <h3>电饭煲步骤</h3><ol><li>${b.needsSoak.length ? `${b.needsSoak.join('、')} 提前浸泡 2–4 小时（或早上泡上，晚上煮）` : '无需浸泡，小米/玉米糁可直接下锅'}</li><li>所有米混合淘洗 1–2 次</li><li>加水：米的体积 × ${b.waterRatio}（或水面高出米约 1 指节）</li><li>${b.needsSoak.length ? '选“杂粮饭/糙米饭”模式' : '选“标准煮饭”模式'}，煮好焖 10 分钟</li><li>分装：每碗称 ${bowl} g，摊开放凉后冷藏，多余的冷冻</li></ol>${sum !== 100 ? `<p class="mut">当前比例合计 ${sum}%，已按比例换算。</p>` : ''}`;
   };
   f.oninput = calc; calc();
-  const drawFav = () => { const favs = S.get('riceFavs', []); $('#rfav').innerHTML = favs.map((r, i) => `<li><a href="#rice" data-i="${i}">${GRAINS.filter(id => r[id] > 0).map(id => food(id).name + ' ' + r[id] + '%').join(' + ')}</a></li>`).join('') || '<li class="mut">暂无</li>'; $('#rfav').querySelectorAll('a').forEach(a => a.onclick = () => { S.set('riceCurrent', favs[a.dataset.i]); rerender(); }); };
+  const drawFav = () => { const favs = S.get('riceFavs', []); $('#rfav').innerHTML = favs.map((r, i) => `<li><a href="#rice" data-i="${i}">${GRAINS.filter(id => r[id] > 0).map(id => food(id).name + ' ' + r[id] + '%').join(' + ')}</a></li>`).join('') || '<li class="mut">还没有收藏。调好比例后点“收藏这个配比”。</li>'; $('#rfav').querySelectorAll('a').forEach(a => a.onclick = () => { S.set('riceCurrent', favs[a.dataset.i]); rerender(); }); };
   $('#rsave').onclick = () => { S.set('riceFavs', [...S.get('riceFavs', []), S.get('riceCurrent')]); drawFav(); };
   drawFav();
 };

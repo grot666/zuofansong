@@ -97,6 +97,6 @@ view.bind = () => {
   const water = d => { const l = getLog(); l.water = Math.max(0, l.water + d); setLog(l); rerender(); };
   $('#w250').onclick = () => water(250); $('#w500').onclick = () => water(500); $('#wm').onclick = () => water(-250);
   $('#planDay').onclick = () => pushItems(PLAN_DAY, '我的计划日');
-  $('#copyY').onclick = () => { const yl = getLog(dayOffset(-1)); if (!yl.items.length) { alert('昨天没有记录'); return; } pushItems(yl.items.map(i => [i.id, i.g]), '昨天的饮食'); };
+  $('#copyY').onclick = () => { const yl = getLog(dayOffset(-1)); if (!yl.items.length) { afMsg('昨天没有记录，无法复制。'); return; } pushItems(yl.items.map(i => [i.id, i.g]), '昨天的饮食'); };
 };
 

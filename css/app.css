@@ -13,3 +13,8 @@ button{background:var(--acc);color:#fff;border:0;width:auto;cursor:pointer}butto
 table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid #8882;text-align:left}
 .list li{padding:8px 0;border-bottom:1px solid #8882;list-style:none}.list{padding:0;margin:0}.chip{display:inline-block;font-size:12px;padding:1px 6px;border-radius:10px;background:#8882;margin-right:4px}
 a.btn{display:inline-flex;align-items:center;min-height:44px;padding:6px 10px;border-radius:8px;background:var(--acc);color:#fff;text-decoration:none}
+
+input[type=checkbox],input[type=radio]{width:auto;min-height:auto;width:20px;height:20px;vertical-align:middle;accent-color:var(--acc)}
+button.mini{min-height:32px;padding:2px 8px;font-size:.85em;margin-left:4px}
+table td:first-child,table th:first-child{white-space:nowrap}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}

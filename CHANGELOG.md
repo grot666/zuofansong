@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.41
+- R11-2 no staple 3 days running; peas side on any fiber-short day (~89% days ≥25 g)
+
 ## v0.10.40
 - R11-1 sweet potato ≤175 g per meal (≤350 g/day)
 

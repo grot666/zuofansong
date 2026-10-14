@@ -2,7 +2,7 @@
 import { TUNA } from '../tuna.js';
 import { totals } from '../foods.js';
 import { selectWeek } from './select.js';
-import { STAPLE_ALT_W, FIBER_SIDE, SP_ID, SP_MAX_PER_WEEK, stapleOptions, fiberAlts } from './fiber.js';
+import { STAPLE_ALT_W, FIBER_SIDE, SP_ID, SP_CAP_ALT, SP_MAX_PER_WEEK, stapleOptions, fiberAlts } from './fiber.js';
 import { portionCore, TUNA_ADDON_G } from './portion.js';
 const sum = (items, food) => totals(items, food);
 export function portionDay(sk, targets, food, opts = {}) {
@@ -16,12 +16,12 @@ export function portionDay(sk, targets, food, opts = {}) {
   }
   return dayWith(sk, sk.staple, targets, food, opts);
 }
-// One day with a given staple; capped days may add the peas side (FIBER_SIDE) when still short of fiber.
+// One day with a given staple; a day still short of fiber may add the peas side (FIBER_SIDE; any day since R11-2, not only capped days).
 function dayWith(sk, staple, targets, food, opts) {
   const key = opts.memo && [sk.bf.name, sk.pLunch, sk.pDinner, sk.staple, staple, sk.vegL?.id, sk.vegD?.id, opts.noTuna, opts.spCapped, JSON.stringify(opts.addonUse || {})].join('|');
   const hit = key && opts.memo.get(key); if (hit) return { ...hit, day: sk.day };
   let d = portionCore({ ...sk, staple }, targets, food, opts);
-  if (d.fiberNote && opts.spCapped && FIBER_SIDE.every(([id]) => food(id))) {
+  if (d.fiberNote && FIBER_SIDE.every(([id]) => food(id))) {
     const b = portionCore({ ...sk, staple }, targets, food, { ...opts, side: FIBER_SIDE });
     if (b.score + STAPLE_ALT_W < d.score) d = { ...b, fiberSide: true };
   }
@@ -43,11 +43,14 @@ function batch(sks, st, targets, food, opts) {
     }
     return { days, score: score + (staple === sks[0].staple ? 0 : STAPLE_ALT_W * sks.length), tunaG, used };
   };
+  // R11-2: never the previous batch's staple again (no staple 3 days running); fall back to the other 杂粮 staples.
+  const okS = id => food(id) && id !== st.avoid;
+  let opts0 = stapleOptions(sks[0].staple, st.capped).filter(okS); if (!opts0.length) opts0 = SP_CAP_ALT.concat('riceCooked').filter(okS);
   let best = null;
-  for (const s0 of stapleOptions(sks[0].staple, st.capped)) if (food(s0)) { const r = run(s0); if (!best || r.score < best.score) best = r; }
+  for (const s0 of opts0) { const r = run(s0); if (!best || r.score < best.score) best = r; }
   if (!best) best = run(sks[0].staple);
   for (const alt of fiberAlts(best.days[0].staple, st.capped)) {
-    if (!best.days.some(d => d.fiberNote) || !food(alt)) break;
+    if (!best.days.some(d => d.fiberNote)) break; if (!okS(alt)) continue;
     const r = run(alt); if (r.score < best.score) best = r;
   }
   return best;
@@ -58,7 +61,8 @@ export function generateWeek(targets, food, recipes, opts = {}) {
   // 烤红薯 cap: a batch may use sweet potato only if the week stays ≤ SP_MAX_PER_WEEK days (so ≤ 1 full batch + 1 single day).
   const sks = selectWeek(food, recipes, opts); const out = []; let st = { tunaG: 0, used: {} }, spDays = 0;
   for (let i = 0; i < sks.length; i += 2) {
-    const grp = sks.slice(i, i + 2); const r = batch(grp, { ...st, capped: spDays + grp.length > SP_MAX_PER_WEEK }, targets, food, opts);
+    const grp = sks.slice(i, i + 2); const prev = out.length >= 2 && out[out.length - 1].staple === out[out.length - 2].staple ? out[out.length - 1].staple : null;
+    const r = batch(grp, { ...st, avoid: prev, capped: spDays + grp.length > SP_MAX_PER_WEEK }, targets, food, opts);
     st = { tunaG: r.tunaG, used: r.used }; for (const d of r.days) { if (d.staple === SP_ID) spDays++; out.push(d); }
   }
   return out;

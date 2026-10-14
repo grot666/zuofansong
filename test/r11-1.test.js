@@ -17,3 +17,10 @@ test('R11-1 sweet potato ≤ 350 g/day on 1800/140 seeds 0–7 (budget none/¥30
     assert.ok(checkWeek(w, t).every(c => c.kcalOk && c.proteinOk), `seed ${seed}`);
   }
 });
+test('R11-2 no staple 3 days running (1800/140 seeds 0–7), 2-day batches kept', () => {
+  for (let seed = 0; seed < 8; seed++) {
+    const s = planWeek({ kcal: 1800, protein: 140 }, food, RECIPES, { seed }).week.map(d => d.staple);
+    for (let i = 2; i < 7; i++) assert.ok(!(s[i] === s[i - 1] && s[i] === s[i - 2]), `seed ${seed} day ${i}: ${s}`);
+    for (let k = 0; k < 3; k++) assert.equal(s[2 * k], s[2 * k + 1]);
+  }
+});

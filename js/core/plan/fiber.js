@@ -14,4 +14,4 @@ export const SP_MAX_PER_WEEK = 3;
 export const SP_CAP_ALT = ['brownRiceCooked', 'milletCooked'];
 export const stapleOptions = (staple, capped) => (capped && staple === SP_ID ? SP_CAP_ALT : [staple]);
 export const fiberAlts = (staple, capped) => (FIBER_ALT[staple] || []).filter(id => !(capped && id === SP_ID));
-export const FIBER_SIDE = [['peas', PEAS_SIDE_G]]; // 青豆 per lunch/dinner when the cap leaves a day short of fiber
+export const FIBER_SIDE = [['peas', PEAS_SIDE_G]]; // 青豆 per lunch/dinner on a day still short of fiber

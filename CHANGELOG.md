@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.7.9
+- G3: backup reminder (lastExport/backupSnooze keys, pure backupDue + test).
+
 ## v0.7.8
 - G2: plan add-on may use whey powder when usesPowder (≤ maxScoops), after whole-food add-ons.
 

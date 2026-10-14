@@ -15,6 +15,7 @@ import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan, matchFoods, gramsFor } from '../core/foods.js';
+import { addDays, backupDue } from '../core/dates.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
 function sleepHtml(l, p) {
@@ -43,7 +44,8 @@ export const view = () => {
   const undo = S.get('undo', null);
   const demo = S.get('profile', null) == null;
   const onboard = demo && !S.get('onboardSeen', false) ? `<section class="card" id="onboard"><p>目前使用<b>示例目标</b>（1 分钟填写身高/体重/年龄可自动计算）。</p><div class="row"><a class="btn" href="#me">去设置</a><button class="sec" id="obSkip">先用示例</button></div></section>` : '';
-  return `${onboard}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
+  const bk = backupDue({ lastExport: S.get('lastExport', null), snoozeUntil: S.get('backupSnooze', null), logDays: S.keys().filter(k => k.startsWith('log.')).length, today: today() }) ? `<section class="card" id="bkHint"><p>已记录多天，建议导出一次备份（数据只存在这台手机的浏览器里）。</p><div class="row"><a class="btn" href="#me">去“我的”导出</a><button class="sec" id="bkSnooze">7 天后再提醒</button></div></section>` : '';
+  return `${onboard}${bk}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
   热量 ${Math.round(x.kcal)} / ${t.kcal} kcal（还剩 ${Math.round(t.kcal - x.kcal)}）${bar(x.kcal, t.kcal)}
   蛋白 ${r1(x.protein)} / ${t.protein} g${bar(x.protein, t.protein)}
   碳水 ${r1(x.carbs)} / ${t.carbs} g${bar(x.carbs, t.carbs)}
@@ -69,6 +71,7 @@ export const view = () => {
   <p>如厕舒适度风险：<b class="${gr.level === 'high' ? 'bad' : gr.level === 'mid' ? 'warn' : ''}">${{ high: '高', mid: '中', low: '低' }[gr.level]}</b>（${gr.score}/10）</p>${gr.fixes.length ? `<ul>${gr.fixes.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}<p class="mut">若长期便秘或不适，请就医。</p></section>`;
 };
 view.bind = () => {
+  const bs = $('#bkSnooze'); if (bs) bs.onclick = () => { S.set('backupSnooze', addDays(today(), 7)); rerender(); };
   const ob = $('#obSkip'); if (ob) ob.onclick = () => { S.set('onboardSeen', true); rerender(); };
   const pushItems = (items, name) => { const l = getLog(); const n0 = l.items.length; l.items.push(...items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('undo', { date: today(), from: n0, name }); rerender(); };
   const addItem = (id, g) => { S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };

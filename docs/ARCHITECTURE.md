@@ -74,6 +74,8 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `backup.preImport` | export envelope taken before a replace-import; restored by 撤销上次导入 (A17, v0.6.4); not exported | store.importAll / undoImport |
 | `prices` | `{foodId: CNY per 500 g}` user overrides (v0.6.7) | foods |
 | `wRange` | weight chart weeks 4 \| 8 \| 12 \| 0 (all) (v0.6.8) | me |
+| `lastExport` | 'YYYY-MM-DD' of the last JSON export (G3, v0.7.9) | me, today |
+| `backupSnooze` | 'YYYY-MM-DD' until which the backup hint is hidden (G3) | today |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
 | `sauceOff` | `[sauceId]` excluded from rotation (R-11b, v0.7.0) | plan |
 

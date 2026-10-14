@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.44
+- A57 release helper in repo (scripts/release.mjs), fail-closed
+
 ## v0.10.43
 - UX: plan controls 2×2 grid at 375 px (no truncated selects)
 

@@ -99,7 +99,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - (2) the threshold scales with an in-test calibration loop (e.g. limit = 25 ms × calib/calibBaseline).
     - CI keeps the strict 25/40 ms.
   - Tests: `node --test test/` (parallel) passes on the shared box 3 runs in a row; `npm test` still enforces 25 ms.
-- **A57 Move the release helper into the repo and fix it (P2, rank 3 @07:45)**
+- ✅ **A57 Move the release helper into the repo and fix it (P2, rank 3 @07:45)** (v0.10.44)
   - Why: (d). The release path lives outside the repo, in `/workspace/tools/rel.sh`. It doubles `(vX)`, appends PROGRESS at the bottom, leaves a dirty tree on a red test run, and assumes VERSION is on line 2.
   - AC:
     - `scripts/release.mjs` (node, no deps), run as `npm run release -- 0.10.36 "<cn>" "<en>" <ID> "<msg>"`.

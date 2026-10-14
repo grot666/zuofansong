@@ -171,3 +171,5 @@ Current gaps (07:20, v0.10.36): 77/137 foods unverified (7 of them ≈ with an F
 - 07:32 v0.10.42 breakfast preference: rotate or oats every day (opts.breakfast)
 
 - 07:35 v0.10.43 UX: plan controls 2×2 grid at 375 px (no truncated selects)
+
+- 07:55 live 375 px check v0.10.43: plan controls 2×2 grid, 早餐=每天燕麦粥 → 7/7 days 燕麦牛奶粥, weekly fiber 28 g/天 ✓, stored breakfastPref, no overflow, 0 console errors; smoke all pages 0 ERR.

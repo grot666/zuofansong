@@ -1,4 +1,5 @@
 import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from './core/targets.js';
+import { markNav, navKeyFor, subNavHtml } from './nav.js';
 import { blend } from './core/grains.js';
 import { fatWallet, TSP_OIL_G } from './core/fat.js';
 import { proteinGap, gutRisk } from './core/protein.js';
@@ -37,9 +38,9 @@ views.veg = vegView;
 function render() {
   refreshFoods();
   const name = (location.hash || '#today').slice(1); const v = views[name] || views.today;
-  try { $('#view').innerHTML = v(); v.bind && v.bind(); }
+  try { $('#view').innerHTML = (navKeyFor(name) === 'plate' ? subNavHtml(name) : '') + v(); v.bind && v.bind(); }
   catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${esc(e.message)}</p><p>可以刷新重试，或在“我的”页导出备份。</p></section>`; }
-  document.querySelectorAll('.tabs a').forEach(a => { const on = a.getAttribute('href') === '#' + name; a.classList.toggle('on', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  markNav(navKeyFor(name));
   const h = $('#view h2'); document.title = (h ? h.textContent.replace(/\s+/g, ' ').trim() + ' · ' : '') + '做饭松';
 }
 $('#ver').textContent = 'v' + VERSION;

@@ -38,3 +38,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:51 v0.7.9 G3: backup reminder (lastExport/backupSnooze keys, pure backupDue + test).
 
 - 05:51 v0.8.0 G4: 4 canteen set-meal estimates (verified:false); 137 foods.
+
+- 05:54 v0.8.1 UX-4 shared nav (js/nav.js) + reviewDue card; UX-5 --nav-h + safe-area padding, toast; UX-11 5 icon items ≥44px with 搭配 sub-nav.

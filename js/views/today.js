@@ -16,6 +16,7 @@ import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan, matchFoods, gramsFor } from '../core/foods.js';
 import { addDays, backupDue } from '../core/dates.js';
+import { reviewDue } from '../core/review.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
 function sleepHtml(l, p) {
@@ -45,7 +46,8 @@ export const view = () => {
   const demo = S.get('profile', null) == null;
   const onboard = demo && !S.get('onboardSeen', false) ? `<section class="card" id="onboard"><p>目前使用<b>示例目标</b>（1 分钟填写身高/体重/年龄可自动计算）。</p><div class="row"><a class="btn" href="#me">去设置</a><button class="sec" id="obSkip">先用示例</button></div></section>` : '';
   const bk = backupDue({ lastExport: S.get('lastExport', null), snoozeUntil: S.get('backupSnooze', null), logDays: S.keys().filter(k => k.startsWith('log.')).length, today: today() }) ? `<section class="card" id="bkHint"><p>已记录多天，建议导出一次备份（数据只存在这台手机的浏览器里）。</p><div class="row"><a class="btn" href="#me">去“我的”导出</a><button class="sec" id="bkSnooze">7 天后再提醒</button></div></section>` : '';
-  return `${onboard}${bk}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
+  const rv = reviewDue(today(), S.get('reviews', {})) ? `<section class="card" id="rvHint"><p>新的一周：花 1 分钟看看上周，定一个小目标。</p><a class="btn" href="review.html">做本周回顾</a></section>` : '';
+  return `${onboard}${bk}${rv}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
   热量 ${Math.round(x.kcal)} / ${t.kcal} kcal（还剩 ${Math.round(t.kcal - x.kcal)}）${bar(x.kcal, t.kcal)}
   蛋白 ${r1(x.protein)} / ${t.protein} g${bar(x.protein, t.protein)}
   碳水 ${r1(x.carbs)} / ${t.carbs} g${bar(x.carbs, t.carbs)}

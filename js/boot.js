@@ -18,6 +18,15 @@ export function bootStore() {
   if (r.restored) { S.set('profile', r.profile); S.remove('breakState'); }
   return r;
 }
+// UX-5/6/9: one toast above the nav. action = { label, run }.
+export function toast(msg, { action, ms = 3000 } = {}) {
+  document.getElementById('toast')?.remove();
+  const t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+  const s = document.createElement('span'); s.textContent = msg; t.append(s);
+  if (action) { const b = document.createElement('button'); b.textContent = action.label; b.onclick = () => { t.remove(); action.run(); }; t.append(b); }
+  document.body.append(t); setTimeout(() => t.remove(), ms);
+  return t;
+}
 export const getProfile = () => normalizeProfile(S.get('profile', {}));
 export function registerSW() {
   if (!('serviceWorker' in navigator)) return;

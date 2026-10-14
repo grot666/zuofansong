@@ -1,3 +1,4 @@
+import { dayNum } from './dates.js';
 // Weekly review math (research R5.4, R3.3, R3.4, R3.6). Pure.
 // logs: { 'YYYY-MM-DD': {items:[{id,g}], water} }, food: id -> food
 import { totals } from './foods.js';
@@ -43,6 +44,12 @@ export function plateau(weights, todayStr) {
   return { plateau: reason !== 'down', reason, delta, trend: reason };
 }
 // Adds adherence gate, 14-day cooldown after −kcal / 维持周 decisions, and break suppression.
+// UX-4: on Sun/Mon, prompt a weekly review unless one was saved in the last 6 days.
+export function reviewDue(today, reviews = {}) {
+  const dn = dayNum; const t = dn(today); const wd = new Date(t * 86400000).getUTCDay();
+  if (wd !== 0 && wd !== 1) return false;
+  return !Object.keys(reviews).some(d => t - dn(d) >= 0 && t - dn(d) <= 6);
+}
 // ctx: { kcalOkDays, logged, reviews: {date: {decision}}, breakState }
 export function plateauAdvice(weights, todayStr, ctx = {}) {
   const r = plateau(weights, todayStr);

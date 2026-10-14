@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.1
+- UX-4 shared nav (js/nav.js) + reviewDue card; UX-5 --nav-h + safe-area padding, toast; UX-11 5 icon items ≥44px with 搭配 sub-nav.
+
 ## v0.8.0
 - G4: 4 canteen set-meal estimates (verified:false); 137 foods.
 

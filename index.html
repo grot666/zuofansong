@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2f7d4f">
 <title>做饭松 · 粗粮减脂厨房</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,9 +12,9 @@
 <body>
 <header class="top"><h1>做饭松 <small id="ver"></small></h1></header>
 <main id="view" tabindex="-1"></main>
-<footer class="note"><a href="#plate">一餐搭配</a> · <a href="#rice">杂粮饭配比</a> · <a href="review.html">每周复盘</a><br>仅为一般营养信息，不构成医疗建议；如有疾病请咨询医生或注册营养师。</footer>
+<footer class="note"><a href="#plate">一餐搭配</a> · <a href="#rice">杂粮饭配比</a><br>仅为一般营养信息，不构成医疗建议；如有疾病请咨询医生或注册营养师。</footer>
 <nav class="tabs" aria-label="主导航">
-  <a href="#today">今日</a><a href="plan.html">菜单</a><a href="#plate">搭配</a><a href="#veg">蔬菜</a><a href="#rice">杂粮饭</a><a href="#foods">食材</a><a href="#me">我的</a>
+  <a href="#today" data-nav="today" class="on" aria-current="page"><span aria-hidden="true">🏠</span>今日</a><a href="#plate" data-nav="plate"><span aria-hidden="true">🍱</span>搭配</a><a href="plan.html" data-nav="plan"><span aria-hidden="true">📅</span>菜单</a><a href="review.html" data-nav="review"><span aria-hidden="true">📈</span>回顾</a><a href="#me" data-nav="me"><span aria-hidden="true">👤</span>我的</a>
 </nav>
 <script data-zfs-hatch>
 // A20 escape hatch (non-module, no storage access): if the app fails to load, offer to clear offline cache.

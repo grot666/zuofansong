@@ -6,7 +6,7 @@ import { VERSION } from './core/version.js';
 import { localDate } from './core/dates.js';
 import { foodIndexFromStore } from './core/foods.js';
 import { startBreak } from './core/breaks.js';
-import { bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
+import { toast, bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
 
 bootStore();
 const food = foodIndexFromStore(S);
@@ -57,7 +57,7 @@ function render() {
     let msg = '已保存。';
     if (d === 'minus' && confirm('把热量缺口提高 5%？（可在“我的”页改回）')) { const prof = S.get('profile', {}); prof.deficitPct = Math.min(30, (prof.deficitPct ?? 20) + 5); S.set('profile', prof); msg += '缺口已调整为 ' + prof.deficitPct + '%。'; }
     if (d === 'break' && confirm('接下来 7 天把热量设为 TDEE（缺口 0%）？7 天后自动恢复。')) { const r = startBreak(S.get('profile', {}), todayStr()); S.set('profile', r.profile); S.set('breakState', r.breakState); msg += `已设为维持热量，${r.breakState.until} 后自动恢复 ${r.breakState.from}% 缺口。`; }
-    $('#dmsg').textContent = msg;
+    $('#dmsg').textContent = msg; toast(msg, { ms: 4000 });
   };
 }
 try { render(); } catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${e.message}</p></section>`; }

@@ -1,3 +1,4 @@
+import { totals } from './foods.js';
 // Weekly plan generator. Pure; takes food lookup fn so it is testable.
 // Each day: breakfast template + lunch + dinner (staple + protein + veg recipe) + optional fruit.
 // Scales staple and protein portions so kcal is within ±5% of target and protein >= target.
@@ -12,11 +13,7 @@ export const STAPLES = ['riceCooked', 'brownRiceCooked', 'milletCooked', 'sweetP
 // raw-purchase conversion: shopping list buys raw; cooked weight / factor = raw
 export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['brownRice', 2.4], milletCooked: ['millet', 2.6], thighRoasted: ['chickenThigh', 0.75], breastRoasted: ['chickenBreast', 0.75], shrimpCooked: ['shrimp', 0.85], sweetPotatoBaked: ['sweetPotato', 0.85], eggUSDA: ['egg', 1], eggBoiled: ['egg', 1] };
 
-function sum(items, food) {
-  const t = { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, cost: 0 };
-  for (const [id, g] of items) { const f = food(id); if (!f) continue; for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) t[k] += f[k] * g / 100; t.cost += (f.priceCNYPer500g || 0) * g / 500; }
-  return t;
-}
+const sum = (items, food) => totals(items, food);
 
 // A9 split: selectWeek picks *what* (deterministic from seed), portionDay picks *how much*.
 // dinnerProteins[d] is cooked once for dinner(d) and lunch(d+1); lunch(0) uses dinnerProteins[6] (last week's batch).

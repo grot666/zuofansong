@@ -14,6 +14,7 @@ import { VERSION, CHANGELOG } from './core/version.js';
 import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from './core/profile.js';
 import { MULTS, scaleItems } from './core/portion.js';
 import { sleepNotes } from './core/sleep.js';
+import { makeIndex, totals as sumTotals, proteinPerYuan } from './core/foods.js';
 import { bootStore, registerSW } from './boot.js';
 bootStore();
 const $ = s => document.querySelector(s);
@@ -32,26 +33,17 @@ const PRESET_TEMPLATES = [
   { id: 'p3', name: '金枪鱼加餐', items: [['tunaLight', 100], ['cucumber', 150]] },
 ];
 const profile = () => normalizeProfile(S.get('profile', {}));
-const allFoods = () => [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
-const food = id => allFoods().find(f => f.id === id);
+let foodIdx = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []));
+export const refreshFoods = () => { foodIdx = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', [])); };
+const allFoods = () => foodIdx.all();
+const food = id => foodIdx(id);
 const logKey = d => 'log.' + d;
 const getLog = (d = today()) => S.get(logKey(d), { items: [], water: 0 });
 const setLog = (l, d = today()) => S.set(logKey(d), l);
 const tplMult = () => (MULTS.includes(S.get('tplMult', 1)) ? S.get('tplMult', 1) : 1);
 const templates = () => { const user = S.get('templates', []); const use = S.get('templateUse', {}); return [...user, ...PRESET_TEMPLATES].sort((a, b) => (use[b.id] || 0) - (use[a.id] || 0)); };
 
-function totals(items) {
-  const t = { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, powderProtein: 0, veg: 0, cost: 0 };
-  for (const it of items) {
-    const f = food(it.id); if (!f) continue;
-    const k = it.g / 100;
-    for (const key of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) t[key] += f[key] * k;
-    if (f.powder) t.powderProtein += f.protein * k;
-    if (f.cat === '蔬菜') t.veg += it.g / 100;
-    t.cost += (f.priceCNYPer500g || 0) * it.g / 500;
-  }
-  return t;
-}
+const totals = items => sumTotals(items, food);
 function bar(v, max) { const p = Math.min(100, (v / max) * 100); return `<div class="bar"><i class="${v > max * 1.05 ? 'over' : ''}" style="width:${p}%"></i></div>`; }
 const approx = f => (f.verified ? '' : '≈');
 
@@ -149,10 +141,10 @@ views.foods.bind = () => {
   const draw = () => {
     const q = $('#q').value.trim().toLowerCase();
     const list = allFoods().filter(f => !q || f.name.includes(q) || (f.py || '').includes(q) || (f.tags || []).some(t => t.includes(q)) || (f.cat || '').includes(q));
-    $('#fl').innerHTML = list.map(f => `<li><b>${esc(f.name)}</b> ${f.verified ? '✓' : ''} <span class="chip">${esc(f.cat || '自定义')}</span>${(f.tags || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}<br><span class="mut">${approx(f)}${f.kcal} kcal · 蛋白 ${f.protein} · 脂肪 ${f.fat} · 碳水 ${f.carbs} · 纤维 ${f.fiberEst ? '≈' : ''}${f.fiber}${f.priceCNYPer500g ? ` · ≈¥${f.priceCNYPer500g}/斤` : ''}${f.unit ? ` · 1${f.unit.name}≈${f.unit.g}g≈${Math.round(f.kcal * f.unit.g / 100)} kcal` : ''} · 来源 ${esc(f.source || '用户')}${f.note ? ' · ' + esc(f.note) : ''}</span></li>`).join('') || '<li class="mut">没有匹配的食材，可在下方添加</li>';
+    $('#fl').innerHTML = list.map(f => `<li><b>${esc(f.name)}</b> ${f.verified ? '✓' : ''} <span class="chip">${esc(f.cat || '自定义')}</span>${(f.tags || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}<br><span class="mut">${approx(f)}${f.kcal} kcal · 蛋白 ${f.protein} · 脂肪 ${f.fat} · 碳水 ${f.carbs} · 纤维 ${f.fiberEst ? '≈' : ''}${f.fiber}${f.priceCNYPer500g ? ` · ≈¥${f.priceCNYPer500g}/斤` : ''}${f.protein >= 5 && proteinPerYuan(f) ? ` · 蛋白 ${Math.round(proteinPerYuan(f) * 10) / 10} g/¥` : ''}${f.unit ? ` · 1${f.unit.name}≈${f.unit.g}g≈${Math.round(f.kcal * f.unit.g / 100)} kcal` : ''} · 来源 ${esc(f.source || '用户')}${f.note ? ' · ' + esc(f.note) : ''}</span></li>`).join('') || '<li class="mut">没有匹配的食材，可在下方添加</li>';
   };
   $('#q').oninput = draw; draw();
-  $('#cf').onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)); const f = { id: 'c' + Date.now(), name: d.name, cat: '自定义', tags: ['自定义'], source: '用户', verified: false }; for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) f[k] = +d[k] || 0; S.set('customFoods', [...S.get('customFoods', []), f]); e.target.reset(); draw(); };
+  $('#cf').onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)); const f = { id: 'c' + Date.now(), name: d.name, cat: '自定义', tags: ['自定义'], source: '用户', verified: false }; for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) f[k] = +d[k] || 0; S.set('customFoods', [...S.get('customFoods', []), f]); refreshFoods(); e.target.reset(); draw(); };
 };
 
 const GRAINS = ['rice', 'millet', 'cornGrits', 'oatRice', 'brownRice', 'blackRice', 'buckwheat'];
@@ -281,6 +273,7 @@ views.today.bind = () => {
 };
 
 function render() {
+  refreshFoods();
   const name = (location.hash || '#today').slice(1); const v = views[name] || views.today;
   try { $('#view').innerHTML = v(); v.bind && v.bind(); }
   catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${esc(e.message)}</p><p>可以刷新重试，或在“我的”页导出备份。</p></section>`; }

@@ -3,14 +3,14 @@ import { planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { bootStore, registerSW, getProfile } from './boot.js';
 import * as S from './core/store.js';
+import { makeIndex } from './core/foods.js';
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
 import { RECIPES } from '../data/recipes.js';
 
 bootStore();
-const all = [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
-const food = id => all.find(f => f.id === id);
+const food = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []));
 const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
 const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];

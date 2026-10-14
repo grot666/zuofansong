@@ -1,20 +1,9 @@
 // Weekly review math (research R5.4, R3.3, R3.4, R3.6). Pure.
 // logs: { 'YYYY-MM-DD': {items:[{id,g}], water} }, food: id -> food
-const OIL_IDS = new Set(['oil', 'oliveOil']);
+import { totals } from './foods.js';
 export const TUNA = { tunaLight: { kind: 'light', max: 3 * 113 }, tunaAlbacore: { kind: 'albacore', max: 113 } };
 
-export function dayTotals(items, food) {
-  const t = { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, cost: 0, oil: 0, lowFat: 0, takeaway: 0 };
-  for (const { id, g } of items) {
-    const f = food(id); if (!f) continue; const k = g / 100;
-    for (const key of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) t[key] += f[key] * k;
-    t.cost += (f.priceCNYPer500g || 0) * g / 500;
-    if (OIL_IDS.has(id)) t.oil += g;
-    if (f.fatClass === 'low') t.lowFat += f.fat * k;
-    if (f.cat === '外食') t.takeaway += 1;
-  }
-  return t;
-}
+export const dayTotals = (items, food) => totals(items, food);
 
 export function weekReview(dates, logs, food, targets) {
   const days = dates.map(d => ({ date: d, log: logs[d] })).filter(x => x.log && x.log.items && x.log.items.length);

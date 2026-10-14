@@ -2,6 +2,7 @@ import { computeTargets } from './core/targets.js';
 import { weekReview, plateau, lastNDates } from './core/review.js';
 import { weeklyStatus } from './core/weight.js';
 import * as S from './core/store.js';
+import { makeIndex } from './core/foods.js';
 import { startBreak } from './core/breaks.js';
 import { bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
 import { FOODS } from '../data/foods.js';
@@ -9,8 +10,7 @@ import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
 
 bootStore();
-const all = [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
-const food = id => all.find(f => f.id === id);
+const food = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []));
 const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
 const localDate = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };

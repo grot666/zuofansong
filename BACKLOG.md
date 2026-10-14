@@ -49,7 +49,7 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
     - No protein appears in more than 3 slots.
     - At 0.5×free: `overBudget === (cost > budget)`, and cost is non-increasing as the budget tightens.
     - Determinism: the same seed and budget give a deep-equal week.
-- **A8 core test gaps (P1)**. Still open:
+- ✅ v0.6.6 **A8 core test gaps (P1)**. Still open:
   - female BMR; TDEE for each activity factor
   - warning when kcal < BMR
   - BMI ≥30 uses goal-weight protein
@@ -68,7 +68,7 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
     - (2) `veg` → (3) `rice` → (4) `foods` → (5) `plate` → (6) `me` → (7) `today` (most state last)
     - `app.js` ≤ 3 KB router.
     - A15 test passes; the SW test catches each new file.
-- **A11 log retention (P3)**
+- ✅ v0.6.6 **A11 log retention (P3)**
   - AC: as before.
 - **A14 KNOWN_KEYS ↔ docs sync (P3)**
   - Why: v0.6 added the keys `tplMult`, `sleepNoteDay` and `breakState`.
@@ -110,7 +110,7 @@ Status from CHANGELOG/PROGRESS @13c48c4 (not runtime-verified — tests not yet 
 - **P0 · R-01b Pace check** — AC: profile shows kg/wk and %BW/wk to goal date; >1%/wk amber, <0.25%/wk info; test 74→58 kg, 2026-10-15→2027-07-31 ≈ 0.39 kg/wk ≈ 0.53%/wk.
 - **P0 · N-02 Weight MA7 + chart** (R5.3) — AC: MA7 = calendar window [d−6,d], shown only with ≥3 entries (replace current last-7-entries average); inline SVG raw dots + MA line + goal line, 4w/8w/12w/全部, tap tooltip; status chip 正常/偏快/持平; tests for MA math, gap rule, %/wk.
 - **P0 · N-03 Templates + 3-tap log** (= item 8; R5.5) — AC: "+"→sheet→template→记录 (×0.5/×1/×1.5) = 3 taps with undo; "存为模板" from plate builder; 3 presets; "复制昨天" with checkbox confirm; tests for multiplier expand + copy-yesterday.
-- **P1 · N-04 Ranked fiber swaps** (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks the 7 R5.2 swaps by fiberGain/max(kcalDelta,20), top 3, never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal); test: plan-day returns oats40/peas100/broc200 in top 3.
+- **P1 · N-04 Ranked fiber swaps** ⚠ needs research: AC test (oats40/peas100/broc200 top 3) conflicts with the ratio formula on R5.2 values; shipped ranking = replacements first, then ratio. (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks the 7 R5.2 swaps by fiberGain/max(kcalDelta,20), top 3, never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal); test: plan-day returns oats40/peas100/broc200 in top 3.
 - **P1 · N-05 Takeaway quick-add data** (feeds item 4; R5.1) — AC: 20 R5.1 rows as `type:"dish"`, `verified:false`, `source:"fatsecret.cn 估算"`, `defaultPortionG` + `portionNote:"默认份量为假设，建议称重"`; always ≈ + tip line; test 黄焖鸡米饭 500 g → 835 kcal.
 - **P1 · N-06 Weekly review** (= item 9; R5.4) — AC: 10-item checklist auto-filled from logs/weights; missing = "未记录"; one decision saved; "−100–150 kcal" updates target with confirm, "维持周" sets kcal = TDEE for 7 days; fixture-week test.
 - **P1 · R-09 Tuna counter** (= item 5; R3.3) — AC: foods carry `mercuryClass`; tuna split 淡(鲣鱼/skipjack) / 白(长鳍/albacore); weekly soft note light >3×113 g or albacore >1×113 g, labelled conservative; plan rotates shrimp/salmon.

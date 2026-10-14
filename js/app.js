@@ -21,8 +21,10 @@ import { view as foodsView } from './views/foods.js';
 import { view as plateView } from './views/plate.js';
 import { view as meView } from './views/me.js';
 import { view as todayView } from './views/today.js';
+import { compactStore } from './core/retention.js';
 import { bootStore, registerSW } from './boot.js';
 bootStore();
+try { compactStore(S, today(), food); } catch (e) { console.error(e); }
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from './ui.js';
 const views = {};
 views.today = todayView;

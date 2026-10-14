@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.8.4';
+export const VERSION = '0.8.5';
 export const CHANGELOG = [
+  ['0.8.5', '蛋白缺口建议更实际：鸡蛋最多加 3 个，其余用豆腐/鸡胸/牛奶/酸奶各一份；“拍黄瓜”改为“拌黄瓜片”，需用力切的步骤标出护腕替代做法。'],
   ['0.8.4', '“已更新到新版本”提示每个版本只出现一次；菜单“换一套”后可在 6 秒内撤销。'],
   ['0.8.3', '菜单页顶部固定切换：菜单 / 购物清单 / 备餐，一键跳到购物清单；只展开今天，其余 6 天点开查看。'],
   ['0.8.2', '“我的”页保存资料后提示“已保存 · 每日目标已更新”，并跳到每日目标。'],

@@ -26,7 +26,7 @@ view.bind = () => {
     const list = RECIPES.filter(r => on.every(t => r.tags.includes(t)));
     $('#vl').innerHTML = list.map(r => { const x = totals(recipeItems(r)); return `<li><details><summary><b>${esc(r.name)}</b> · ${r.min} 分钟 · 油 ${r.oil} g · ≈${Math.round(x.kcal)} kcal · ≈¥${r1(x.cost)} ${r.tags.map(t => `<span class="chip">${t}</span>`).join('')}</summary>
       <p class="mut">食材：${r.items.map(([id, g]) => `${food(id)?.name || id} ${g} g`).join('、')}${r.oil ? `、油 ${r.oil} g（≈${r1(r.oil / TSP_OIL_G)} 茶匙）` : ''}<br>整份：蛋白 ${r1(x.protein)} g · 脂肪 ${r1(x.fat)} g · 碳水 ${r1(x.carbs)} g · 纤维 ${r1(x.fiber)} g（约 2 人份或 1 天的蔬菜）</p>
-      <ol>${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol><button class="sec" data-log="${r.id}" data-half="1">记入今日（半份）</button> <button class="sec" data-log="${r.id}">记入今日（整份）</button></details></li>`; }).join('') || '<li class="mut">没有符合全部条件的菜，少选一个筛选试试</li>';
+      <ol>${r.steps.map(s => `<li>${esc(s.text)}${s.wristSafe ? '' : `<br><span class="warn">护腕：${esc(s.wristNote)}</span>`}</li>`).join('')}</ol><button class="sec" data-log="${r.id}" data-half="1">记入今日（半份）</button> <button class="sec" data-log="${r.id}">记入今日（整份）</button></details></li>`; }).join('') || '<li class="mut">没有符合全部条件的菜，少选一个筛选试试</li>';
     document.querySelectorAll('[data-log]').forEach(b => b.onclick = () => { const r = RECIPES.find(x => x.id === b.dataset.log); const k = b.dataset.half ? 0.5 : 1; const l = getLog(); l.items.push(...recipeItems(r).map(i => ({ id: i.id, g: i.g * k, t: Date.now() }))); setLog(l); b.textContent = '✓ 已记入'; });
   };
   $('#vf').onchange = draw; draw();

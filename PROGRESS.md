@@ -46,3 +46,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:56 v0.8.3 UX-7: sticky 菜单/购物清单/备餐 anchors (#menu/#list/#prep), days in <details>, only today open.
 
 - 05:58 v0.8.4 UX-8 update toast once per version (updateSeen); UX-9 换一套 undo toast (regenWeek).
+
+- 05:59 v0.8.5 UX-13 proteinFill (≤3 eggs, ≤1 serving others); UX-14 wristSafe on every recipe/tray step, 拌黄瓜片, gentler prep copy.

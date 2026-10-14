@@ -22,10 +22,10 @@ export const SAUCES = [
   { id: 's6', name: '轻糖醋汁', family: '糖醋', items: [['vinegar', 15], ['soy', 5], ['sugar', 5], ['ginger', 3]] },
 ];
 export const TRAY_STEPS = [
-  { text: '淘洗杂粮/米，电饭煲快煮（或取冷藏分装饭微波复热）', min: 3, device: '电饭煲', wrist: true },
-  { text: '鸡腿肉/虾/豆腐 + 冷冻或切好的蔬菜铺一盘，刷 ≤ 1 茶匙油', min: 6, device: '烤盘/空气炸锅', wrist: true, tip: '用厨房剪刀剪块，不用大刀剁切' },
-  { text: '放入烤箱/空气炸锅，中途用夹子翻面（不颠锅）', min: 2, wrist: true },
-  { text: '微波蒸蛋或微波蔬菜', min: 2, device: '微波碗', wrist: true },
-  { text: '调酱汁（按轮换）', min: 3, wrist: true },
-  { text: '装盘/分装明日午饭', min: 3, wrist: true, tip: '双手端烤盘、戴隔热手套' },
+  { text: '淘洗杂粮/米，电饭煲快煮（或取冷藏分装饭微波复热）', min: 3, device: '电饭煲', wrist: true, wristSafe: true },
+  { text: '鸡腿肉/虾/豆腐 + 冷冻或切好的蔬菜铺一盘，刷 ≤ 1 茶匙油', min: 6, device: '烤盘/空气炸锅', wrist: true, wristSafe: true, tip: '用厨房剪刀剪块，不用大刀剁切' },
+  { text: '放入烤箱/空气炸锅，中途用夹子翻面（不颠锅）', min: 2, wrist: true, wristSafe: true },
+  { text: '微波蒸蛋或微波蔬菜', min: 2, device: '微波碗', wrist: true, wristSafe: true },
+  { text: '调酱汁（按轮换）', min: 3, wrist: true, wristSafe: true },
+  { text: '装盘/分装明日午饭', min: 3, wrist: true, wristSafe: true, tip: '双手端烤盘、戴隔热手套' },
 ];

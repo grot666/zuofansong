@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.9
+- R9-2 plan uses kiwiUSDA; R9-3 eggWhite = FDC 172183 verified.
+
 ## v0.9.8
 - R9-1 (P0): budget loop on real regenerated cost (≤7 rounds); A34: unfit days reported + ⚠ tip.
 

@@ -72,7 +72,7 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
       { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name} + ${vegL.name}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] },
       { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name} + ${vegD.name}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] },
     ];
-    const snack = [...(kiwi ? [['kiwi', kiwi]] : []), ...addon];
+    const snack = [...(kiwi ? [[food('kiwiUSDA') ? 'kiwiUSDA' : 'kiwi', kiwi]] : []), ...addon]; // R9-2: verified FDC twin when available
     if (snack.length) meals.push({ name: '加餐', title: snack.map(([id, g]) => `${food(id).name} ${g} g`).join(' + '), items: snack });
     return { meals, tot: sum(meals.flatMap(m => m.items), food) };
   };

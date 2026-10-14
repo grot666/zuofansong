@@ -29,3 +29,10 @@ export const TRAY_STEPS = [
   { text: '调酱汁（按轮换）', min: 3, wrist: true, wristSafe: true },
   { text: '装盘/分装明日午饭', min: 3, wrist: true, wristSafe: true, tip: '双手端烤盘、戴隔热手套' },
 ];
+// R-11 remainder: per-protein tray settings for the 30-min evening variant (oven/air fryer, typical home times; check core temp).
+export const TRAY_BAKE = {
+  thighRoasted: { temp: 200, min: 15, how: '鸡腿肉剪小块' }, breastRoasted: { temp: 200, min: 16, how: '鸡胸片成厚片' },
+  shrimpCooked: { temp: 200, min: 8, how: '虾仁解冻沥干' }, seabass: { temp: 200, min: 12, how: '鲈鱼块' },
+  tofuFirm: { temp: 210, min: 15, how: '老豆腐切大块（按压不用力）' }, porkLoin: { temp: 200, min: 15, how: '里脊片' },
+  basa: { temp: 200, min: 12, how: '巴沙鱼块' }, sole: { temp: 200, min: 12, how: '龙利鱼块' }, leanBeef: { temp: 220, min: 8, how: '牛肉片' },
+};

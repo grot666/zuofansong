@@ -107,3 +107,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:45 v0.10.11 BACKLOG Next line refreshed
 
 - 06:45 v0.10.12 R-01 remainder: %BW/week pace in onboarding, fast-loss review warning
+
+- 06:45 v0.10.13 R-11 remainder: per-weekday 30-min one-tray evening variant

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.13
+- R-11 remainder: per-weekday 30-min one-tray evening variant
+
 ## v0.10.12
 - R-01 remainder: %BW/week pace in onboarding, fast-loss review warning
 

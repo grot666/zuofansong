@@ -1,8 +1,8 @@
 import { computeTargets } from './core/targets.js';
 import { parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
-import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
-import { sauceNutrition, rotateSauces } from './core/sauces.js';
+import { SAUCES, SAUCE_ING, TRAY_STEPS, TRAY_BAKE } from '../data/sauces.js';
+import { sauceNutrition, rotateSauces, trayPlan } from './core/sauces.js';
 import { toast, bootStore, registerSW, getProfile } from './boot.js';
 import * as S from './core/store.js';
 import { localDate, todayIndex } from './core/dates.js';
@@ -17,13 +17,14 @@ const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
 const DAYS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
-function trayCard() {
+function trayCard(week = []) {
   const off = new Set(S.get('sauceOff', []));
   const rot = rotateSauces(SAUCES.filter(x => !off.has(x.id)), 7);
   const mins = TRAY_STEPS.reduce((a, x) => a + x.min, 0);
   return `<section class="card"><h2>工作日 30 分钟一盘烤晚餐</h2>
   <p class="mut">动手约 ${mins} 分钟 · 3 件设备（电饭煲、烤盘/空气炸锅、微波碗）· 护腕友好。</p>
   <ol>${TRAY_STEPS.map(x => `<li>${x.text}（${x.min} 分钟）${x.wrist ? ' ✅护腕' : ''}${x.tip ? `<br><span class="mut">${x.tip}</span>` : ''}</li>`).join('')}</ol>
+  ${(() => { const tp = trayPlan(week.slice(0, 5).map(d => d.dinnerProtein), TRAY_STEPS, TRAY_BAKE, rot.out); return tp.some(Boolean) ? `<h3>本周工作日每晚一盘</h3><ol>${tp.map((x, i) => x ? `<li>${DAYS[i]}：${x.how} · ${x.temp} °C 约 ${x.ovenMin} 分钟${x.sauce ? ' · ' + x.sauce.name : ''} · 共约 ${x.totalMin} 分钟${x.wristSafe ? ' ✅护腕' : ''}</li>` : '').join('')}</ol>` : ''; })()}
   <p><b>熟没熟以中心温度为准：禽肉 74 °C</b>（USDA FSIS）。烤制时间以自家设备为准。</p>
   <h3>本周酱汁轮换</h3><ol>${rot.out.map((x, i) => { const n = sauceNutrition(x); return `<li>${DAYS[i]}：${x.name}（${x.items.map(([id, g]) => SAUCE_ING[id].name + ' ' + g + ' g').join(' + ')}）≈${Math.round(n.kcal)} kcal · 脂肪 ${n.fat} g${x.allergen ? ' · 含' + x.allergen.join('、') : ''}</li>`; }).join('') || '<li class="mut">请至少选一种酱汁</li>'}</ol>
   ${rot.repeatWarning ? '<p class="mut">只选了一类口味，会每天重复。</p>' : ''}
@@ -57,7 +58,7 @@ function render() {
   <li>煮一锅水煮蛋（6–8 个），冷藏 4–5 天内吃完。</li>
   <li>工作日晚上：热饭 + 空气炸锅/烤箱烤蛋白和蔬菜，多做一份装明天午餐。</li></ol>
   <p class="mut">米饭安全：冷藏 24 小时内吃完、只加热一次并热透；冷冻的分份当天取出微波。</p></section>
-  ${trayCard()}`;
+  ${trayCard(week)}`;
   document.querySelectorAll('[data-sauce]').forEach(c => c.onchange = () => { const off = new Set(S.get('sauceOff', [])); c.checked ? off.delete(c.dataset.sauce) : off.add(c.dataset.sauce); S.set('sauceOff', [...off]); render(); });
   $('#regen').onclick = () => { const r = regenWeek({ seed }); S.set('planSeed', r.seed); render(); toast('已换一套菜单', { ms: 6000, action: { label: '撤销', run: () => { S.set('planSeed', r.prevSeed); render(); } } }); };
   $('#budget').onchange = e => { const r = parseBudget(e.target.value); if (!r.ok) { e.target.value = budget; toast(r.msg); return; } S.set('weeklyBudget', r.value); render(); };

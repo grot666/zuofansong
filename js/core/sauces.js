@@ -17,3 +17,13 @@ export function rotateSauces(enabled, days, startIdx = 0) {
   }
   return { out, repeatWarning: families.size < 2 && days > 1 };
 }
+// R-11 remainder: one tray per weekday evening built from the plan's dinner proteins.
+// total = prep before the oven + max(oven time, work done meanwhile) + plating; must stay ≤ 30 min. All steps wrist-safe.
+export function trayPlan(dinnerIds, steps, bake, sauces) {
+  const pre = steps.slice(0, 2).reduce((a, x) => a + x.min, 0), during = steps.slice(3, 5).reduce((a, x) => a + x.min, 0), plate = steps[5].min;
+  return dinnerIds.map((id, i) => {
+    const b = bake[id]; if (!b) return null;
+    return { id, temp: b.temp, ovenMin: b.min, how: b.how, sauce: sauces.length ? sauces[i % sauces.length] : null,
+      totalMin: pre + steps[2].min + Math.max(b.min, during) + plate, wristSafe: steps.every(s => s.wristSafe) };
+  });
+}

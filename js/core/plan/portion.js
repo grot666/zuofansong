@@ -11,6 +11,7 @@ export const MAX_PROTEIN_G_PER_MEAL = 300;
 // Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
 export const MEAT_W = 0.5;
 export const SG_MAX = 350; // staple g per meal
+export const STAPLE_MAX_G = { sweetPotatoBaked: 175 }; // R11-1: ≤ 350 g 烤红薯 per day (2 meals)
 export const MEAT_OVER_G = 250; // = MEAT_NOTE_G (shopping.js)
 export const MEAT_OVER_W = 3;
 export const TUNA_ADDON_G = 100;
@@ -55,7 +56,7 @@ export function portionCore(sk, { kcal, protein }, food, opts = {}) {
   const sF = 2 * (st.fiber || 0) / 100, pF = ((pl.fiber || 0) * pm(pLunch) + (pd.fiber || 0) * pm(pDinner)) / 100;
   const repA = addons.map(a => a.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W);
   const free = sK - pK * sP / pP; let bs = Infinity, bsg = 0, bpg = 0, bvi = 0, bbi = 0, bki = 0, bai = 0;
-  const cl = x => (x < 30 ? 30 : x > SG_MAX ? SG_MAX : x);
+  const SGM = STAPLE_MAX_G[staple] ?? SG_MAX, cl = x => (x < 30 ? 30 : x > SGM ? SGM : x);
   // R10-S2: grams of non-tofu meat above MEAT_OVER_G per meal cost MEAT_OVER_W each, so add-ons are tried first.
   const meatMeals = [pLunch, pDinner].filter(id => id !== 'tofuFirm').map(pm);
   const over = pg => meatMeals.reduce((s, m) => s + Math.max(0, pg * m - MEAT_OVER_G), 0) * MEAT_OVER_W;
@@ -66,15 +67,15 @@ export function portionCore(sk, { kcal, protein }, food, opts = {}) {
     if (knob + 60 * MEAT_W >= bs) continue; // exact prune: every other score term is ≥ 0 and pg ≥ 60
     const v = vegTs[vi], b = bfT[bi], w = kiwiT[ki], a = addT[ai];
     const bK = v.kcal + b.kcal + w.kcal + a.kcal, bP = v.protein + b.protein + w.protein + a.protein, bF = v.fiber + b.fiber + w.fiber + a.fiber;
-    const xs0 = free > 0 ? (kcal - bK - pK * (protein - bP) / pP) / free : SG_MAX, xs1 = (kcal - bK - 60 * pK) / sK, xs2 = (kcal - bK - MAX_PROTEIN_G_PER_MEAL * pK) / sK, xs3 = (protein - bP - 60 * pP) / sP;
-    let n = 0; sgs[n++] = 30; sgs[n++] = SG_MAX;
+    const xs0 = free > 0 ? (kcal - bK - pK * (protein - bP) / pP) / free : SGM, xs1 = (kcal - bK - 60 * pK) / sK, xs2 = (kcal - bK - MAX_PROTEIN_G_PER_MEAL * pK) / sK, xs3 = (protein - bP - 60 * pP) / sP;
+    let n = 0; sgs[n++] = 30; sgs[n++] = SGM;
     for (const x of [xs0, xs1, xs2, xs3]) if (Number.isFinite(x)) { sgs[n++] = cl(Math.floor(x / 10) * 10); sgs[n++] = cl(Math.ceil(x / 10) * 10); }
     for (let q = 0; q < n; q++) {
       const sg = sgs[q];
       const pgMin = Math.max(60, Math.ceil((protein - bP - sg * sP) / pP / 5) * 5);
       const pg0 = Math.min(MAX_PROTEIN_G_PER_MEAL, pgMin);
       // R10-D1 follow-up: at the staple cap a low-density staple + lean protein can leave kcal short; then also try more protein.
-      const pg1 = sg === SG_MAX ? Math.min(MAX_PROTEIN_G_PER_MEAL, Math.max(pg0, Math.ceil((kcal - bK - sg * sK) / pK / 5) * 5)) : pg0;
+      const pg1 = sg === SGM ? Math.min(MAX_PROTEIN_G_PER_MEAL, Math.max(pg0, Math.ceil((kcal - bK - sg * sK) / pK / 5) * 5)) : pg0;
       for (let t = 0; t < (pg1 === pg0 ? 1 : 2); t++) {
         const pg = t ? pg1 : pg0;
         const k = bK + sg * sK + pg * pK, P = bP + sg * sP + pg * pP, fib = bF + sg * sF + pg * pF;

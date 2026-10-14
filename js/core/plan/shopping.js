@@ -1,5 +1,6 @@
 // A45: split from js/core/plan.js (shopping). Import via js/core/plan.js (facade).
 import { COOKED_TO_RAW, priceOf, twinOf } from '../foods.js';
+import { FIBER_SIDE } from './fiber.js';
 // R10-S1: shelf-stable staples and condiments go to one "常备" line; verified twins merge under the everyday name.
 export const PANTRY_IDS = new Set(['rice', 'brownRice', 'millet', 'oats', 'oatsDry', 'tunaLight', 'tunaAlbacore', 'soy', 'oyster', 'oil', 'oliveOil', 'garlic', 'ginger', 'whey']);
 export const SMALL_G = 50;
@@ -47,6 +48,8 @@ export function parseBudget(raw) {
   return { ok: true, value: Math.round(n) };
 }
 // R9-10 reuse metric: distinct vegetable ids in a week (fewer = more reuse, less waste).
-export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;
+// Distinct recipe vegetables; the capped-day fiber side (FIBER_SIDE, exact grams) is not a recipe and is not counted.
+const isSide = (d, id, g) => d.fiberSide && FIBER_SIDE.some(([s, sg]) => s === id && sg === g);
+export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.filter(([id, g]) => !isSide(d, id, g)).map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;
 // R10-F2: 7-day average fiber (g/day) for the plan header.
 export const weekFiber = days => (days.length ? days.reduce((s, d) => s + (d.tot?.fiber || 0), 0) / days.length : 0);

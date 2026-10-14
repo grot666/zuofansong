@@ -17,7 +17,7 @@ const free = planWeek(t, food, RECIPES, { seed: 0 }).cost;
 test('A35a real-data fixture 1800/140 seed 0 @0.85×free (pinned)', () => {
   const r = planWeek(t, food, RECIPES, { seed: 0, budget: 0.85 * free });
   assert.deepEqual(r.week.map(d => d.dinnerProtein), ['thighRoasted', 'breastRoasted', 'tofuFirm', 'tofuFirm', 'tofuFirm', 'breastRoasted', 'basa']);
-  assert.equal(r.swaps, 3); assert.ok(Math.abs(r.cost - 181.38) <= 0.05, String(r.cost)); // re-pinned v0.10.39 (A55 batch staple)
+  assert.equal(r.swaps, 4); assert.ok(Math.abs(r.cost - 187.52) <= 0.05, String(r.cost)); // re-pinned v0.10.40 (R11-1 SP ≤175 g/meal)
 });
 test('A35b tie-break: equal scores → cheaper first, then options order', () => {
   const price = { A: 50, B: 20, C: 20, D: 30 };

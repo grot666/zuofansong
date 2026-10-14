@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.40
+- R11-1 sweet potato ≤175 g per meal (≤350 g/day)
+
 ## v0.10.39
 - A55 staple decided per 2-day batch; SP cap per batch; fiber days 77%→84%
 

@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 07:49 SGT — v0.10.46: A58/A62 plangrid invariants + snapshots cover SP cap, fiber side, breakfast mode
 - 2026-10-15 07:45 SGT — v0.10.45: A60 restore spcap share assertion; lint guard for asserts hidden in comments
 - 2026-10-15 07:39 SGT — v0.10.44: A57 release helper in repo (scripts/release.mjs), fail-closed
 - 2026-10-15 05:44 SGT — v0.7.4: A23 priceOf(food, id) in core/foods.js (COOKED_TO_RAW moved there, re-exported by plan.js): user override on a cooked id → raw-equivalent cookedPrice×k, else raw food's merged price; shoppingList/proteinCost/totals all use it. Probe flipped: thighRoasted:999 now raises the 1800/140 seed-0 week by >¥100 and budget 300 swaps thigh out; chickenThigh:999 unchanged; egg:7 beats ref 5.91. 食材 page labels cooked prices 按熟重. A24 makeIndex({base, partials}) (partials never create entries; legacy positional = all base) + foodIndexFromStore(S) used by ui/plan/review; precedence + page text tests. A27 today vs plan cost for 230 g cooked rice agree. 96 tests.

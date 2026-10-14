@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.46
+- A58/A62 plangrid invariants + snapshots cover SP cap, fiber side, breakfast mode
+
 ## v0.10.45
 - A60 restore spcap share assertion; lint guard for asserts hidden in comments
 

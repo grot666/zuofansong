@@ -110,7 +110,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - It commits, then `git push`. The script refuses on a dirty tree.
     - DECISIONS: "release only via npm run release".
   - Tests: `test/release.test.mjs` runs the pure helpers (`bumpVersionSrc`, `insertProgress`, `commitSubject`) on fixtures. `commitSubject('fix: x (v1.2.3)', '1.2.3') === 'fix: x (v1.2.3)'`.
-- **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P1, rank 2 @07:45; do together with A62)**
+- ✅ **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P1, rank 2 @07:45; do together with A62)**
   - Why: (a). The cap is only checked in `spcap.test.js`. The plangrid invariants (determinism, pairing, no silent non-ok) and the A44 snapshots don't cover `stapleSwap`/`spCap`/`fiberSide`, so a refactor could drop the cap on budget paths not in spcap's {none, ¥200}.
   - AC: plangrid asserts the sweet-potato cap and `spCap ⇒ staple !== SP_ID` for every run (incl. .5× budgets). The A44 snapshot gains the per-day `staple` + `fiberSide` sequence for seed 0 and seed 1 at 1800/140.
   - Tests: as stated; runtime of plangrid stays ≤ 4 s (DE guard).

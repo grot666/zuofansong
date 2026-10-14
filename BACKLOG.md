@@ -28,7 +28,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
   - DECISIONS' "oats 94.2%" also doesn't generalise. Oats adds only ~+0.7 pt on the full grid (A61).
 - **Bug found:** in `test/spcap.test.js` line 19, the share assertion `assert.ok(sp / n <= 3 / 7 …)` now sits **inside a `//` comment** (pasted after the A55 note), so it no longer runs (A60).
 
-- **A60 Restore the commented-out sweet-potato share assertion (P1, 5 min)**
+- ✅ **A60 Restore the commented-out sweet-potato share assertion (P1, 5 min)**
   - Why: see "Bug found" above. The per-week cap is still asserted (line 15), but the grid share isn't.
   - AC: the assertion is on its own line.
   - Tests: add a cheap guard test (`test/lint.test.js`) that fails if any `test/*.js` line contains `// …assert.` after code on the same line (regex `;\s*//.*\bassert\.`).

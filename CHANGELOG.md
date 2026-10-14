@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.45
+- A60 restore spcap share assertion; lint guard for asserts hidden in comments
+
 ## v0.10.44
 - A57 release helper in repo (scripts/release.mjs), fail-closed
 

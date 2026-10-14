@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.8
+- Walkthrough fixes: onboarding goal suggestion, select-on-focus, 44px checkbox/radio rows
+
 ## v0.10.7
 - Weekly plan reuses vegetables (shorter shopping list); pasta/sweet potato FDC ids confirmed; budget overshoot revert
 

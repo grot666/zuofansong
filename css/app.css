@@ -22,3 +22,7 @@ input[type=checkbox],input[type=radio]{width:auto;min-height:auto;width:20px;hei
 button.mini{min-height:32px;padding:2px 8px;font-size:.85em;margin-left:4px}
 table td:first-child,table th:first-child{white-space:nowrap}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+/* Walkthrough 375px: checkbox/radio rows are the tap target (≥44px, 护腕-friendly), bigger box. */
+label:has(> input[type=checkbox]), label:has(> input[type=radio]) { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+label[style*="inline-block"]:has(> input[type=checkbox]) { display: inline-flex !important; }
+input[type=checkbox], input[type=radio] { width: 22px !important; height: 22px; flex: none; }

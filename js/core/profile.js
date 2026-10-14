@@ -18,7 +18,7 @@ export function normalizeProfile(p = {}) {
   if (!['fixed', 'bw', 'ffm'].includes(out.proteinMode)) out.proteinMode = DEFAULT_PROFILE.proteinMode;
   return out;
 }
-import { dayNum } from './dates.js';
+import { dayNum, addDays } from './dates.js';
 // Pure; dates are local 'YYYY-MM-DD'.
 export function paceCheck({ currentKg, goalKg, today, goalDate }) {
   if (!(currentKg > 0) || !(goalKg > 0) || !goalDate || !today) return { status: 'incomplete' };
@@ -85,3 +85,11 @@ export function saveOnboardStep(stored, step, form) {
   return { ok: true, profile: mergeProfileEdit(stored || {}, edits) };
 }
 export const PACE_TEXT = { fast: '偏快（每周 >1% 体重），建议把目标日期往后放', ok: '速度合适', slow: '偏慢，可以再积极一点', reached: '已达到目标体重', gain: '目标高于当前体重（本应用以减脂为主）', 'invalid-date': '目标日期需在今天之后', incomplete: '' };
+
+// Walkthrough fix: onboarding step 2 used to prefill the demo goal (58 kg) whatever the user weighed.
+// Keep a plausible stored goal (below current weight, ≤20% loss); otherwise suggest −7% at 0.5 kg/week.
+export function suggestGoal({ weight, goalWeight, goalDate }, today) {
+  if (goalWeight > 0 && goalWeight < weight && goalWeight >= weight * 0.8 && goalDate > today) return { goalWeight, goalDate };
+  const g = Math.round(weight * 0.93 * 2) / 2;
+  return { goalWeight: g, goalDate: addDays(today, Math.ceil((weight - g) / 0.5) * 7) };
+}

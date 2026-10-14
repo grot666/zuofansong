@@ -354,3 +354,7 @@ Line-by-line check of PROMPT.md against the live app (v0.7.6). Covered and verif
 - ✅ v0.10.3 **R9-8 (P2) Protein cap realism.** Why: p160 hits 300 g cooked protein/meal in 12/24 weeks. AC: show a note when a meal exceeds 250 g cooked meat/fish, or lower cap with powder/add-on fallback. Test: p160 seed 0 has note or ≤ new cap.
 - ✅ v0.10.4 **R9-9 (P2) Wrist flags on firm-veg cutting.** AC: r18 茭白切片, r10 丝瓜削皮切块 get `wristSafe:false` + note (买切好的/刨子). Test: data test regex /茭白|削皮/ requires wristNote.
 - ✅ v0.10.5 **R9-10 (P2) PROMPT gaps.** Prep-time limit and ingredient reuse in plan generator (§3.10/§6) absent; 龙利鱼 not in PROTEINS; budget input `+v||300` turns 0/blank into 300. AC: optional `maxPrepMin` filter for recipes; reuse bonus measured by distinct veg ids/week; budget blank shows validation. Tests: maxPrepMin=5 picks only recipes ≤5 min; budget '' keeps previous value with message.
+
+## Done 06:34 order
+- ✅ **R9-10b** veg ingredient reuse in selectWeek (REUSE_WINDOW 5), budget overshoot revert; pasta 169736 / sweetPotato 168482 FDC-verified (v0.10.7).
+- ✅ **WALK-1** 375px new-user walkthrough: onboarding goal suggestion (was demo 58 kg), select-on-focus, 44px checkbox/radio rows (v0.10.8).

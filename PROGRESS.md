@@ -167,3 +167,5 @@ Current gaps (07:20, v0.10.36): 77/137 foods unverified (7 of them ≈ with an F
 - 07:28 v0.10.40 R11-1 sweet potato ≤175 g per meal (≤350 g/day)
 
 - 07:30 v0.10.41 R11-2 no staple 3 days running; peas side on any fiber-short day (~89% days ≥25 g)
+
+- 07:32 v0.10.42 breakfast preference: rotate or oats every day (opts.breakfast)

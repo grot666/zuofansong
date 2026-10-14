@@ -55,7 +55,8 @@ export function selectWeek(food, recipes, opts = {}) {
   const picks = opts.reuse === false ? Array.from({ length: 14 }, (_, i) => vegs[(i + seed * 14) % vegs.length]) : pickReuse(vegs, seed * 14, food);
   const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => (proteins.length ? proteins[(d + seed) % proteins.length] : null)); // A47: null when none usable
   return dinnerProteins.map((pDinner, d) => ({
-    day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
+    // opts.breakfast: 'rotate' (default) | 'oats' (燕麦粥 every day, more fiber)
+    day: d, bf: opts.breakfast === 'oats' ? BREAKFASTS[0] : BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
     staple: STAPLES[(Math.floor(d / 2) + seed) % STAPLES.length],
     vegL: picks[d * 2] || null, vegD: picks[d * 2 + 1] || null,
   }));

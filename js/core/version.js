@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.41';
+export const VERSION = '0.10.42';
 export const CHANGELOG = [
+  ['0.10.42', '菜单页可选早餐：三种轮换或每天燕麦粥（纤维更足）'],
   ['0.10.41', '主食不再连续 3 天相同；纤维不够的日子可加青豆，纤维达标天数约 89%'],
   ['0.10.40', '烤红薯每餐最多 175 g（每天 ≤350 g）'],
   ['0.10.39', '主食按两天一批决定（电饭煲做一次吃两天），烤红薯上限按批计算；纤维达标天数提高到约 84%'],

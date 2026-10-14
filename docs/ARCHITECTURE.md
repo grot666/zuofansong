@@ -84,6 +84,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `foodUse` | {id: count} quick-add use counts for chips (UX-12, v0.8.6) | today, foods |
 | `onboardStep` | 2–3, onboarding step to resume after reload; removed on skip/完成 (A29, v0.9.0) | today |
 | `maxPrepMin` | 0/5/10, plan veg prep-time limit (R9-10, v0.10.5) | plan |
+| `breakfastPref` | rotate/oats, plan breakfast preference (opts.breakfast, v0.10.42) | plan |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
 | `sauceOff` | `[sauceId]` excluded from rotation (R-11b, v0.7.0) | plan |
 
@@ -116,7 +117,7 @@ Export envelope `{app:'zuofansong', schema, exportedAt, data}` (skips `backup.*`
 
 ## 5. Weekly plan @v0.10.28 (A9, A16, A19, A23, A25, A33–A46, G1, G2, UX-9, R9-10, PERF-1 ✅)
 ```
-selectWeek(food, recipes, {seed, proteins, dinnerProteins, maxPrepMin, reuse}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL|null, vegD|null}
+selectWeek(food, recipes, {seed, proteins, dinnerProteins, maxPrepMin, reuse, breakfast}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL|null, vegD|null}
 portionDay(skel, {kcal, protein}, food, {powderScoops, noTuna, addonUse}) → {day, meals, tot, proteinG, stapleG, bfMult, kiwiG, addon, fit}
 generateWeek / planWeek(t, food, recipes, {seed, budget, powderScoops, maxPrepMin, revert}) → {week, cost, overBudget, swaps, infeasible, unfit}
 regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // week = f(targets, seed, opts); undo = restore prevSeed

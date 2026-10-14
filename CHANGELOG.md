@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.43
+- UX: plan controls 2×2 grid at 375 px (no truncated selects)
+
 ## v0.10.42
 - breakfast preference: rotate or oats every day (opts.breakfast)
 

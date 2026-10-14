@@ -584,3 +584,5 @@ TFCC rule for every recipe-related AC below: no step may require forceful choppi
 - **R11-6 (P1) VER batch: next 15 foods** (RESEARCH-R11 §R11.4). AC: cite FDC 171411 oil, 169230 garlic, 169988 celery, 168409 cucumber, 168411 edamame (or CFCT); 平台 #575 enoki, #429 loofah, #450 napa, #493 kongxincai, #419 winterMelon, #525 yam, #519 jiaobai (values match app within 1 kcal → just set source+verified); recipes use twins (egg→eggUSDA, broccoli→broccoliUSDA); soy/yogurt/basa/leanBeef/porkLoin stay ≈ with reason; shanghaiQing may cite #457 油菜 only as "proxy". Tests: data test pins the cited values ±0.5; every `verified:true` source matches /USDA FDC \d+|平台 #\d+/.
 
 - **OATS Breakfast preference: every-day 燕麦粥 option (P2)** ✅
+
+- **UX-375 Plan controls 2×2 grid at 375 px (P3)** ✅

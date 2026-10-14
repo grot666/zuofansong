@@ -26,3 +26,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 label:has(> input[type=checkbox]), label:has(> input[type=radio]) { display: flex; align-items: center; gap: 8px; min-height: 44px; }
 label[style*="inline-block"]:has(> input[type=checkbox]) { display: inline-flex !important; }
 input[type=checkbox], input[type=radio] { width: 22px !important; height: 22px; flex: none; }
+/* plan controls: 2×2 grid at 375 px so selects are not truncated */
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}.ctl label{margin:0}.ctl select,.ctl input{width:100%}.ctl button{align-self:end}

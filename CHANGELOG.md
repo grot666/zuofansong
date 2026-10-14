@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.9
+- Meal scores steer plan: rankVeg by mealScores; seed 0 = 14 top recipes, seeds rotate by 14.
+
 ## v0.8.8
 - Meat-lean planner: meat = protein floor, 0.5/g meat penalty, more add-ons, tuna ≤2/week; 1617/160 avg meat 283→233 g.
 

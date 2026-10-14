@@ -30,3 +30,5 @@
 - 05:50 G2: plan uses powder (existing `whey`, 30 g scoop) only when profile.usesPowder, up to maxScoops, and only after all whole-food add-ons (higher penalty). With powder at 1400/160, not-ok days drop from 18 to 1 of 63.
 
 - 06:04 Meat-lean planner: meat portion = protein floor only (was kcal filler); score += 0.5×meat g, add-on order penalty 8→2; new add-ons egg-white+tofu, tuna can (≤2 days/week). Grid avg meat 258→146 g/meal; 1617/160 283→233 g; all grid days still fit.
+
+- 06:04 Scores steer plan: veg recipes ranked by mealScores sum (health+easy+cheap+tasty, recipe + its oil); seed 0 = top 14, each 换一套 rotates 14 further (seed*14 mod 34) so variety is kept. Proteins stay on the budget-driven rotation.

@@ -1,3 +1,4 @@
+import { mealScores } from './scores.js';
 import { totals, COOKED_TO_RAW, priceOf } from './foods.js';
 // Weekly plan generator. Pure; takes food lookup fn so it is testable.
 // Each day: breakfast template + lunch + dinner (staple + protein + veg recipe) + optional fruit.
@@ -17,15 +18,21 @@ const sum = (items, food) => totals(items, food);
 
 // A9 split: selectWeek picks *what* (deterministic from seed), portionDay picks *how much*.
 // dinnerProteins[d] is cooked once for dinner(d) and lunch(d+1); lunch(0) uses dinnerProteins[6] (last week's batch).
+export const vegScore = (r, food) => { const sc = mealScores([...r.items, ['oil', r.oil || 0]], food); return sc.health + sc.easy + sc.cheap + sc.tasty; };
+export function rankVeg(vegs, food) {
+  const sc = new Map(vegs.map(r => [r.id, vegScore(r, food)]));
+  return [...vegs].sort((a, b) => sc.get(b.id) - sc.get(a.id) || a.id.localeCompare(b.id, 'en', { numeric: true }));
+}
 export function selectWeek(food, recipes, opts = {}) {
   const seed = opts.seed ?? 0;
   const proteins = (opts.proteins || PROTEINS).filter(id => food(id));
-  const vegs = recipes.filter(r => r.items.every(([id]) => food(id)));
+  // G1 follow-up: meal scores steer selection. Seed 0 uses the 14 best-scoring veg recipes; later seeds rotate on.
+  const vegs = rankVeg(recipes.filter(r => r.items.every(([id]) => food(id))), food);
   const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => proteins[(d + seed) % proteins.length]);
   return dinnerProteins.map((pDinner, d) => ({
     day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
     staple: STAPLES[(Math.floor(d / 2) + seed) % STAPLES.length],
-    vegL: vegs[(d * 2 + seed) % vegs.length], vegD: vegs[(d * 2 + 1 + seed) % vegs.length],
+    vegL: vegs[(d * 2 + seed * 14) % vegs.length], vegD: vegs[(d * 2 + 1 + seed * 14) % vegs.length],
   }));
 }
 export const BF_MULTS = [1, 0.75, 1.25, 0.5];

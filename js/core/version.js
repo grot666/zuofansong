@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.8.8';
+export const VERSION = '0.8.9';
 export const CHANGELOG = [
+  ['0.8.9', '一周菜单优先选“健康/好做/便宜/好吃”总分高的蔬菜做法；“换一套”轮换到其他做法。'],
   ['0.8.8', '一周菜单少放肉：肉量只够蛋白目标，热量由主食和加餐（蛋清、豆腐、酸奶、每周最多 2 次金枪鱼罐头）补足，每餐肉平均从约 280 g 降到约 230 g。'],
   ['0.8.7', '新用户 3 步上手：填身高体重 → 设目标体重和日期（显示减重速度是否合适）→ 一键记第一餐；随时可“跳过，先看看”。'],
   ['0.8.6', '快速记录下方显示常用食材按钮（最近 + 最常用，新用户显示 8 个常见食材），可一键记入；食材库每行加“+ 记入”。'],

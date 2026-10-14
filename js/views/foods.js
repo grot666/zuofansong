@@ -23,7 +23,14 @@ view.bind = () => {
   const draw = () => {
     const q = $('#q').value.trim().toLowerCase();
     const list = allFoods().filter(f => !q || f.name.includes(q) || (f.py || '').includes(q) || (f.tags || []).some(t => t.includes(q)) || (f.cat || '').includes(q));
-    $('#fl').innerHTML = list.map(f => `<li><b>${esc(f.name)}</b> ${f.verified ? '✓' : ''} <span class="chip">${esc(f.cat || '自定义')}</span>${(f.tags || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}<br><span class="mut">${approx(f)}${f.kcal} kcal · 蛋白 ${f.protein} · 脂肪 ${f.fat} · 碳水 ${f.carbs} · 纤维 ${f.fiberEst ? '≈' : ''}${f.fiber}${f.priceCNYPer500g ? ` · ≈¥${f.priceCNYPer500g}/斤` : ''}${f.protein >= 5 && proteinPerYuan(f) ? ` · 蛋白 ${Math.round(proteinPerYuan(f) * 10) / 10} g/¥` : ''}${f.unit ? ` · 1${f.unit.name}≈${f.unit.g}g≈${Math.round(f.kcal * f.unit.g / 100)} kcal` : ''} · 来源 ${esc(f.source || '用户')}${f.note ? ' · ' + esc(f.note) : ''}</span></li>`).join('') || '<li class="mut">没有匹配的食材，可在下方添加</li>';
+    $('#fl').innerHTML = list.map(f => `<li><b>${esc(f.name)}</b> ${f.verified ? '✓' : ''} <span class="chip">${esc(f.cat || '自定义')}</span>${(f.tags || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}<br><span class="mut">${approx(f)}${f.kcal} kcal · 蛋白 ${f.protein} · 脂肪 ${f.fat} · 碳水 ${f.carbs} · 纤维 ${f.fiberEst ? '≈' : ''}${f.fiber}${f.priceCNYPer500g ? ` · ${f.priceUser ? '' : '≈'}¥${f.priceCNYPer500g}/斤${f.priceUser ? '（我的价格）' : ''}` : ''} <button class="sec" data-price="${f.id}" aria-label="改价格">改价</button>${f.protein >= 5 && proteinPerYuan(f) ? ` · 蛋白 ${Math.round(proteinPerYuan(f) * 10) / 10} g/¥` : ''}${f.unit ? ` · 1${f.unit.name}≈${f.unit.g}g≈${Math.round(f.kcal * f.unit.g / 100)} kcal` : ''} · 来源 ${esc(f.source || '用户')}${f.note ? ' · ' + esc(f.note) : ''}</span></li>`).join('') || '<li class="mut">没有匹配的食材，可在下方添加</li>';
+  };
+  $('#fl').onclick = e => {
+    const id = e.target.dataset && e.target.dataset.price; if (!id) return;
+    const v = prompt(`${food(id).name}：每斤（500 g）价格 ¥（留空 = 恢复估价）`, food(id).priceCNYPer500g || '');
+    if (v === null) return;
+    const prices = { ...S.get('prices', {}) }; if (Number(v) > 0) prices[id] = Number(v); else delete prices[id];
+    S.set('prices', prices); refreshFoods(); draw();
   };
   $('#q').oninput = draw; draw();
   $('#cf').onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)); const f = { id: 'c' + Date.now(), name: d.name, cat: '自定义', tags: ['自定义'], source: '用户', verified: false }; for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) f[k] = +d[k] || 0; S.set('customFoods', [...S.get('customFoods', []), f]); refreshFoods(); e.target.reset(); draw(); };

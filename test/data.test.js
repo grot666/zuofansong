@@ -39,3 +39,9 @@ test('A4 normalizeProfile({}) gives same targets as defaults', () => {
   assert.deepEqual(computeTargets(normalizeProfile({})), computeTargets(DEFAULT_PROFILE));
   assert.equal(normalizeProfile({ deficitPct: 'x' }).deficitPct, 20);
 });
+import { priceOverrides } from '../js/core/foods.js';
+test('price override merges over base food', () => {
+  const f = makeIndex(ALL, priceOverrides({ eggUSDA: 9, bogus: 0, ghost: 5 }));
+  assert.equal(f('eggUSDA').priceCNYPer500g, 9); assert.equal(f('eggUSDA').protein, food('eggUSDA').protein); assert.ok(f('eggUSDA').priceUser);
+  assert.equal(f.all().length, ALL.length);
+});

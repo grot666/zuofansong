@@ -3,7 +3,7 @@ import { weekReview, plateau, lastNDates } from './core/review.js';
 import { weeklyStatus } from './core/weight.js';
 import * as S from './core/store.js';
 import { localDate } from './core/dates.js';
-import { makeIndex } from './core/foods.js';
+import { makeIndex, priceOverrides } from './core/foods.js';
 import { startBreak } from './core/breaks.js';
 import { bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
 import { FOODS } from '../data/foods.js';
@@ -11,7 +11,7 @@ import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
 
 bootStore();
-const food = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []));
+const food = makeIndex(FOODS, FOODS2, FOODS3, S.get('customFoods', []), priceOverrides(S.get('prices', {})));
 const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
 const fmt = (v, unit, digits = 0) => v == null ? '<span class="mut">未记录</span>' : `${digits ? r1(v) : Math.round(v)} ${unit}`;

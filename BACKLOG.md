@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION v0.6.x; foods 131; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next: A18 → A17 → A20 → A21 → A22 → A6 split app.js views · A19 · A8 · A11 · R-15 · N-items still open below · price override per food.
+Next: A18 → A17 → A20 → A21 → A22 → A6 split app.js views · A19 · A8 · A11 · R-15 · N-items still open below · ✅ price override per food (v0.6.7).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/51 pass on a clean clone._

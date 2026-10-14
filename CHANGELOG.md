@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.4
+- R9-9: wristSafe:false + notes on 茭白切片 and 丝瓜削皮切块.
+
 ## v0.10.3
 - R9-8: meatNote on lunch/dinner > 250 g cooked meat/fish.
 

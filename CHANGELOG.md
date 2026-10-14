@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.23
+- CI runs tests serially so perf guards measure the planner
+
 ## v0.10.22
 - plangrid time guard for slower CI runners
 

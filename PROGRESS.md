@@ -28,3 +28,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:45 v0.7.5 A25 protein cap + add-ons, 97 tests green.
 
 - 05:45 v0.7.6 A26 import/compact/undo safety.
+
+- 05:46 a11y form-label audit (375px, empty + seeded, 8 views): 0 unlabeled inputs/selects, 0 empty buttons/links. Static scan: no unlabeled markup.

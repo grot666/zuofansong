@@ -76,6 +76,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `wRange` | weight chart weeks 4 \| 8 \| 12 \| 0 (all) (v0.6.8) | me |
 | `lastExport` | 'YYYY-MM-DD' of the last JSON export (G3, v0.7.9) | me, today |
 | `backupSnooze` | 'YYYY-MM-DD' until which the backup hint is hidden (G3) | today |
+| `updateSeen` | VERSION whose update toast was already shown (UX-8, v0.8.4) | all pages |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
 | `sauceOff` | `[sauceId]` excluded from rotation (R-11b, v0.7.0) | plan |
 

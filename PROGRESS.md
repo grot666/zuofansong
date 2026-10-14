@@ -44,3 +44,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:55 v0.8.2 UX-6: pure saveProfile {ok, changed, clamped}; toast + scroll/highlight 每日目标.
 
 - 05:56 v0.8.3 UX-7: sticky 菜单/购物清单/备餐 anchors (#menu/#list/#prep), days in <details>, only today open.
+
+- 05:58 v0.8.4 UX-8 update toast once per version (updateSeen); UX-9 换一套 undo toast (regenWeek).

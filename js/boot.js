@@ -27,15 +27,21 @@ export function toast(msg, { action, ms = 3000 } = {}) {
   document.body.append(t); setTimeout(() => t.remove(), ms);
   return t;
 }
+// UX-8: pure gate.
+export const shouldShowUpdate = ({ newVersion, updateSeen }) => !!newVersion && newVersion !== updateSeen;
 export const getProfile = () => normalizeProfile(S.get('profile', {}));
 export function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   const hadController = !!navigator.serviceWorker.controller;
   // A20: tell the user a new version is active; no auto reload (could lose form input).
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
+  navigator.serviceWorker.addEventListener('controllerchange', async () => {
     if (!hadController || document.getElementById('update-toast')) return;
-    const b = document.createElement('button'); b.id = 'update-toast'; b.className = 'card'; b.textContent = '已更新到新版本 · 刷新';
-    b.onclick = () => location.reload(); document.body.prepend(b);
+    // UX-8: show once per new version; read the version the new SW serves.
+    let v = null; try { v = (await (await fetch('js/core/version.js', { cache: 'no-store' })).text()).match(/VERSION = '([^']+)'/)?.[1] || null; } catch { /* offline */ }
+    if (!shouldShowUpdate({ newVersion: v, updateSeen: S.get('updateSeen', null) })) return;
+    const seen = () => S.set('updateSeen', v);
+    const t = toast('已更新到新版本', { action: { label: '刷新', run: () => { seen(); location.reload(); } }, ms: 8000 });
+    t.id = 'update-toast'; seen();
   });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

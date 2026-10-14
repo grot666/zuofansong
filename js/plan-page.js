@@ -1,9 +1,9 @@
 import { computeTargets } from './core/targets.js';
-import { planWeek, shoppingList, checkWeek } from './core/plan.js';
+import { regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces } from './core/sauces.js';
-import { bootStore, registerSW, getProfile } from './boot.js';
+import { toast, bootStore, registerSW, getProfile } from './boot.js';
 import * as S from './core/store.js';
 import { localDate, todayIndex } from './core/dates.js';
 import { foodIndexFromStore } from './core/foods.js';
@@ -59,7 +59,7 @@ function render() {
   <p class="mut">米饭安全：冷藏 24 小时内吃完、只加热一次并热透；冷冻的分份当天取出微波。</p></section>
   ${trayCard()}`;
   document.querySelectorAll('[data-sauce]').forEach(c => c.onchange = () => { const off = new Set(S.get('sauceOff', [])); c.checked ? off.delete(c.dataset.sauce) : off.add(c.dataset.sauce); S.set('sauceOff', [...off]); render(); });
-  $('#regen').onclick = () => { S.set('planSeed', seed + 1); render(); };
+  $('#regen').onclick = () => { const r = regenWeek({ seed }); S.set('planSeed', r.seed); render(); toast('已换一套菜单', { ms: 6000, action: { label: '撤销', run: () => { S.set('planSeed', r.prevSeed); render(); } } }); };
   $('#budget').onchange = e => { S.set('weeklyBudget', +e.target.value || 300); render(); };
   document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => {
     const d = week[+b.dataset.day]; const key = 'log.' + localDate(); const l = S.get(key, { items: [], water: 0 });

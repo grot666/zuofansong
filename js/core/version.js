@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.8.3';
+export const VERSION = '0.8.4';
 export const CHANGELOG = [
+  ['0.8.4', '“已更新到新版本”提示每个版本只出现一次；菜单“换一套”后可在 6 秒内撤销。'],
   ['0.8.3', '菜单页顶部固定切换：菜单 / 购物清单 / 备餐，一键跳到购物清单；只展开今天，其余 6 天点开查看。'],
   ['0.8.2', '“我的”页保存资料后提示“已保存 · 每日目标已更新”，并跳到每日目标。'],
   ['0.8.1', '底部导航精简为 5 项（今日/搭配/菜单/回顾/我的），三个页面一致，周回顾一键可达；蔬菜/杂粮饭/食材在“搭配”顶部切换；底部不再遮挡按钮，保存后有提示；周日/周一提醒做周回顾。'],

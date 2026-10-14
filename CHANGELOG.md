@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.4
+- UX-8 update toast once per version (updateSeen); UX-9 换一套 undo toast (regenWeek).
+
 ## v0.8.3
 - UX-7: sticky 菜单/购物清单/备餐 anchors (#menu/#list/#prep), days in <details>, only today open.
 

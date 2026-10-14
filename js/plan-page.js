@@ -3,10 +3,11 @@ import { generateWeek, shoppingList, checkWeek } from './core/plan.js';
 import * as S from './core/store.js';
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
+import { FOODS3 } from '../data/foods3.js';
 import { RECIPES } from '../data/recipes.js';
 
 const DEFAULT_PROFILE = { sex: 'male', birth: '1997-07-31', height: 173.5, weight: 74, goalWeight: 58, activity: 'sedentary', deficitPct: 20, proteinMode: 'fixed', proteinTarget: 140, fatPct: 25 };
-const all = [...FOODS, ...FOODS2, ...S.get('customFoods', [])];
+const all = [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
 const food = id => all.find(f => f.id === id);
 const r1 = n => Math.round(n * 10) / 10;
 const $ = s => document.querySelector(s);
@@ -23,7 +24,7 @@ function render() {
   const list = shoppingList(week, food);
   const cost = list.reduce((s, x) => s + x.cost, 0);
   const proteinsUsed = [...new Set(week.map(d => d.dinnerProtein))].map(id => food(id).name);
-  $('#view').innerHTML = `<section class="card"><h2>本周菜单</h2>
+  $('#view').innerHTML = `<section class="card"><h2>本周菜单 <small class="mut">v0.4.0</small></h2>
   <p class="mut">每天目标 ${t.kcal} kcal（±5%）、蛋白 ≥ ${t.protein} g。晚餐多做一份 = 第二天午餐（晚上一次做两顿）。主食按熟重。</p>
   <div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" value="${budget}"></label></div></section>
   ${week.map((d, i) => `<section class="card"><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3>

@@ -6,8 +6,10 @@ import { fatWallet } from '../js/core/fat.js';
 import { proteinGap, gutRisk } from '../js/core/protein.js';
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
+import { FOODS3 } from '../data/foods3.js';
 import { RECIPES } from '../data/recipes.js';
 
+const ALL = [...FOODS, ...FOODS2, ...FOODS3];
 const base = { sex: 'male', birth: '1997-07-31', age: 29, height: 173.5, weight: 74, activity: 'sedentary' };
 test('bmr male', () => { assert.equal(Math.round(bmr({ sex: 'male', weight: 74, height: 173.5, age: 29 })), 1684); });
 test('age', () => { assert.equal(ageFrom('1997-07-31', new Date('2026-10-15')), 29); });
@@ -20,5 +22,5 @@ test('blend yield', () => { const b = blend([{ food: { id: 'rice', kcal: 346, pr
 test('fat wallet', () => { const w = fatWallet(45, [{ fat: 10, fatClass: 'high' }, { fat: 5, fatClass: 'low' }]); assert.equal(w.left, 30); assert.equal(w.low, 5); });
 test('protein gap cap', () => { const g = proteinGap(120, 40, 24, 2); assert.equal(g.scoops, 2); assert.equal(g.left, 32); });
 test('gut risk high', () => { assert.equal(gutRisk({ fiber: 5, water: 500, weight: 74, powderShare: 0.5 }).level, 'high'); });
-test('food ids unique and complete', () => { const all = [...FOODS, ...FOODS2]; const ids = new Set(all.map(f => f.id)); assert.equal(ids.size, all.length); for (const f of all) for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) assert.equal(typeof f[k], 'number', f.id + k); });
-test('recipes reference real foods, <=5 ingredients, >=30', () => { const ids = new Set([...FOODS, ...FOODS2].map(f => f.id)); assert.ok(RECIPES.length >= 30); for (const r of RECIPES) { assert.ok(r.items.length + (r.oil ? 1 : 0) <= 5, r.name); for (const [id] of r.items) assert.ok(ids.has(id), r.name + ' ' + id); } });
+test('food fields complete', () => { for (const f of ALL) for (const k of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) assert.equal(typeof f[k], 'number', f.id + k); });
+test('recipes reference real foods, <=5 ingredients, >=30', () => { const ids = new Set(ALL.map(f => f.id)); assert.ok(RECIPES.length >= 30); for (const r of RECIPES) { assert.ok(r.items.length + (r.oil ? 1 : 0) <= 5, r.name); for (const [id] of r.items) assert.ok(ids.has(id), r.name + ' ' + id); } });

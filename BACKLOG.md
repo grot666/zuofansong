@@ -61,7 +61,7 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
   - new: `normalizeProfile` clamps and fills defaults (fatPct <20 → 20; strings → numbers)
   - new: `sleep.js` midnight wrap is covered by r6; add the `sleepNoteDay` once-per-day rule
   - AC: one test per bullet; total test count ≥ 60.
-- **A6 split app.js (P2, sequenced after A5)**
+- ✅ v0.6.3 **A6 split app.js (P2, sequenced after A5)**
   - Why: `app.js` is 35 KB. A5 has landed, so views import `makeIndex`/`totals` from core. Do A15 first so every new view file is forced into ASSETS. One view per commit keeps every step green.
   - AC, in this order, each its own commit with CI green:
     - (1) `js/views/shared.js` (the `$`, `esc`, `r1`, `bar` helpers, plus the food index)

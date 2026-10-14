@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.6.3 — 2026-10-15
+- A6：app.js 拆为 js/ui.js + js/views/{today,plate,veg,rice,foods,me}.js（46 行路由）。
+
 ## 0.6.2 — 2026-10-15
 - 导入无版本号的旧备份会运行迁移；迁移前备份失败则不升级；SW 后台更新用 waitUntil。
 

@@ -1,14 +1,24 @@
 // A45: split from js/core/plan.js (shopping). Import via js/core/plan.js (facade).
 import { COOKED_TO_RAW, priceOf } from '../foods.js';
+// R10-S1: shelf-stable staples and condiments go to one "常备" line; verified twins merge under the everyday name.
+export const PANTRY_IDS = new Set(['rice', 'brownRice', 'millet', 'oats', 'oatsDry', 'tunaLight', 'tunaAlbacore', 'soy', 'oyster', 'oil', 'oliveOil', 'garlic', 'ginger', 'whey']);
+export const SMALL_G = 50;
+const TWIN = { eggWhite: ['egg', 0.6], oatsDry: ['oats', 1] }; // [base id, g of item per g of base]
+const twinOf = (id, food) => { if (TWIN[id] && food(TWIN[id][0])) return TWIN[id]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
 export function shoppingList(days, food) {
   const agg = {};
   for (const d of days) for (const m of d.meals) for (const [id, g] of m.items) {
     const [rawId, f] = COOKED_TO_RAW[id] || [id, 1];
-    const a = agg[rawId] || (agg[rawId] = { g: 0, cost: 0 });
-    a.g += g / f; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
+    const [key, f2] = twinOf(rawId, food);
+    const a = agg[key] || (agg[key] = { g: 0, cost: 0 });
+    a.g += g / f / f2; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
   }
-  return Object.entries(agg).map(([id, a]) => { const f = food(id); return { id, name: f?.name || id, cat: f?.cat || '', g: Math.round(a.g), cost: f ? a.cost : 0 }; }).sort((a, b) => a.cat.localeCompare(b.cat) || b.g - a.g);
+  return Object.entries(agg).map(([id, a]) => { const f = food(id); const g = Math.round(a.g); const pantry = PANTRY_IDS.has(id) || ['调味', '油脂'].includes(f?.cat);
+    return { id, name: f?.name || id, cat: f?.cat || '', g, cost: f ? a.cost : 0, pantry, small: !pantry && g < SMALL_G }; })
+    .sort((a, b) => a.pantry - b.pantry || a.small - b.small || a.cat.localeCompare(b.cat) || b.g - a.g);
 }
+// R10-S1: lines the user actually shops for (pantry items and the "少量" group count as one line each).
+export const listLines = list => list.filter(x => !x.pantry && !x.small).length + (list.some(x => x.small) ? 1 : 0) + (list.some(x => x.pantry) ? 1 : 0);
 
 export function checkWeek(days, { kcal, protein }) {
   return days.map(d => ({ day: d.day, kcalOk: Math.abs(d.tot.kcal - kcal) <= kcal * 0.05, proteinOk: d.tot.protein >= protein - 0.5 }));

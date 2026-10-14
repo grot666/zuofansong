@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.27
+- R10-S1: shorter shopping list (twins merged, 常备 line, small items flagged)
+
 ## v0.10.26
 - R10-F2: weekly fiber line
 

@@ -135,3 +135,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 07:02 v0.10.25 R10-F1: fiber-aware portioning (veg multiplier, staple alternatives, fiberNote)
 
 - 07:03 v0.10.26 R10-F2: weekly fiber line
+
+- 07:03 v0.10.27 R10-S1: shorter shopping list (twins merged, 常备 line, small items flagged)

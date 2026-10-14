@@ -65,3 +65,11 @@ test('N-07 kiwi FDC 168153', () => {
   const k = food('kiwiUSDA'); assert.equal(k.source, 'USDA FDC 168153'); assert.equal(k.verified, true);
   assert.deepEqual([k.kcal, k.protein, k.fat, k.fiber], [61, 1.14, 0.52, 3.0]); assert.ok(Math.abs(k.carbs - 14.7) < 0.05);
 });
+test('R-08b 15 g olive oil = 132.6 kcal / 15 g fat, counted as oil', () => {
+  const t = totals([['oliveOil', 15]], food); assert.ok(Math.abs(t.kcal - 132.6) < 0.05); assert.equal(t.fat, 15); assert.equal(t.oil, 15);
+});
+test('N-05 takeaway dishes carry type/defaultPortionG/portionNote, unverified', () => {
+  const dishes = ALL.filter(f => f.type === 'dish');
+  assert.ok(dishes.length >= 20);
+  for (const d of dishes) { assert.equal(d.verified, false); assert.ok(d.defaultPortionG > 0 && d.portionNote, d.id); }
+});

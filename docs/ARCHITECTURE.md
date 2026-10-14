@@ -69,9 +69,13 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `reviews` | `{'YYYY-MM-DD': {decision, note}}` | review |
 | `breakState` | `{from: deficitPct, until:'YYYY-MM-DD'}` or absent | review (start), boot (clears after until) |
 | `breakFrom` | **legacy ≤v0.5.0**; removed by migration 2; kept in KNOWN_KEYS only so old backups import | — |
-| `sleepNoteDay` | reserved in KNOWN_KEYS, **not written by any code @v0.6.2** (R6.2 once/day rule not persisted; see A14) | — |
 | `backup.preMigration` | export envelope, one copy, overwritten per migration; **not** exported/importable | store.migrate |
-| `logArchive.YYYY-MM` | [target A11] monthly daily-totals | migration |
+| `logArchive.YYYY-MM` | `{date: {kcal,protein,fat,carbs,fiber,cost,water,n}}` daily totals for logs >180 d (A11, v0.6.6) | core/retention.compactStore on index load |
+| `backup.preImport` | export envelope taken before a replace-import; restored by 撤销上次导入 (A17, v0.6.4); not exported | store.importAll / undoImport |
+| `prices` | `{foodId: CNY per 500 g}` user overrides (v0.6.7) | foods |
+| `wRange` | weight chart weeks 4 \| 8 \| 12 \| 0 (all) (v0.6.8) | me |
+| `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
+| `sauceOff` | `[sauceId]` excluded from rotation (R-11b, v0.7.0) | plan |
 
 Rules:
 1. New keys go in this table **and** `KNOWN_KEYS` (import drops unknown keys; `log.*`/`logArchive.*` are regex-matched).

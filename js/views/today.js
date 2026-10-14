@@ -24,6 +24,12 @@ function sleepHtml(l, p) {
   if (!p.sleepNudges) return '';
   return `<p class="mut">睡前提醒：${n.dinnerBy} 前吃完晚饭，${n.caffeineBy} 后不喝咖啡/茶（按 ${p.bedtime} 睡觉）。</p>${n.lateMeal ? `<p class="warn">${n.lateMeal.time} 吃了约 ${Math.round(n.lateMeal.kcal)} kcal，离睡觉较近，可能影响睡眠。偶尔一次没关系。</p>` : ''}${n.lateCaffeine ? `<p class="warn">${n.lateCaffeine.time} 摄入咖啡因，可能影响今晚入睡。</p>` : ''}`;
 }
+// R-13: neutral slip recovery — show the 7-day average of logged days.
+function slipNote(t) {
+  const days = [0, 1, 2, 3, 4, 5, 6].map(i => getLog(dayOffset(-i))).filter(lg => lg.items.length);
+  const avg = days.reduce((a, lg) => a + totals(lg.items).kcal, 0) / days.length;
+  return `<p class="mut">没关系，继续。近 7 天有记录的 ${days.length} 天平均 <b>${Math.round(avg)} kcal</b>（目标 ${t.kcal}）${avg <= t.kcal * 1.05 ? '，整体仍在计划内' : ''}。明天照常吃，不用节食补救。</p>`;
+}
 export const view = () => {
   const p = profile(); const t = computeTargets(p); const l = getLog(); const x = totals(l.items);
   const fw = fatWallet(t.fat, l.items.map(i => { const f = food(i.id); return f ? { fat: f.fat * i.g / 100, fatClass: f.fatClass || 'neutral' } : { fat: 0 }; }));
@@ -43,7 +49,7 @@ export const view = () => {
   碳水 ${r1(x.carbs)} / ${t.carbs} g${bar(x.carbs, t.carbs)}
   纤维 ${r1(x.fiber)} / 28 g${bar(x.fiber, 28)}
   ${swaps.length ? `<p><b>纤维还差 ${Math.round(28 - x.fiber)} g，最划算的补法：</b></p><ul>${swaps.map(s => `<li>${s.text}${s.fiberGain ? `（纤维 +${s.fiberGain} g，热量 ${s.kcalDelta >= 0 ? '+' : ''}${s.kcalDelta} kcal）` : ''}${s.add ? ` <button class="sec" data-swap="${s.id}">+ 记入</button>` : ''}</li>`).join('')}</ul><p class="mut">数据来自 USDA FDC。</p>` : ''}
-  ${l.items.length && x.kcal > t.kcal * 1.1 ? '<p class="mut">今天超了也没关系，看一周平均。明天照常吃，不用节食补救。</p>' : ''}
+  ${l.items.length && x.kcal > t.kcal * 1.1 ? slipNote(t) : ''}
   ${sleepHtml(l, p)}
   <p class="mut">估算食材成本 ≈ ¥${r1(x.cost)}</p></section>
   <section class="card"><h2>常用餐</h2><p class="mut">点一下就记入。在“搭配”页可存自己的模板。</p><div class="row" role="group" aria-label="份量">份量 ${MULTS.map(m => `<button class="${m === tplMult() ? '' : 'sec'}" data-mult="${m}" aria-pressed="${m === tplMult()}">×${m}</button>`).join('')}</div><div>${templates().map(tp => { const k = totals(scaleItems(tp.items, tplMult()).map(([id, g]) => ({ id, g }))).kcal; return `<button class="sec" data-tpl="${tp.id}" style="margin:4px 4px 0 0">${esc(tp.name)} · ${Math.round(k)}</button>`; }).join('')}</div>

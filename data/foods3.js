@@ -1,7 +1,7 @@
 // Shanghai takeaway / breakfast ESTIMATES (research R5.1, fatsecret.cn generic entries, 2026-10-15).
 // All verified:false -> UI shows ≈. Fiber is not given by source; set to a rough estimate (marked fiberEst).
 // Default portions are design assumptions, editable when logging.
-const T = (id, name, py, kcal, protein, fat, carbs, unitName, unitG, extra = {}) => ({ id, name, py, cat: '外食', kcal, protein, fat, carbs, fiber: extra.fiber ?? 1, fiberEst: true, priceCNYPer500g: 0, tags: ['外卖', '上海'], source: 'fatsecret.cn 估算 (R5.1)', verified: false, fatClass: extra.fatClass || 'low', unit: { name: unitName, g: unitG }, ease: 5, ...extra });
+const T = (id, name, py, kcal, protein, fat, carbs, unitName, unitG, extra = {}) => ({ id, name, py, cat: '外食', kcal, protein, fat, carbs, fiber: extra.fiber ?? 1, fiberEst: true, priceCNYPer500g: 0, tags: ['外卖', '上海'], source: 'fatsecret.cn 估算 (R5.1)', verified: false, fatClass: extra.fatClass || 'low', unit: { name: unitName, g: unitG }, ease: 5, type: 'dish', defaultPortionG: unitG, portionNote: '默认份量为估算，按实际碗/盒大小调整', ...extra });
 const C = (id, name, py, cat, kcal, protein, fat, carbs, fiber, price, tags, extra = {}) => ({ id, name, py, cat, kcal, protein, fat, carbs, fiber, priceCNYPer500g: price, tags, source: extra.source || 'CFCT (未逐条核对)', verified: false, ease: 4, ...extra });
 export const FOODS3 = [
   T('shengjian', '生煎包', 'shengjianbao', 282, 10.0, 12.8, 34.3, '个', 25),

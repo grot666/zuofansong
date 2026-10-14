@@ -5,6 +5,77 @@ Next (06:45): no open P0/P1. Shipped v0.10.0–v0.10.10: R9-4…R9-10 ✅, A36�
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 
+### Arch review @8e6e1d5 (v0.10.10), 2026-10-15 ~06:55 SGT — 161/161 tests on a clean clone
+Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × seeds 0–5 × budget {none, 1, .9, .8, .7, .5}×free (180 planWeek runs, PRICE_REFS merged). Scripts not committed.
+- **Determinism:** 0/180 runs differ between two identical calls.
+- **Pairing:** lunch(d+1) protein == dinner(d) protein in all 7 days, 0 violations.
+- **kcal ±5% / protein:** 3/180 runs have a non-ok day, all flagged (`overBudget`/`infeasible`); 0 silent. 61/180 end over budget (expected at .5–.7×).
+- **Budget revert can't loop:** it is a single pass over ≤1 candidate slot plus one regeneration.
+- **Veg reuse:** seed 0 → 14 distinct recipes over 14 slots.
+- **Portion base (fd34684) is per-call local:** no module-level cache or `let` state in plan.js, so changes to food data or profile targets can't leave stale state across `planWeek` calls.
+- **Perf:** median 4.9 ms, p95 9.2 ms, max 17.7 ms per planWeek.
+
+- **A40 `pickReuse`/`selectWeek` hang forever when no veg recipe is usable (P0)**
+  - Why: `pickReuse` loops `while (out.length < 14)`, and when `cand` is empty it does `used.clear(); continue`. With `vegs.length === 0` this never ends, so the main thread freezes and the plan page is dead. Reachable whenever the recipe filter (`r.items.every(id => food(id))`) leaves nothing: a data-file error, a renamed food id, or a future recipe filter (prep-time `maxPrepMin`, 护腕 or 不开火 filters).
+  - Probe: `pickReuse([], 0, food)` and `selectWeek(food, [], {seed:0})` were both killed by `timeout 5` (exit 124).
+  - AC:
+    - Guard `if (!vegs.length) return []`.
+    - `selectWeek` with zero vegs returns days with `vegL/vegD = null`.
+    - `portionDay` treats a null veg as no items.
+    - `planWeek` returns `{…, infeasible: {reason: 'no-veg'}}`, and the plan page shows a notice.
+    - Any `while` in core gets an iteration bound.
+  - Tests:
+    - `pickReuse([], …)` returns `[]` within 50 ms.
+    - `planWeek(t, food, [], {seed:0})` returns with `infeasible.reason === 'no-veg'`.
+    - 1 recipe → 14 picks, all the same id (holds today).
+- **A41 Import-as-backup misses its own common case (P1)**
+  - Why: me.js sets `lastExport` after import only `if (!S.get('lastExport'))`. But every backup made by 导出 contains `lastExport` (the export button sets it *before* `exportAll`). Restoring a 20-day-old backup therefore brings back a 20-day-old `lastExport`, and the backup nag fires right after import, which the v0.10.10 fix was meant to stop. The logic also lives in a view, so it's untested.
+  - AC:
+    - Pure `afterImport(S, today)` in core/store.js (or dates.js) sets `lastExport = max(imported lastExport, today)` unconditionally.
+    - `undoImport` restores the pre-import value (already true via the snapshot).
+  - Tests (memory backend):
+    - Import a backup with `lastExport: today-20` → `backupDue(...) === false`.
+    - A backup without `lastExport` → `lastExport === today`.
+    - `undoImport` → the pre-import `lastExport` is back.
+- **A42 `canDeepen` edge cases (P1)**
+  - Why:
+    - (a) With BMR unknown (no `birth`/`height` → `computeTargets` returns `bmr:null`, `kcal:null`), `canDeepen` is false, and the review shows "热量目标已接近基础代谢" (target is close to BMR). That's wrong copy; the real issue is an incomplete profile.
+    - (b) During an active 维持周 (`breakState`, deficitPct 0), `canDeepen` is true (probe), so "再减热量" (cut calories further) is offered mid-break, and choosing it overwrites the deficit that `resolveBreak` will later restore.
+    - (c) `canDeepen({})` is false, silently.
+  - AC: `canDeepen(p, {breakState})` returns `{ok, reason}`, with reason one of `'bmr-unknown' | 'below-bmr' | 'cap' | 'on-break'`. The review shows per-reason copy (`'bmr-unknown'` → "先在“我的”补全出生日期和身高"). The "minus" option is hidden while `breakState` is active.
+  - Tests:
+    - Each reason.
+    - Existing walk.test grid unchanged for `ok`.
+    - Choosing break then minus within the break → minus not offered.
+- **A43 Tighten the perf guard to the new baseline (P2)**
+  - Why: A32 asserts median < 60 ms, but the median is now ~5 ms (p95 9 ms). A 6× regression (e.g. losing the precomputed base) would still pass.
+  - AC:
+    - Median of 7 runs < 25 ms in `a32.test.js`.
+    - Add a grid-wide p95 < 40 ms over 30 mixed runs (budgets incl. .5×).
+    - Keep the messages printing the measured values.
+    - If CI flakes, raise to 30/50 ms and record that in DECISIONS rather than deleting.
+- **A44 Pin the veg-reuse and budget-revert behaviour (P2)**
+  - Why: `REUSE_WINDOW` and the revert are only covered indirectly. A change to `rankVeg` or the tie-break silently changes menus.
+  - Tests:
+    - (a) Snapshot of the 14 veg ids for seed 0 and seed 1.
+    - (b) Distinct new vegetables per week with reuse ≤ the count with `reuse:false` for seeds 0–5 (the point of the feature).
+    - (c) Revert: a fixture where the last greedy round overshoots, and revert lowers cost while keeping `swaps` ≥ 0.
+    - (d) The grid invariants above (determinism, pairing, no silent non-ok) as one `plangrid.test.js`, ≤ 2 s.
+- **A45 Split js/core/plan.js (P2 refactor)**
+  - Why: plan.js is 243 lines with 35 exports, covering selection (veg/protein ranking, reuse), portioning (ADDONS, caps, portionDay), budget (applyBudget, revert, planWeek), shopping and tips. Four features in v0.9–v0.10 all edited it, which raises the conflict risk.
+  - AC:
+    - `js/core/plan/{select,portion,budget,shopping}.js`.
+    - `js/core/plan.js` becomes a re-export facade, so imports and tests don't change.
+    - No behaviour change: the A44 snapshot and grid tests pass before and after.
+    - sw ASSETS updated (A15 test enforces).
+    - Each new file < 100 lines.
+    - Do it after A40/A44 so the snapshots guard the move.
+- **A46 Bounded loops in core (P3)**
+  - Why: A40 shows that an unbounded `while` in a pure function freezes the UI.
+  - AC:
+    - Grep-based test: every `while (` in `js/core/**` sits in a function with an explicit max-iterations constant, or is listed in an allowlist with a comment.
+    - Currently: `pickReuse` and `applyBudget` (bounded by the slot count; document that).
+
 ### Arch review @3e61689 (v0.9.5), 2026-10-15 ~06:25 SGT — 133/133 tests on a clean clone
 Verified:
 - The base protein rotation is still seed-only. `selectWeek` doesn't call `rankProteins`, which is exported but has **no caller** (see A38).

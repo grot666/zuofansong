@@ -20,7 +20,7 @@ test('A23 cooked-id override is honoured by plan cost and budget', () => {
 test('A23 priceOf: cooked override → ×k raw equivalent; raw override beats ref', () => {
   assert.equal(priceOf(idx({ thighRoasted: 40 }), 'thighRoasted').rawPrice, 30);
   assert.equal(priceOf(idx({ egg: 7 }), 'egg').rawPrice, 7);
-  assert.equal(priceOf(idx({}), 'egg').rawPrice, 5.91);
+  assert.equal(priceOf(idx({}), 'egg').rawPrice, 5.89);
   const l = shoppingList([{ meals: [{ items: [['riceCooked', 230]] }] }], idx({ riceCooked: 2 }));
   assert.ok(Math.abs(l[0].cost - 100 * 2 * 2.3 / 500) < 1e-9);
 });
@@ -32,7 +32,7 @@ test('A24 precedence estimate < ref < user; custom + override; base with priceSo
   S.set('customFoods', [{ id: 'c1', name: '自制', kcal: 100, protein: 10, fat: 1, carbs: 1, fiber: 0, priceCNYPer500g: 8, priceSource: '自己记的' }]);
   S.set('prices', { porkLoin: 20, c1: 9 });
   const f = foodIndexFromStore(S);
-  assert.equal(f('rice').priceCNYPer500g, 3.0); // ref over estimate
+  assert.equal(f('rice').priceCNYPer500g, 2.81); // ref over estimate (R9-6)
   assert.equal(f('porkLoin').priceCNYPer500g, 20); // user over ref
   assert.equal(f('c1').priceCNYPer500g, 9); assert.equal(f('c1').name, '自制');
   S.set('prices', {}); assert.equal(foodIndexFromStore(S)('c1').priceCNYPer500g, 8);

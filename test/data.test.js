@@ -58,7 +58,7 @@ import { PRICE_REFS } from '../data/prices.js';
 test('R7.3 protein per yuan fixtures + refs merge', () => {
   for (const [P, price, exp] of [[21.0, 17.55, 5.983], [12.6, 5.91, 10.660], [7.13, 3.00, 11.883], [20.1, 23.00, 4.370]]) assert.ok(Math.abs(proteinPerYuan({ protein: P, priceCNYPer500g: price }) - exp) < 1e-3);
   const f = makeIndex({ base: [ALL], partials: [PRICE_REFS, priceOverrides({ egg: 7 })] });
-  assert.equal(f('porkLoin').priceCNYPer500g, 17.55); assert.ok(f('porkLoin').priceSource);
+  assert.equal(f('porkLoin').priceCNYPer500g, 17.50); assert.ok(f('porkLoin').priceSource);
   assert.equal(f('egg').priceCNYPer500g, 7); assert.equal(f.all().length, ALL.length);
 });
 test('N-07 kiwi FDC 168153', () => {
@@ -72,4 +72,11 @@ test('N-05 takeaway dishes carry type/defaultPortionG/portionNote, unverified', 
   const dishes = ALL.filter(f => f.type === 'dish');
   assert.ok(dishes.length >= 20);
   for (const d of dishes) { assert.equal(d.verified, false); assert.ok(d.defaultPortionG > 0 && d.portionNote, d.id); }
+});
+test('R9-6 refs dated; every PROTEINS id has priceSource or priceEstimate', async () => {
+  const { PRICE_REFS } = await import('../data/prices.js'); const { PROTEINS } = await import('../js/core/plan.js');
+  for (const r of PRICE_REFS) if (r.priceSource) assert.match(r.priceDate, /^2026-10-14$/);
+  const { foodIndexFromStore } = await import('../js/core/foods.js'); const f = foodIndexFromStore({ get: (k, d) => d });
+  for (const id of PROTEINS) assert.ok(f(id).priceSource || f(id).priceEstimate, id);
+  assert.equal(f('rice').priceCNYPer500g, 2.81); assert.equal(f('egg').priceCNYPer500g, 5.89);
 });

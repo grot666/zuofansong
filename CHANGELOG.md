@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.7.8
+- G2: plan add-on may use whey powder when usesPowder (≤ maxScoops), after whole-food add-ons.
+
 ## v0.7.7
 - G1: shared core mealScores; plan page shows 4-dimension scores per lunch/dinner.
 

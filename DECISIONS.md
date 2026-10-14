@@ -26,3 +26,5 @@
 - 05:45 A26: no log compaction while backup.preImport exists (until undo or a later replace). Archived days keep compaction-time cost; price edits never re-price archives.
 
 - 05:48 A25 note: no powder add-on in the plan (no powder food id exists); the plan stays whole-food and today's 蛋白补充 card still covers any gap with powder (usesPowder/maxScoops). Cap kept at 300 g, not 250: the A19 grid needed egg-white/yogurt plus the tofu 1.5× rule just to stay green at 300.
+
+- 05:50 G2: plan uses powder (existing `whey`, 30 g scoop) only when profile.usesPowder, up to maxScoops, and only after all whole-food add-ons (higher penalty). With powder at 1400/160, not-ok days drop from 18 to 1 of 63.

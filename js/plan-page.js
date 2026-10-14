@@ -35,7 +35,7 @@ function render() {
   const t = computeTargets(p);
   const seed = S.get('planSeed', 0);
   const budget = S.get('weeklyBudget', 300);
-  const plan = planWeek(t, food, RECIPES, { seed, budget }); const week = plan.week;
+  const plan = planWeek(t, food, RECIPES, { seed, budget, powderScoops: p.usesPowder ? Math.max(0, Math.floor(p.maxScoops || 0)) : 0 }); const week = plan.week;
   const checks = checkWeek(week, t);
   const list = shoppingList(week, food);
   const cost = list.reduce((s, x) => s + x.cost, 0);

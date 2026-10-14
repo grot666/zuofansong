@@ -38,7 +38,14 @@ const pm = id => PORTION_MULT[id] || 1;
 export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 198]]];
 // A19: closed-form search. Totals are linear in staple g (sg, per meal) and protein g (pg, per meal),
 // so for each breakfast×snack knob and sg we solve the best pg ≥ protein floor directly (no iteration loops).
-export function portionDay(sk, { kcal, protein }, food) {
+// G2: opts.powderScoops > 0 (profile.usesPowder) appends whey add-ons after every whole-food add-on.
+export const SCOOP_G = 30;
+export function powderAddons(n) {
+  const out = [];
+  for (let k = 1; k <= n; k++) out.push([['whey', SCOOP_G * k]], [['yogurt', 300], ['eggBoiled', 100], ['whey', SCOOP_G * k]]);
+  return out;
+}
+export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   const { bf, pDinner, pLunch, staple, vegL, vegD } = sk;
   const r5 = x => Math.round(x / 5) * 5;
   const build = (sg, pg, bm, kiwi, addon = []) => {
@@ -55,7 +62,7 @@ export function portionDay(sk, { kcal, protein }, food) {
   const sK = 2 * st.kcal / 100, sP = 2 * st.protein / 100;
   const pK = (pl.kcal * pm(pLunch) + pd.kcal * pm(pDinner)) / 100, pP = (pl.protein * pm(pLunch) + pd.protein * pm(pDinner)) / 100;
   let best = null;
-  const addons = ADDONS.filter(a => a.every(([id]) => food(id)));
+  const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)));
   BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
     const base = build(0, 0, bm, kiwi, addon).tot;
     for (let sg = 30; sg <= 350; sg += 10) {
@@ -75,7 +82,7 @@ export function portionDay(sk, { kcal, protein }, food) {
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
-  return selectWeek(food, recipes, opts).map(sk => portionDay(sk, targets, food));
+  return selectWeek(food, recipes, opts).map(sk => portionDay(sk, targets, food, opts));
 }
 
 // RESEARCH-R6 §R6.3 greedy. slots: protein id per slot; slotCost(id, i): CNY for slot i with id (protein held constant).

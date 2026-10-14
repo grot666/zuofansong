@@ -107,7 +107,7 @@ Verified, no action needed:
 - **Retention cost.** On a 400-day store (12 items/day, ~170 KB), the first `compactStore` takes 7 ms and archives 219 days; the steady state is ~3 ms per index load.
 - **Retention vs import/undo.** `undoImport` wipes every non-backup key, including archives created after the import, then restores the pre-import snapshot, so no orphan archives remain.
 
-- **A23 Price overrides on cooked ids are ignored by planWeek/shoppingList/budget (P0)**
+- ✅ v0.7.4 **A23 Price overrides on cooked ids are ignored by planWeek/shoppingList/budget (P0)**
   - Why: the foods view lets the user override the price of any id, including cooked ids (`thighRoasted`, `breastRoasted`, `shrimpCooked`, `riceCooked`…). But `shoppingList` and `proteinCost` in plan.js price via `COOKED_TO_RAW` using the **raw** id, so the override is silently ignored on the plan page. Meanwhile, today/plate costs and protein/¥ do use it, so the two sides of the app disagree.
   - Probe (1800/140, seed 0):
     - The week costs ¥245.0 either way: `thighRoasted:999` leaves it unchanged, while `chickenThigh:999` raises it to ¥1835.8.
@@ -119,7 +119,7 @@ Verified, no action needed:
       - `thighRoasted:999` raises the 1800/140 seed-0 cost, and budget 300 swaps thigh out.
       - `chickenThigh:999` keeps today's behaviour.
       - A raw override still beats a ref (`egg:7` over 5.91).
-- **A24 One food-index builder; explicit base vs partial lists (P1)**
+- ✅ v0.7.4 **A24 One food-index builder; explicit base vs partial lists (P1)**
   - Why:
     - The 6-argument `makeIndex(FOODS, FOODS2, FOODS3, PRICE_REFS, customFoods, priceOverrides(prices))` call is copied 3× (ui.js, plan-page.js, review-page.js). The next data file or a precedence change can drift between pages.
     - `makeIndex` decides "partial vs base" by the presence of `priceUser`/`priceSource`, so a future base food that carries a `priceSource` field (natural for R7 data) would be silently dropped.
@@ -144,7 +144,7 @@ Verified, no action needed:
     - Import a 400-day legacy backup → `compactStore` → `undoImport` → keys deep-equal the pre-import snapshot, with no `logArchive.*` left.
     - `compactStore` is a no-op while `backup.preImport` exists, so the user can undo an import before old detail is collapsed. It runs on the next load after undo, or after 1 day.
     - Archive totals for a day equal `totals()` at the moment of compaction (document that later price changes don't re-price archives).
-- **A27 Cost basis note (P3, docs + test)**
+- ✅ v0.7.4 **A27 Cost basis note (P3, docs + test)**
   - Why: today/plate cost uses the cooked-id price per cooked gram, while plan uses the raw price via the yield factor. After A23 both must agree for the same meal.
   - AC: test that `totals([[riceCooked, 230]]).cost` ≈ `shoppingList` cost of the same 230 g cooked (±¥0.05), using merged prices.
 

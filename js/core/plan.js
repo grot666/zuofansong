@@ -1,4 +1,4 @@
-import { totals } from './foods.js';
+import { totals, COOKED_TO_RAW, priceOf } from './foods.js';
 // Weekly plan generator. Pure; takes food lookup fn so it is testable.
 // Each day: breakfast template + lunch + dinner (staple + protein + veg recipe) + optional fruit.
 // Scales staple and protein portions so kcal is within ±5% of target and protein >= target.
@@ -11,7 +11,7 @@ export const BREAKFASTS = [
 export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seabass', 'tofuFirm', 'porkLoin', 'basa', 'leanBeef', 'tunaLight'];
 export const STAPLES = ['riceCooked', 'brownRiceCooked', 'milletCooked', 'sweetPotatoBaked'];
 // raw-purchase conversion: shopping list buys raw; cooked weight / factor = raw
-export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['brownRice', 2.4], milletCooked: ['millet', 2.6], thighRoasted: ['chickenThigh', 0.75], breastRoasted: ['chickenBreast', 0.75], shrimpCooked: ['shrimp', 0.85], sweetPotatoBaked: ['sweetPotato', 0.85], eggUSDA: ['egg', 1], eggBoiled: ['egg', 1] };
+export { COOKED_TO_RAW };
 
 const sum = (items, food) => totals(items, food);
 
@@ -87,7 +87,7 @@ export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap =
   }
   return { slots: cur, cost, swaps: steps.length, overBudget: false, steps };
 }
-const proteinCost = (food, id, proteinG) => { const f = food(id); const [rawId, k] = COOKED_TO_RAW[id] || [id, 1]; const raw = food(rawId) || f; return proteinG / (f.protein / 100) / k * (raw.priceCNYPer500g || 0) / 500; };
+const proteinCost = (food, id, proteinG) => { const f = food(id); const [, k] = COOKED_TO_RAW[id] || [id, 1]; return proteinG / (f.protein / 100) / k * priceOf(food, id).rawPrice / 500; };
 // Full weekly plan with optional budget: swaps a dinner(d)+lunch(d+1) protein pair together.
 export function planWeek(targets, food, recipes, opts = {}) {
   let week = generateWeek(targets, food, recipes, opts);
@@ -110,9 +110,10 @@ export function shoppingList(days, food) {
   const agg = {};
   for (const d of days) for (const m of d.meals) for (const [id, g] of m.items) {
     const [rawId, f] = COOKED_TO_RAW[id] || [id, 1];
-    agg[rawId] = (agg[rawId] || 0) + g / f;
+    const a = agg[rawId] || (agg[rawId] = { g: 0, cost: 0 });
+    a.g += g / f; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
   }
-  return Object.entries(agg).map(([id, g]) => { const f = food(id); return { id, name: f?.name || id, cat: f?.cat || '', g: Math.round(g), cost: f ? (f.priceCNYPer500g || 0) * g / 500 : 0 }; }).sort((a, b) => a.cat.localeCompare(b.cat) || b.g - a.g);
+  return Object.entries(agg).map(([id, a]) => { const f = food(id); return { id, name: f?.name || id, cat: f?.cat || '', g: Math.round(a.g), cost: f ? a.cost : 0 }; }).sort((a, b) => a.cat.localeCompare(b.cat) || b.g - a.g);
 }
 
 export function checkWeek(days, { kcal, protein }) {

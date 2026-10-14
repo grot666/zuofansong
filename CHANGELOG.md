@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.7.4 — 2026-10-15
+- A23 priceOf（熟重价×k 折算生重）；A24 foodIndexFromStore；A27 今日/菜单花费一致。
+
 ## 0.7.3 — 2026-10-15
 - N-04 按 Rulings R8 排序；R-10 平台期 reason/依从度/14 天冷却/维持周抑制。
 

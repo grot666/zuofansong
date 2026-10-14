@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.7.3';
+export const VERSION = '0.7.4';
 export const CHANGELOG = [
+  ['0.7.4', '修改熟食价格（如烤鸡腿）现在也会影响一周菜单花费和预算换菜；今日花费与菜单花费算法统一。'],
   ['0.7.3', '纤维补法排序更合理（只推荐 ≥3 g 的补法，换主食需当天确实吃了米饭）；平台期提示加入“记录是否稳定”判断，刚调整过热量或在维持周时 14 天内不再提示。'],
   ['0.7.2', '手机界面打磨：三个页面导航统一、复选框大小正常、“改价”按钮变小、表格不再断行、空状态提示更清楚；平台期提示区分“持平/上升”。'],
   ['0.7.1', '吃超了会显示近 7 天平均热量（没关系，继续）；食材页可按“每元蛋白”排序；外卖菜标注默认份量为估算。'],

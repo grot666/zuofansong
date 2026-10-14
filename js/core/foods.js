@@ -1,12 +1,27 @@
+import { FOODS } from '../../data/foods.js';
+import { FOODS2 } from '../../data/foods2.js';
+import { FOODS3 } from '../../data/foods3.js';
+import { PRICE_REFS } from '../../data/prices.js';
 // A5: shared food index + nutrient totals. Pure.
+// raw-purchase conversion: cooked id -> [raw id, cooked g per raw g]
+export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['brownRice', 2.4], milletCooked: ['millet', 2.6], thighRoasted: ['chickenThigh', 0.75], breastRoasted: ['chickenBreast', 0.75], shrimpCooked: ['shrimp', 0.85], sweetPotatoBaked: ['sweetPotato', 0.85], eggUSDA: ['egg', 1], eggBoiled: ['egg', 1] };
+
 const OIL_IDS = new Set(['oil', 'oliveOil']);
-// lists: arrays of foods; later entries are merged over earlier ones with the same id (custom foods, then price overrides).
-export function makeIndex(...lists) {
+// A24: makeIndex({ base: [lists…], partials: [lists…] }) — base entries create/merge foods; partials only
+// merge onto existing ids (refs, user price overrides) and never create entries.
+// Legacy positional form makeIndex(listA, listB, …) treats every list as base.
+export function makeIndex(...args) {
+  const spec = args.length === 1 && args[0] && !Array.isArray(args[0]) ? args[0] : { base: args, partials: [] };
   const m = new Map();
-  for (const l of lists) for (const f of l || []) { if (m.has(f.id)) m.set(f.id, { ...m.get(f.id), ...f }); else if (!f.priceUser && !f.priceSource) m.set(f.id, f); }
+  for (const l of spec.base || []) for (const f of l || []) m.set(f.id, m.has(f.id) ? { ...m.get(f.id), ...f } : f);
+  for (const l of spec.partials || []) for (const f of l || []) if (m.has(f.id)) m.set(f.id, { ...m.get(f.id), ...f });
   const food = id => m.get(id);
   food.all = () => [...m.values()];
   return food;
+}
+// One builder for every page: estimate < official ref < user override; custom foods are base.
+export function foodIndexFromStore(S) {
+  return makeIndex({ base: [FOODS, FOODS2, FOODS3, S.get('customFoods', [])], partials: [PRICE_REFS, priceOverrides(S.get('prices', {}))] });
 }
 // items: [{id,g}] or [[id,g]]. Unknown ids are skipped.
 export function totals(items, food) {
@@ -15,7 +30,7 @@ export function totals(items, food) {
     const [id, g] = Array.isArray(it) ? it : [it.id, it.g];
     const f = food(id); if (!f) continue; const k = g / 100;
     for (const key of ['kcal', 'protein', 'fat', 'carbs', 'fiber']) t[key] += f[key] * k;
-    t.cost += (f.priceCNYPer500g || 0) * g / 500;
+    { const [, kk] = COOKED_TO_RAW[id] || [id, 1]; t.cost += (g / kk) * priceOf(food, id).rawPrice / 500; }
     if (f.powder) t.powderProtein += f.protein * k;
     if (f.cat === '蔬菜') t.veg += g / 100;
     if (OIL_IDS.has(id)) t.oil += g;
@@ -41,4 +56,13 @@ export function gramsFor(f, n, unit) {
   if (unit === 'unit') return f.unit && f.unit.g ? n * f.unit.g : null;
   if (unit === 'bowl') return n * 150 / (f.yield || 1);
   return null;
+}
+// A23: price per 500 g of the RAW purchase for any id. A user override on a cooked id is per cooked weight,
+// so its raw equivalent is cookedPrice × k. Otherwise the raw food's merged price (ref/override) is used.
+export function priceOf(food, id) {
+  const [rawId, k] = COOKED_TO_RAW[id] || [id, 1];
+  const f = food(id);
+  if (rawId !== id && f && f.priceUser) return { rawId, rawPrice: f.priceCNYPer500g * k };
+  const raw = food(rawId) || f;
+  return { rawId, rawPrice: (raw && raw.priceCNYPer500g) || 0 };
 }

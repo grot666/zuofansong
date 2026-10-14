@@ -41,7 +41,7 @@ test('A4 normalizeProfile({}) gives same targets as defaults', () => {
 });
 import { priceOverrides } from '../js/core/foods.js';
 test('price override merges over base food', () => {
-  const f = makeIndex(ALL, priceOverrides({ eggUSDA: 9, bogus: 0, ghost: 5 }));
+  const f = makeIndex({ base: [ALL], partials: [priceOverrides({ eggUSDA: 9, bogus: 0, ghost: 5 })] });
   assert.equal(f('eggUSDA').priceCNYPer500g, 9); assert.equal(f('eggUSDA').protein, food('eggUSDA').protein); assert.ok(f('eggUSDA').priceUser);
   assert.equal(f.all().length, ALL.length);
 });
@@ -57,7 +57,7 @@ test('UX-3 matchFoods / gramsFor', () => {
 import { PRICE_REFS } from '../data/prices.js';
 test('R7.3 protein per yuan fixtures + refs merge', () => {
   for (const [P, price, exp] of [[21.0, 17.55, 5.983], [12.6, 5.91, 10.660], [7.13, 3.00, 11.883], [20.1, 23.00, 4.370]]) assert.ok(Math.abs(proteinPerYuan({ protein: P, priceCNYPer500g: price }) - exp) < 1e-3);
-  const f = makeIndex(ALL, PRICE_REFS, priceOverrides({ egg: 7 }));
+  const f = makeIndex({ base: [ALL], partials: [PRICE_REFS, priceOverrides({ egg: 7 })] });
   assert.equal(f('porkLoin').priceCNYPer500g, 17.55); assert.ok(f('porkLoin').priceSource);
   assert.equal(f('egg').priceCNYPer500g, 7); assert.equal(f.all().length, ALL.length);
 });

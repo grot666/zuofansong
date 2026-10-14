@@ -53,7 +53,7 @@ export const view = () => {
   <div class="row" style="margin-top:8px"><button id="planDay" class="sec">记入我的计划日</button><button id="copyY" class="sec">复制昨天</button></div>
   <p class="mut">计划日 = 3 蛋 + 400 g 米饭 + 360 g 去皮鸡腿 + 1 罐水浸金枪鱼 + 300 g 西兰花 + 200 g 胡萝卜 + 15 g 油 ≈ 1780 kcal / 149 g 蛋白 / 62 g 脂肪 / 纤维仅 ≈15 g。</p>
   ${hasTakeaway ? '<p class="mut">点外卖：备注“少油少酱”，汤和红油不喝，麻酱/底油单独放，选蒸/煮/白灼优于炸/红烧。外卖热量是估算（≈）。</p>' : ''}</section>
-  <section class="card"><h2>脂肪预算</h2>已用 ${fw.spent} / ${fw.budget} g（剩 ${fw.left} g）${bar(fw.spent, fw.budget)}
+  <section class="card"><h2>脂肪预算</h2>已用 ${fw.spent} / ${fw.budget} g（剩 ${fw.left} g）${bar(fw.spent, fw.budget)}<p>今日烹调油 <b>${Math.round(x.oil)} g</b> / 25–30 g（膳食指南）${x.oil > 30 ? ' <span class="warn">偏多</span>' : ''}</p>
   <p class="mut">值得花：${fw.high} g（炒菜油、鸡蛋、鱼、坚果） · 一般：${fw.neutral} g · <span class="${fw.low ? 'bad' : ''}">低价值：${fw.low} g</span></p>
   ${lowItems.length ? `<p class="warn">低价值脂肪来自：${[...new Set(lowItems.map(i => food(i.id).name))].join('、')}。换成瘦肉/去皮鸡腿/清蒸鱼，可省出油给蔬菜调味。</p>` : '<p class="mut">炒菜油 1 茶匙 ≈ 4.5 g。把脂肪花在让蔬菜好吃的油上，比花在五花肉、鸡皮、外卖油上更划算。</p>'}</section>
   <section class="card"><h2>蛋白补充</h2><p>天然食物蛋白 ${Math.round(wholeProtein)} g，目标 ${t.protein} g，缺口 <b>${pg.gap} g</b>${pg.gap ? ` → 可用蛋白粉 <b>${pg.scoops} 勺</b>（每勺 ${p.scoopG} g，上限 ${p.maxScoops} 勺）${pg.left ? `，仍差 ${pg.left} g，可加 ${Math.ceil(pg.left / 6.3)} 个鸡蛋或豆腐` : ''}` : ' ✓'}</p><p class="mut">优先天然食物，蛋白粉只补缺口。</p></section>

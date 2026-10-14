@@ -32,7 +32,7 @@ export function keys() {
   for (let i = 0; i < b.length; i++) { const k = b.key(i); if (k && k.startsWith(PREFIX)) out.push(k.slice(PREFIX.length)); }
   return out;
 }
-export const KNOWN_KEYS = ['profile', 'weights', 'customFoods', 'recents', 'riceCurrent', 'riceFavs', 'templates', 'templateUse', 'tplMult', 'undo', 'planSeed', 'weeklyBudget', 'reviews', 'breakFrom', 'breakState', 'prices', 'version'];
+export const KNOWN_KEYS = ['profile', 'weights', 'customFoods', 'recents', 'riceCurrent', 'riceFavs', 'templates', 'templateUse', 'tplMult', 'undo', 'planSeed', 'weeklyBudget', 'reviews', 'breakFrom', 'breakState', 'prices', 'wRange', 'version'];
 const isKnown = k => KNOWN_KEYS.includes(k) || /^log\.\d{4}-\d{2}-\d{2}$/.test(k) || /^logArchive\.\d{4}-\d{2}$/.test(k);
 // key = target version. Each migration idempotent.
 export const MIGRATIONS = {

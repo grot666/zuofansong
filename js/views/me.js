@@ -6,6 +6,7 @@ import { proteinGap, gutRisk } from '../core/protein.js';
 import { suggestFiber } from '../core/fiber.js';
 import { ma7, weeklyStatus } from '../core/weight.js';
 import * as S from '../core/store.js';
+import { addDays } from '../core/dates.js';
 import { FOODS } from '../../data/foods.js';
 import { FOODS2 } from '../../data/foods2.js';
 import { FOODS3 } from '../../data/foods3.js';
@@ -17,9 +18,12 @@ import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
+const RANGES = [[4, '4周'], [8, '8周'], [12, '12周'], [0, '全部']];
 function weightChart(ws, goal) {
   if (ws.length < 2) return '<p class="mut">每周称 2–3 次，早上空腹、如厕后。至少 3 次记录后显示 7 日均线。</p>';
-  const pts = ma7(ws.slice(-56));
+  const wk = S.get('wRange', 8); const from = wk ? addDays(today(), -7 * wk) : '';
+  let pts = ma7(ws).filter(p => p.date >= from); if (pts.length < 2) pts = ma7(ws).slice(-2);
+  const chips = `<div class="row" role="group" aria-label="时间范围">${RANGES.map(([w, l]) => `<button class="${w === wk ? '' : 'sec'}" data-wr="${w}" aria-pressed="${w === wk}">${l}</button>`).join('')}</div>`;
   const W = 340, H = 140, P = 24;
   const vals = pts.flatMap(p => [p.weight, p.ma].filter(v => v != null));
   if (goal) vals.push(goal);
@@ -33,7 +37,7 @@ function weightChart(ws, goal) {
   const st = weeklyStatus(ws);
   const stText = st ? { fast: '<span class="warn">偏快</span>', ok: '正常', flat: '持平', up: '上升', slow: '偏慢' }[st.status] : '';
   const last = pts[pts.length - 1];
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="体重趋势：最新 ${last.weight} kg${last.ma ? '，7 日均 ' + r1(last.ma) + ' kg' : ''}" style="color:var(--acc)">${goalLine}${dots}${line ? `<polyline points="${line}" fill="none" stroke="currentColor" stroke-width="2.5"/>` : ''}<text x="${P}" y="12" font-size="10" fill="currentColor">${r1(hi)}</text><text x="${P}" y="${H - 4}" font-size="10" fill="currentColor">${r1(lo)}</text></svg>
+  return chips + `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="体重趋势：最新 ${last.weight} kg${last.ma ? '，7 日均 ' + r1(last.ma) + ' kg' : ''}" style="color:var(--acc)">${goalLine}${dots}${line ? `<polyline points="${line}" fill="none" stroke="currentColor" stroke-width="2.5"/>` : ''}<text x="${P}" y="12" font-size="10" fill="currentColor">${r1(hi)}</text><text x="${P}" y="${H - 4}" font-size="10" fill="currentColor">${r1(lo)}</text></svg>
   <p>${last.ma ? `7 日均 <b>${r1(last.ma)} kg</b>` : ''}${st ? ` · 每周 ${st.deltaKg > 0 ? '+' : ''}${r1(st.deltaKg)} kg（${r1(-st.pct)}%）· ${stText}` : ''}<br><span class="mut">点 = 每次称重，线 = 7 日均值，虚线 = 目标。看均值，不看单日波动。${st && st.status === 'flat' ? '连续 2–3 周持平可考虑热量再减 100–150 kcal 或增加步数。' : ''}</span></p>`;
 }
 
@@ -81,6 +85,7 @@ function goalPace(p) {
   return `<p class="mut">距目标 ${r1(p.weight - p.goalWeight)} kg，${r.days} 天（约 ${r1(r.weeks)} 周），需每周减 ${r1(r.kgPerWeek)} kg（${r1(r.pctPerWeek)}%/周）${tail}。</p>`;
 }
 view.bind = () => {
+  document.querySelectorAll('[data-wr]').forEach(b => b.onclick = () => { S.set('wRange', +b.dataset.wr); rerender(); });
   const p = profile(); const f = $('#pf');
   for (const [k, v] of Object.entries(p)) { const el = f.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }
   f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode', 'bedtime'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; d.sleepNudges = f.elements.sleepNudges.checked; S.set('profile', mergeProfileEdit(S.get('profile', {}), d)); rerender(); };

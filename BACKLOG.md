@@ -431,3 +431,4 @@ Line-by-line check of PROMPT.md against the live app (v0.7.6). Covered and verif
 - ✅ **WALK-1** 375px new-user walkthrough: onboarding goal suggestion (was demo 58 kg), select-on-focus, 44px checkbox/radio rows (v0.10.8).
 - ✅ **PERF-1** planWeek median ~7 ms (A32 < 60 ms); 龙利鱼 (sole) in PROTEINS (v0.10.9).
 - ✅ **WALK-2** returning-user walkthrough: BMR-safe review decision, import counts as backup; round-trip verified (v0.10.10).
+- ✅ **NEXT-1** BACKLOG Next refreshed (v0.10.11) · ✅ **R-01** pace %/wk onboarding + review warning (v0.10.12) · ✅ **R-11** per-weekday 30-min one-tray variant (v0.10.13) · ✅ **VER-10** top-10 verify batch (v0.10.14).

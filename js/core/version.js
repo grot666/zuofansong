@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.9.7';
+export const VERSION = '0.9.8';
 export const CHANGELOG = [
+  ['0.9.8', '按预算换蛋白会一直换到真正在预算内（或确实无法再省）；如果换完某天热量超标，菜单页会提示是哪天。'],
   ['0.9.7', '金枪鱼不再作为正餐主菜，只作加餐（每次 100 g），一周总量不超过 339 g 的保守参考，周回顾不会再提示菜单本身超量。'],
   ['0.9.6', '菜单页说明本周为何这样安排：按预算换了评分更合适的蛋白、加餐已轮换（同一种最多约 4 天）。'],
   ['0.9.5', '超预算换蛋白时，在预算内优先选“健康/好做/便宜/好吃”评分高的，而不只是最便宜的。'],

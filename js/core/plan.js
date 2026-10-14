@@ -137,16 +137,24 @@ export function planWeek(targets, food, recipes, opts = {}) {
   const cost = w => shoppingList(w, food).reduce((s, x) => s + x.cost, 0);
   let total = cost(week);
   const infeasible = feasibility(targets);
-  if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible };
-  const slots = week.map(d => d.dinnerProtein);
-  const pairG = week.map((d, i) => d.proteinG + week[(i + 1) % 7].proteinG); // grams of cooked protein in the pair
-  const pairP = slots.map((id, i) => pairG[i] * food(id).protein / 100);
-  const fixed = total - slots.reduce((s, id, i) => s + proteinCost(food, id, pairP[i]), 0);
+  if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible, unfit: [] };
+  // R9-1: loop on the *real* regenerated cost (portions change after a swap), max 7 rounds.
+  // A34: report days that were ok before swapping but are not ok after (`unfit`), so the page can warn.
+  const base = week; let swaps = 0;
   const options = (opts.proteins || PROTEINS).filter(id => food(id));
-  const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget, score: id => proteinScore(id, food) });
-  week = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots });
-  total = cost(week);
-  return { week, cost: total, overBudget: total > opts.budget, swaps: r.swaps, infeasible };
+  for (let round = 0; round < 7 && total > opts.budget; round++) {
+    const slots = week.map(d => d.dinnerProtein);
+    const pairG = week.map((d, i) => d.proteinG + week[(i + 1) % 7].proteinG); // grams of cooked protein in the pair
+    const pairP = slots.map((id, i) => pairG[i] * food(id).protein / 100);
+    const fixed = total - slots.reduce((s, id, i) => s + proteinCost(food, id, pairP[i]), 0);
+    const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget, score: id => proteinScore(id, food) });
+    if (!r.swaps) break;
+    swaps += r.swaps;
+    week = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots });
+    total = cost(week);
+  }
+  const unfit = week.map((d, i) => (base[i].fit === 'ok' && d.fit !== 'ok' ? i : -1)).filter(i => i >= 0);
+  return { week, cost: total, overBudget: total > opts.budget, swaps, infeasible, unfit };
 }
 
 export function shoppingList(days, food) {
@@ -171,5 +179,6 @@ export function planTips(plan) {
   if (plan.swaps) tips.push(`已按预算换更合适的蛋白（看评分）：${plan.swaps} 次，晚餐和第二天午餐一起换。`);
   const ids = new Set(plan.week.flatMap(d => (d.addon || []).map(([id]) => id)));
   if (ids.size >= 2) tips.push('加餐已轮换，同一种最多约 4 天。');
+  if (plan.unfit?.length) tips.push(`⚠ 为了省钱换蛋白后，${plan.unfit.map(i => ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i]).join('、')}热量会超出目标 5% 以上；可提高预算或少盛一点主食。`);
   return tips;
 }

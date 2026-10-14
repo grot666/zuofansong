@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.8
+- R9-1 (P0): budget loop on real regenerated cost (≤7 rounds); A34: unfit days reported + ⚠ tip.
+
 ## v0.9.7
 - A33 (P0): one weekly tuna gram budget shared with review; tuna add-on only; grid test incl. 0.8× budget.
 

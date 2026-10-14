@@ -29,6 +29,22 @@ export function rankVeg(vegs, food) {
 export const proteinScore = (id, food) => { const sc = mealScores([['riceCooked', 150], [id, 150], ['shanghaiQing', 250], ['oil', 6]], food); return sc.health + sc.easy + sc.cheap + sc.tasty; };
 // A38: snapshot helper only (A36). Base rotation must stay seed-only (DECISIONS 06:13); budget swaps use proteinScore.
 export const rankProteins = (ids, food) => { const sc = new Map(ids.map(id => [id, proteinScore(id, food)])); return [...ids].sort((a, b) => sc.get(b) - sc.get(a) || ids.indexOf(a) - ids.indexOf(b)); };
+// Ingredient reuse: walk the seed-rotated ranking and, from the next REUSE_WINDOW unused recipes,
+// take the one adding the fewest new vegetables (ties keep rank order). Deterministic in seed.
+export const REUSE_WINDOW = 5;
+export function pickReuse(vegs, start, food) {
+  const order = Array.from({ length: vegs.length }, (_, i) => vegs[(i + start) % vegs.length]);
+  const vegIds = r => r.items.map(([id]) => id).filter(id => food(id)?.cat === '蔬菜');
+  const have = new Set(), out = [], used = new Set();
+  while (out.length < 14) {
+    const cand = order.filter(r => !used.has(r.id)).slice(0, REUSE_WINDOW);
+    if (!cand.length) { used.clear(); continue; }
+    let best = cand[0], bn = Infinity;
+    for (const r of cand) { const n = vegIds(r).filter(id => !have.has(id)).length; if (n < bn) { bn = n; best = r; } }
+    used.add(best.id); out.push(best); vegIds(best).forEach(id => have.add(id));
+  }
+  return out;
+}
 export function selectWeek(food, recipes, opts = {}) {
   const seed = opts.seed ?? 0;
   const proteins = (opts.proteins || PROTEINS).filter(id => food(id));
@@ -37,11 +53,12 @@ export function selectWeek(food, recipes, opts = {}) {
   const ok = recipes.filter(r => r.items.every(([id]) => food(id)));
   const quick = opts.maxPrepMin ? ok.filter(r => r.min <= opts.maxPrepMin) : ok;
   const vegs = rankVeg(quick.length ? quick : ok, food);
+  const picks = opts.reuse === false ? Array.from({ length: 14 }, (_, i) => vegs[(i + seed * 14) % vegs.length]) : pickReuse(vegs, seed * 14, food);
   const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => proteins[(d + seed) % proteins.length]);
   return dinnerProteins.map((pDinner, d) => ({
     day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
     staple: STAPLES[(Math.floor(d / 2) + seed) % STAPLES.length],
-    vegL: vegs[(d * 2 + seed * 14) % vegs.length], vegD: vegs[(d * 2 + 1 + seed * 14) % vegs.length],
+    vegL: picks[d * 2], vegD: picks[d * 2 + 1],
   }));
 }
 export const FITS = ['ok', 'kcal-high', 'kcal-low', 'protein-low'];
@@ -145,7 +162,7 @@ export function planWeek(targets, food, recipes, opts = {}) {
   if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible, unfit: [] };
   // R9-1: loop on the *real* regenerated cost (portions change after a swap), max 7 rounds.
   // A34: report days that were ok before swapping but are not ok after (`unfit`), so the page can warn.
-  const base = week; let swaps = 0, stalled = false;
+  const base = week; let swaps = 0, stalled = false, prev = week;
   const options = (opts.proteins || PROTEINS).filter(id => food(id));
   for (let round = 0; round < 7 && total > opts.budget; round++) {
     const slots = week.map(d => d.dinnerProtein);
@@ -156,10 +173,23 @@ export function planWeek(targets, food, recipes, opts = {}) {
     if (!r.swaps) break;
     const next = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots }); const nextCost = cost(next);
     if (nextCost >= total) { stalled = true; break; } // estimate disagreed with real portions: keep the cheaper week (monotonic)
-    swaps += r.swaps; week = next; total = nextCost;
+    swaps += r.swaps; prev = week; week = next; total = nextCost;
   }
   // Still over budget: fall back to the cheapest week the greedy can reach (budget 0), so cost never rises as budget falls.
   if (stalled && total > opts.budget && opts.budget > 0) { const m = planWeek(targets, food, recipes, { ...opts, budget: 0 }); if (m.cost < total) { week = m.week; total = m.cost; swaps = m.swaps; } }
+  // Still over budget: the greedy can overshoot (estimate vs real portions). Try reverting the 1 slot changed in the
+  // last round with the smallest estimated revert penalty; keep it only if the real cost drops (one extra regeneration).
+  if (total > opts.budget && !stalled) {
+    const pG = week.map((d, i) => (d.proteinG + week[(i + 1) % 7].proteinG));
+    const est = (id, i) => proteinCost(food, id, pG[i] * food(id).protein / 100);
+    const cand = week.map((d, i) => i).filter(i => week[i].dinnerProtein !== prev[i].dinnerProtein)
+      .sort((a, b) => (est(prev[a].dinnerProtein, a) - est(week[a].dinnerProtein, a)) - (est(prev[b].dinnerProtein, b) - est(week[b].dinnerProtein, b)) || a - b).slice(0, 1);
+    for (const i of cand) {
+      const slots = week.map(d => d.dinnerProtein); slots[i] = prev[i].dinnerProtein;
+      const next = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: slots }); const c = cost(next);
+      if (c < total - 1e-9) { week = next; total = c; swaps--; }
+    }
+  }
   const unfit = week.map((d, i) => (base[i].fit === 'ok' && d.fit !== 'ok' ? i : -1)).filter(i => i >= 0);
   return { week, cost: total, overBudget: total > opts.budget, swaps, infeasible, unfit };
 }

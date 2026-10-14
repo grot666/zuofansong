@@ -95,3 +95,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 
 - 06:29 v0.10.6 A36 golden rankings/add-on scores; A37 explicit tasty booleans; A38 rankProteins documented as snapshot helper + seed-only test; A39 determinism tests.
 
+
+- 06:37 v0.10.7 Weekly plan reuses vegetables (shorter shopping list); pasta/sweet potato FDC ids confirmed; budget overshoot revert

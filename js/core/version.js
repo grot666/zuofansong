@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.6';
+export const VERSION = '0.10.7';
 export const CHANGELOG = [
+  ['0.10.7', '每周菜单尽量复用同样的蔬菜，购物清单更短；意面、红薯营养数据已核对 USDA'],
   ['0.10.6', '内部：评分与菜单加入回归保护测试（无界面变化）。'],
   ['0.10.5', '菜单可限定蔬菜做法时间（≤5 / ≤10 分钟）；显示本周用到几种蔬菜；预算留空或填 0 会提示并保留原值。'],
   ['0.10.4', '茭白切片、丝瓜削皮也加上护腕提示（买切好的或用刨子）。'],

@@ -5,7 +5,7 @@ import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces } from './core/sauces.js';
 import { bootStore, registerSW, getProfile } from './boot.js';
 import * as S from './core/store.js';
-import { localDate } from './core/dates.js';
+import { localDate, todayIndex } from './core/dates.js';
 import { foodIndexFromStore } from './core/foods.js';
 import { mealScores } from './core/scores.js';
 const stars = sc => `<br><span class="mut">健康 ${sc.health} · 好做 ${sc.easy} · 便宜 ${sc.cheap} · 好吃 ${sc.tasty}（满分 5）</span>`;
@@ -40,16 +40,17 @@ function render() {
   const list = shoppingList(week, food);
   const cost = list.reduce((s, x) => s + x.cost, 0);
   const proteinsUsed = [...new Set(week.map(d => d.dinnerProtein))].map(id => food(id).name);
-  $('#view').innerHTML = `<section class="card"><h2>本周菜单</h2>
+  const ti = todayIndex(localDate());
+  $('#view').innerHTML = `<nav class="seg" aria-label="菜单分区"><a href="#menu">菜单</a><a href="#list">购物清单</a><a href="#prep">备餐</a></nav><section class="card" id="menu"><h2>本周菜单</h2>
   <p class="mut">每天目标 ${t.kcal} kcal（±5%）、蛋白 ≥ ${t.protein} g。晚餐多做一份 = 第二天午餐（晚上一次做两顿）。主食按熟重。</p>
   ${plan.infeasible ? `<p class="warn">这个热量下蛋白目标偏高（蛋白占 ${plan.infeasible.pct}% 热量），已优先保证蛋白，部分天热量会超出。可在“我的”降低蛋白目标或热量缺口。</p>` : ''}${week.some(d => d.fit !== 'ok') && !plan.infeasible ? '<p class="mut">个别天无法同时满足热量和蛋白，已优先保证蛋白（标 ⚠）。</p>' : ''}
   <div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" value="${budget}"></label></div></section>
-  ${week.map((d, i) => `<section class="card"><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3>
+  ${week.map((d, i) => `<details class="card day"${i === ti ? ' open' : ''}><summary><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3></summary>
     <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span>${/午餐|晚餐/.test(m.name) ? stars(mealScores(m.items, food)) : ''}</li>`).join('')}</ul>
-    <button class="sec" data-day="${i}">把这天记入今日</button></section>`).join('')}
-  <section class="card"><h2>购物清单（生重）</h2><p>估算合计 <b>≈¥${Math.round(cost)}</b> ${plan.swaps ? `<span class="mut">已为预算换了 ${plan.swaps} 次更便宜的蛋白（晚餐和第二天午餐一起换）。</span> ` : ''}${cost > budget ? `<span class="warn">仍超出预算 ¥${Math.round(cost - budget)}：可调高预算，或多用鸡蛋、豆腐</span>` : '在预算内 ✓'}</p>
+    <button class="sec" data-day="${i}">把这天记入今日</button></details>`).join('')}
+  <section class="card" id="list"><h2>购物清单（生重）</h2><p>估算合计 <b>≈¥${Math.round(cost)}</b> ${plan.swaps ? `<span class="mut">已为预算换了 ${plan.swaps} 次更便宜的蛋白（晚餐和第二天午餐一起换）。</span> ` : ''}${cost > budget ? `<span class="warn">仍超出预算 ¥${Math.round(cost - budget)}：可调高预算，或多用鸡蛋、豆腐</span>` : '在预算内 ✓'}</p>
   <ul class="list">${list.map(x => `<li><label style="margin:0"><input type="checkbox" style="width:auto;min-height:auto"> ${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'} <span class="mut">≈¥${r1(x.cost)}</span></label></li>`).join('')}</ul><p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>
-  <section class="card"><h2>周日备餐（约 60 分钟）</h2><ol>
+  <section class="card" id="prep"><h2>周日备餐（约 60 分钟）</h2><ol>
   <li>电饭煲煮 2–3 天的杂粮饭；煮好 1 小时内分盒冷藏，第 3 天及以后的分份直接冷冻。</li>
   <li>本周蛋白：${proteinsUsed.join('、')}。鸡腿/鸡胸一次腌好（生抽+料酒+姜），分成前 3 天的量。</li>
   <li>绿叶菜洗净沥干装保鲜袋；西兰花/胡萝卜切好块。</li>
@@ -65,6 +66,6 @@ function render() {
     l.items.push(...d.meals.flatMap(m => m.items).map(([id, g]) => ({ id, g, t: Date.now() }))); S.set(key, l); b.textContent = '✓ 已记入今日';
   });
 }
-try { render(); } catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${e.message}</p></section>`; }
+try { render(); if (/^#(menu|list|prep)$/.test(location.hash)) document.querySelector(location.hash)?.scrollIntoView(); } catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${e.message}</p></section>`; }
 { const v = document.getElementById('ver'); if (v) v.textContent = 'v' + VERSION; }
 registerSW();

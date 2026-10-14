@@ -9,3 +9,5 @@ export function backupDue({ lastExport, snoozeUntil, logDays, today }) {
   if (snoozeUntil && dayNum(today) < dayNum(snoozeUntil)) return false;
   return !lastExport || dayNum(today) - dayNum(lastExport) >= 14;
 }
+// UX-7: Monday = 0 … Sunday = 6 (plan DAYS order).
+export const todayIndex = s => (new Date(dayNum(s) * 86400000).getUTCDay() + 6) % 7;

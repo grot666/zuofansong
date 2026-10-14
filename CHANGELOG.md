@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.3
+- UX-7: sticky 菜单/购物清单/备餐 anchors (#menu/#list/#prep), days in <details>, only today open.
+
 ## v0.8.2
 - UX-6: pure saveProfile {ok, changed, clamped}; toast + scroll/highlight 每日目标.
 

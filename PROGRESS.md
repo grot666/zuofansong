@@ -42,3 +42,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:54 v0.8.1 UX-4 shared nav (js/nav.js) + reviewDue card; UX-5 --nav-h + safe-area padding, toast; UX-11 5 icon items ≥44px with 搭配 sub-nav.
 
 - 05:55 v0.8.2 UX-6: pure saveProfile {ok, changed, clamped}; toast + scroll/highlight 每日目标.
+
+- 05:56 v0.8.3 UX-7: sticky 菜单/购物清单/备餐 anchors (#menu/#list/#prep), days in <details>, only today open.

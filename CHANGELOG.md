@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.30
+- A48: npm test serial like CI
+
 ## v0.10.29
 - A47: no-protein guard (infeasible no-protein, never throws)
 

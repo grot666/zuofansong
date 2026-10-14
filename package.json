@@ -1,1 +1,1 @@
-{"name":"zuofansong","private":true,"type":"module","scripts":{"test":"node --test test/"}}
+{"name":"zuofansong","private":true,"type":"module","scripts":{"test":"node --test --test-concurrency=1 test/"}}

@@ -22,7 +22,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
     - Food index missing every PROTEINS id → same.
     - Normal grid (A44d) unchanged.
 
-- **A48 `npm test` must match CI serial concurrency (P1)**
+- ✅ **A48 `npm test` must match CI serial concurrency (P1)**
   - Why: v0.10.23 made CI `node --test --test-concurrency=1` so A43's 25/40 ms guards measure the planner, not 2-vCPU contention. `package.json` still has `"test": "node --test test/"`, so local runs are parallel and can flake (or look fine while CI fails). Two sources of truth for "how to run tests".
   - AC:
     - `package.json` scripts.test = `node --test --test-concurrency=1 test/`.

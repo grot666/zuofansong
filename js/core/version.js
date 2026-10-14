@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.2';
+export const VERSION = '0.10.3';
 export const CHANGELOG = [
+  ['0.10.3', '一餐肉/鱼超过 250 g 时，菜单会提示“偏多”并给出调整办法。'],
   ['0.10.2', '加餐说明与实际一致：轮换的是蛋清、豆腐、酸奶、鸡蛋、虾、金枪鱼（去掉了从未被选中的牛奶/千张/豆干加餐）。'],
   ['0.10.1', '官方参考价更新到 10 月 14 日均价（猪里脊 17.50、鸡蛋 5.89、大米 2.81 元/斤）；没有官方价的鸡肉、豆腐、鱼虾、牛肉明确标“估算”。'],
   ['0.10.0', '菜单和购物清单中，营养值未核对的食材前加“≈”；牛奶、鲈鱼改用已核对的 USDA 数据；预算换菜不会越换越贵。'],

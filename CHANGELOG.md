@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.3
+- R9-8: meatNote on lunch/dinner > 250 g cooked meat/fish.
+
 ## v0.10.2
 - R9-7: removed never-chosen milk/千张/豆干 add-ons; 0.9.4 copy corrected; usage test.
 

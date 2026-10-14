@@ -1,5 +1,5 @@
 import { computeTargets } from './core/targets.js';
-import { planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
+import { meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces } from './core/sauces.js';
@@ -46,7 +46,7 @@ function render() {
   ${plan.infeasible ? `<p class="warn">这个热量下蛋白目标偏高（蛋白占 ${plan.infeasible.pct}% 热量），已优先保证蛋白，部分天热量会超出。可在“我的”降低蛋白目标或热量缺口。</p>` : ''}${week.some(d => d.fit !== 'ok') && !plan.infeasible ? '<p class="mut">个别天无法同时满足热量和蛋白，已优先保证蛋白（标 ⚠）。</p>' : ''}
   ${planTips(plan).map(x => `<p class="mut tip">${x}</p>`).join('')}<div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" value="${budget}"></label></div></section>
   ${week.map((d, i) => `<details class="card day"${i === ti ? ' open' : ''}><summary><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3></summary>
-    <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.verified ? '' : '≈'}${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span>${/午餐|晚餐/.test(m.name) ? stars(mealScores(m.items, food)) : ''}</li>`).join('')}</ul>
+    <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.verified ? '' : '≈'}${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span>${/午餐|晚餐/.test(m.name) ? stars(mealScores(m.items, food)) : ''}${meatNote(m) ? `<br><span class="warn">${meatNote(m)}</span>` : ''}</li>`).join('')}</ul>
     <button class="sec" data-day="${i}">把这天记入今日</button></details>`).join('')}
   <section class="card" id="list"><h2>购物清单（生重）</h2><p>估算合计 <b>≈¥${Math.round(cost)}</b> ${cost > budget ? `<span class="warn">仍超出预算 ¥${Math.round(cost - budget)}：可调高预算，或多用鸡蛋、豆腐</span>` : '在预算内 ✓'}</p>
   <ul class="list">${list.map(x => `<li><label style="margin:0"><input type="checkbox" style="width:auto;min-height:auto"> ${food(x.id)?.verified ? '' : '≈'}${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'} <span class="mut">≈¥${r1(x.cost)}</span></label></li>`).join('')}</ul><p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>

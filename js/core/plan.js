@@ -185,3 +185,10 @@ export function planTips(plan) {
   if (plan.unfit?.length) tips.push(`⚠ 为了省钱换蛋白后，${plan.unfit.map(i => ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i]).join('、')}热量会超出目标 5% 以上；可提高预算或少盛一点主食。`);
   return tips;
 }
+// R9-8: a lunch/dinner with > MEAT_NOTE_G cooked meat/fish gets a realism note (tofu excluded).
+export const MEAT_NOTE_G = 250;
+export function meatNote(meal) {
+  if (!/午餐|晚餐/.test(meal.name)) return '';
+  const main = meal.items[1]; if (!main || main[0] === 'tofuFirm' || main[1] <= MEAT_NOTE_G) return '';
+  return `这餐肉/鱼约 ${Math.round(main[1])} g，偏多：可分一半到第二天，或在“我的”降低蛋白目标/打开蛋白粉。`;
+}

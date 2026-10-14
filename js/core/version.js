@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.13';
+export const VERSION = '0.10.14';
 export const CHANGELOG = [
+  ['0.10.14', '核对 10 种菜单常用食材：全麦面包、番茄、生菜改用 USDA 数据；其余标 ≈ 并注明与 USDA 的差异原因'],
   ['0.10.13', '备餐页新增“本周工作日每晚一盘”：按当天蛋白给出温度、时间和酱汁，每晚 ≤30 分钟、全程护腕'],
   ['0.10.12', '新手引导显示每周减重占体重的百分比（>1% 提示偏快）；回顾页实测每周减重 >1% 时提醒'],
   ['0.10.11', '内部：待办清单更新'],

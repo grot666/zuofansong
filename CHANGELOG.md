@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.14
+- Verify batch: top-10 generator foods FDC-verified or ≈ with FDC comparison
+
 ## v0.10.13
 - R-11 remainder: per-weekday 30-min one-tray evening variant
 

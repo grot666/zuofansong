@@ -92,3 +92,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:27 v0.10.4 R9-9: wristSafe:false + notes on 茭白切片 and 丝瓜削皮切块.
 
 - 06:28 v0.10.5 R9-10: maxPrepMin, distinct-veg metric, budget validation.
+
+- 06:29 v0.10.6 A36 golden rankings/add-on scores; A37 explicit tasty booleans; A38 rankProteins documented as snapshot helper + seed-only test; A39 determinism tests.

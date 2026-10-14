@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.6
+- A36 golden rankings/add-on scores; A37 explicit tasty booleans; A38 rankProteins documented as snapshot helper + seed-only test; A39 determinism tests.
+
 ## v0.10.5
 - R9-10: maxPrepMin, distinct-veg metric, budget validation.
 

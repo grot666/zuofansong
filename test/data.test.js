@@ -80,3 +80,7 @@ test('R9-6 refs dated; every PROTEINS id has priceSource or priceEstimate', asyn
   for (const id of PROTEINS) assert.ok(f(id).priceSource || f(id).priceEstimate, id);
   assert.equal(f('rice').priceCNYPer500g, 2.81); assert.equal(f('egg').priceCNYPer500g, 5.89);
 });
+test('A37 every 蛋白/主食/外食 food has an explicit boolean tasty', async () => {
+  const all = [...(await import('../data/foods.js')).FOODS, ...(await import('../data/foods2.js')).FOODS2, ...(await import('../data/foods3.js')).FOODS3];
+  for (const f of all) if (['蛋白', '主食', '外食'].includes(f.cat)) assert.equal(typeof f.tasty, 'boolean', f.id);
+});

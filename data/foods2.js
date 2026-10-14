@@ -38,3 +38,5 @@ export const FOODS2 = [
 ];
 // A31: 好吃 flag lives in data (read by core/scores.js); custom foods may set `tasty: true` too.
 for (const f of FOODS2) if (['shrimpCooked', 'thighRoasted', 'eggUSDA', 'salmon'].includes(f.id)) f.tasty = true;
+// A37: reviewed — every 蛋白/主食/外食 food not flagged tasty above is explicitly not tasty.
+for (const f of FOODS2) if (['蛋白', '主食', '外食'].includes(f.cat) && typeof f.tasty !== 'boolean') f.tasty = false;

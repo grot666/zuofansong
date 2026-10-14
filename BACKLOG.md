@@ -42,23 +42,23 @@ Probes (node against core with PRICE_REFS; scripts not committed): the numbers b
     - (c) Score is only consulted on the **final** swap (one that alone brings the week within budget). Pin this with a 3-step case, or change it deliberately and record it in DECISIONS.
     - (d) Monotonic: across budgets {1, .95, .9, .85, .8, .7, .6}×free, cost never rises as the budget falls (holds today: no increases seen).
     - (e) A user price override that changes a protein's `cheap` score changes `proteinScore` (documents the price → score coupling).
-- **A36 Golden scores: drift guard over the protein ranking and the add-on foods (P2)**
+- **A36 Golden scores: drift guard over the protein ranking and the add-on foods (P2)** ✅
   - Why: A31 golden covers 3 meals. The planner now consumes `proteinScore` (budget) and `rankVeg` (veg), so a `tasty` flag edit can silently reorder plans.
   - AC: `a31.test.js` snapshots:
     - `rankProteins(PROTEINS)` with scores: `thigh 19, tofu 19, pork 19, breast 18, seabass 18, basa 18, shrimp 17, beef 17, tuna 16`.
     - The top 14 `rankVeg` ids.
     - One meal per new add-on food (milk 250, 千张 50, 豆干 80, shrimpCooked 100).
   - Failing message: "scores changed: update golden + DECISIONS".
-- **A37 tasty coverage is implicit (P2)**
+- **A37 tasty coverage is implicit (P2)** ✅
   - Why: only 14/137 foods have a `tasty` key; everything else is `undefined`. That includes 23 protein foods, and all new add-ons except shrimp: milk, qianzhang, doufugan, yogurt, eggWhite, eggBoiled, tofuFirm, tunaLight. So "reviewed and not tasty" can't be told apart from "never reviewed".
   - AC:
     - Every food with cat 蛋白, 主食 or 外食 has an explicit boolean `tasty`.
     - `data.test.js` asserts `typeof f.tasty === 'boolean'` for those categories.
     - Changing values follows A36.
-- **A38 Remove or use `rankProteins` (P3)**
+- **A38 Remove or use `rankProteins` (P3)** ✅
   - Why: dead export, kept after the reverted experiment (DECISIONS 06:13).
   - AC: either delete it, or keep it only as the A36 snapshot helper, with a comment that base rotation must stay seed-only, plus a test asserting `selectWeek` output is independent of `tasty` flags (flip all to false → same `dinnerProteins`).
-- **A39 Repeat-penalty determinism and order sensitivity (P2)**
+- **A39 Repeat-penalty determinism and order sensitivity (P2)** ✅
   - Why: `used{}` is filled day by day, so day d's add-on depends on days 0..d-1. `planWeek` regenerates after swaps, so a swap on day 2 can change add-ons on days 3–6. That's correct but untested. A future single-day "换这天" call to `portionDay` would also produce a different add-on than in-week.
   - Tests:
     - (a) `generateWeek` deep-equal across 2 calls *and* after an unrelated `generateWeek` with other targets (no shared module state).

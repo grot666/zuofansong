@@ -27,6 +27,7 @@ export function rankVeg(vegs, food) {
 }
 // Proteins ranked by the 4 scores of a standard plate (rice 150 + protein 150 + 上海青 250 + oil 6); seed 0 starts at the best.
 export const proteinScore = (id, food) => { const sc = mealScores([['riceCooked', 150], [id, 150], ['shanghaiQing', 250], ['oil', 6]], food); return sc.health + sc.easy + sc.cheap + sc.tasty; };
+// A38: snapshot helper only (A36). Base rotation must stay seed-only (DECISIONS 06:13); budget swaps use proteinScore.
 export const rankProteins = (ids, food) => { const sc = new Map(ids.map(id => [id, proteinScore(id, food)])); return [...ids].sort((a, b) => sc.get(b) - sc.get(a) || ids.indexOf(a) - ids.indexOf(b)); };
 export function selectWeek(food, recipes, opts = {}) {
   const seed = opts.seed ?? 0;

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.7.5
+- A25: per-meal protein cap MAX_PROTEIN_G_PER_MEAL=300 g; egg-white/yogurt/egg/tofu add-ons (加餐) are tried before raising meat; tofu mains scale 1.5×.
+
 ## 0.7.4 — 2026-10-15
 - A23 priceOf（熟重价×k 折算生重）；A24 foodIndexFromStore；A27 今日/菜单花费一致。
 

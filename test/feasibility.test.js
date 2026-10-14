@@ -23,3 +23,10 @@ test('A19 planWeek flags infeasible targets', () => {
   assert.ok(planWeek({ kcal: 1200, protein: 160 }, food, RECIPES, { seed: 0 }).infeasible);
   assert.equal(planWeek({ kcal: 1800, protein: 140 }, food, RECIPES, { seed: 0 }).infeasible, null);
 });
+import { MAX_PROTEIN_G_PER_MEAL } from '../js/core/plan.js';
+test('A25 protein portion cap on every grid day; 1800/140 seed 0 ≤ 300 g', () => {
+  assert.equal(MAX_PROTEIN_G_PER_MEAL, 300);
+  for (const kcal of [1400, 1500, 1617, 1800, 2000, 2200]) for (const protein of [110, 140, 160]) for (let seed = 0; seed < 9; seed++)
+    for (const d of generateWeek({ kcal, protein }, food, RECIPES, { seed })) assert.ok(d.proteinG <= MAX_PROTEIN_G_PER_MEAL);
+  for (const d of generateWeek({ kcal: 1800, protein: 140 }, food, RECIPES, { seed: 0 })) assert.ok(d.proteinG <= 300 && d.fit === 'ok');
+});

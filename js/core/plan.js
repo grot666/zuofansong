@@ -30,40 +30,48 @@ export function selectWeek(food, recipes, opts = {}) {
 }
 export const BF_MULTS = [1, 0.75, 1.25, 0.5];
 export const KIWI_G = [100, 0, 200];
+// A25: realistic cooked-protein portion per meal; add-ons are tried before more meat.
+export const MAX_PROTEIN_G_PER_MEAL = 300;
+// Plant mains are less protein-dense; a 450 g block of firm tofu is still a normal portion.
+export const PORTION_MULT = { tofuFirm: 1.5 };
+const pm = id => PORTION_MULT[id] || 1;
+export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 198]]];
 // A19: closed-form search. Totals are linear in staple g (sg, per meal) and protein g (pg, per meal),
 // so for each breakfast×snack knob and sg we solve the best pg ≥ protein floor directly (no iteration loops).
 export function portionDay(sk, { kcal, protein }, food) {
   const { bf, pDinner, pLunch, staple, vegL, vegD } = sk;
   const r5 = x => Math.round(x / 5) * 5;
-  const build = (sg, pg, bm, kiwi) => {
+  const build = (sg, pg, bm, kiwi, addon = []) => {
     const meals = [
       { name: '早餐', title: bm === 1 ? bf.name : `${bf.name} ×${bm}`, items: bf.items.map(([id, g]) => [id, Math.round(g * bm)]) },
-      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name} + ${vegL.name}`, items: [[staple, sg], [pLunch, pg], ...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] },
-      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name} + ${vegD.name}`, items: [[staple, sg], [pDinner, pg], ...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] },
+      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name} + ${vegL.name}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] },
+      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name} + ${vegD.name}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] },
     ];
-    if (kiwi) meals.push({ name: '加餐', title: '猕猴桃', items: [['kiwi', kiwi]] });
+    const snack = [...(kiwi ? [['kiwi', kiwi]] : []), ...addon];
+    if (snack.length) meals.push({ name: '加餐', title: snack.map(([id, g]) => `${food(id).name} ${g} g`).join(' + '), items: snack });
     return { meals, tot: sum(meals.flatMap(m => m.items), food) };
   };
   const st = food(staple), pl = food(pLunch), pd = food(pDinner);
   const sK = 2 * st.kcal / 100, sP = 2 * st.protein / 100;
-  const pK = (pl.kcal + pd.kcal) / 100, pP = (pl.protein + pd.protein) / 100;
+  const pK = (pl.kcal * pm(pLunch) + pd.kcal * pm(pDinner)) / 100, pP = (pl.protein * pm(pLunch) + pd.protein * pm(pDinner)) / 100;
   let best = null;
-  BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => {
-    const base = build(0, 0, bm, kiwi).tot;
-    for (let sg = 50; sg <= 350; sg += 10) {
+  const addons = ADDONS.filter(a => a.every(([id]) => food(id)));
+  BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
+    const base = build(0, 0, bm, kiwi, addon).tot;
+    for (let sg = 30; sg <= 350; sg += 10) {
       const pgMin = Math.max(60, Math.ceil((protein - base.protein - sg * sP) / pP / 5) * 5);
-      const pg = Math.min(450, Math.max(pgMin, r5((kcal - base.kcal - sg * sK) / pK)));
+      const pg = Math.min(MAX_PROTEIN_G_PER_MEAL, Math.max(pgMin, r5((kcal - base.kcal - sg * sK) / pK)));
       const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
       const short = Math.max(0, protein - P);
       // lexicographic: protein floor, then kcal distance, then prefer default knobs
-      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5;
-      if (!best || score < best.score) best = { score, sg, pg, bm, kiwi };
+      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 8;
+      if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
     }
-  }));
-  const r = build(best.sg, best.pg, best.bm, best.kiwi);
+  })));
+  const r = build(best.sg, best.pg, best.bm, best.kiwi, best.addon);
   const off = (r.tot.kcal - kcal) / kcal;
-  const fit = r.tot.protein < protein - 0.5 ? 'protein-low' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
-  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, fit };
+  const fit = r.tot.protein < protein - 0.5 ? 'protein-high' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
+  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, addon: best.addon, fit };
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {

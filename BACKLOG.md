@@ -129,7 +129,7 @@ Verified, no action needed:
       - Precedence table: estimate < ref < user, with a custom food plus a user override on that custom id.
       - A base food with `priceSource` stays in the index.
       - Pages are text-checked to contain `foodIndexFromStore(` and no raw `makeIndex(` call.
-- **A25 Pin a realistic per-meal protein portion cap (P1)**
+- **A25 Pin a realistic per-meal protein portion cap (P1)** ✅
   - Why: `portionDay` caps cooked protein at `Math.min(450, …)` grams **per meal**, and lunch and dinner each get it, so up to 900 g of cooked meat a day. Nothing pins this; `grep 450 test/` finds nothing.
   - Probe: across the A19 grid (6 kcal × 3 protein × 9 seeds × 7 days = 1134 days), the max is 450 g and **875 of 1134 days are ≥ 250 g per meal**. Many plans "fit" only by prescribing ~1–1.5 chicken breasts per meal, twice a day. That isn't "change what he eats tomorrow" realistic.
   - AC:

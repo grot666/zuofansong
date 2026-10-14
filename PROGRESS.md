@@ -139,3 +139,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 07:03 v0.10.27 R10-S1: shorter shopping list (twins merged, 常备 line, small items flagged)
 
 - 07:05 v0.10.28 R10-S2: per-meal meat cap via score penalty
+
+- 07:07 v0.10.29 A47: no-protein guard (infeasible no-protein, never throws)

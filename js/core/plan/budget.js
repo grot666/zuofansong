@@ -30,8 +30,9 @@ export function planWeek(targets, food, recipes, opts = {}) {
   const cost = w => shoppingList(w, food).reduce((s, x) => s + x.cost, 0);
   let total = cost(week);
   const noVeg = !recipes.some(r => r.items.every(([id]) => food(id)));
-  const infeasible = noVeg ? { reason: 'no-veg' } : feasibility(targets); // A40
-  if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible, unfit: [] };
+  const noProtein = !(opts.proteins || PROTEINS).some(id => food(id));
+  const infeasible = noProtein ? { reason: 'no-protein' } : noVeg ? { reason: 'no-veg' } : feasibility(targets); // A40/A47
+  if (noProtein || opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: noProtein && opts.budget != null && total > opts.budget, swaps: 0, infeasible, unfit: [] };
   // R9-1: loop on the *real* regenerated cost (portions change after a swap), max 7 rounds.
   // A34: report days that were ok before swapping but are not ok after (`unfit`), so the page can warn.
   const base = week; let swaps = 0, stalled = false, prev = week;

@@ -10,7 +10,7 @@ Commits since `9390563` (docs(arch) @8e6e1d5 / v0.10.10): R-01, R-11, VER-10, A4
 
 Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0.10.17 · A43 ✅ v0.10.18 (+ CI serial v0.10.23) · A44 ✅ v0.10.19/0.10.22 · A45 ✅ v0.10.20 · A46 ✅ v0.10.21 · R-01/R-11/VER-10/R10-D1 ✅ · R10-F1 ✅ v0.10.25 · R10-F2 ✅ v0.10.26 · R10-S1 ✅ v0.10.27 (= A49 behaviour).
 
-- **A47 `selectWeek`/`planWeek` crash when no protein is usable (P0)**
+- ✅ **A47 `selectWeek`/`planWeek` crash when no protein is usable (P0)**
   - Why: same class as A40. `proteins = (opts.proteins || PROTEINS).filter(id => food(id))` can be `[]` (empty opts, or every id missing from the index after a data rename). Then `proteins[(d + seed) % proteins.length]` is `undefined`, and `portionDay` does `food(pLunch).kcal` → TypeError. The plan page try/catch shows a raw error card instead of a usable week. Probe @4a688c5: `planWeek(t, food, RECIPES, {proteins: []})` and a food lookup that drops all PROTEINS both throw.
   - AC:
     - Guard: if `!proteins.length`, `selectWeek` still returns 7 days with `pDinner`/`pLunch` = `null` (or skip protein slots safely).

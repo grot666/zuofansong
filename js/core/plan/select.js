@@ -55,7 +55,7 @@ export function selectWeek(food, recipes, opts = {}) {
   const quick = opts.maxPrepMin ? ok.filter(r => r.min <= opts.maxPrepMin) : ok;
   const vegs = rankVeg(quick.length ? quick : ok, food);
   const picks = opts.reuse === false ? Array.from({ length: 14 }, (_, i) => vegs[(i + seed * 14) % vegs.length]) : pickReuse(vegs, seed * 14, food);
-  const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => proteins[(d + seed) % proteins.length]);
+  const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => (proteins.length ? proteins[(d + seed) % proteins.length] : null)); // A47: null when none usable
   return dinnerProteins.map((pDinner, d) => ({
     day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
     staple: STAPLES[(Math.floor(d / 2) + seed) % STAPLES.length],

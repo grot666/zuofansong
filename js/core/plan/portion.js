@@ -38,6 +38,14 @@ export function powderAddons(n) {
 export const FIBER_ALT = { riceCooked: ['brownRiceCooked', 'sweetPotatoBaked'], brownRiceCooked: ['sweetPotatoBaked'], milletCooked: ['sweetPotatoBaked'] };
 export const STAPLE_ALT_W = 20;
 export function portionDay(sk, targets, food, opts = {}) {
+  // A47: no usable protein → a day without meat items, flagged protein-low (never throws).
+  if (!food(sk.pLunch) || !food(sk.pDinner)) {
+    const veg = r => (r ? [...r.items.map(([id, g]) => [id, g / 2]), ['oil', r.oil / 2]] : []);
+    const st = food(sk.staple) ? [[sk.staple, 150]] : [];
+    const meals = [{ name: '早餐', title: sk.bf.name, items: sk.bf.items }, { name: '午餐', title: '主食 + 蔬菜', items: [...st, ...veg(sk.vegL)] }, { name: '晚餐', title: '主食 + 蔬菜', items: [...st, ...veg(sk.vegD)] }];
+    const tot = sum(meals.flatMap(m => m.items), food);
+    return { day: sk.day, meals, tot, dinnerProtein: null, staple: sk.staple, proteinG: 0, stapleG: 150, bfMult: 1, kiwiG: 0, vegMult: 1, addon: [], score: Infinity, fit: 'protein-low', fiberNote: null };
+  }
   let best = portionCore(sk, targets, food, opts);
   for (const alt of FIBER_ALT[sk.staple] || []) {
     if (!best.fiberNote || !food(alt)) break;

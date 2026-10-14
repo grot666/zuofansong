@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.29
+- A47: no-protein guard (infeasible no-protein, never throws)
+
 ## v0.10.28
 - R10-S2: per-meal meat cap via score penalty
 

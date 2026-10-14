@@ -110,12 +110,12 @@ Status from CHANGELOG/PROGRESS @13c48c4 (not runtime-verified — tests not yet 
 - ✅ v0.6.0 **P0 · R-01b Pace check** — AC: profile shows kg/wk and %BW/wk to goal date; >1%/wk amber, <0.25%/wk info; test 74→58 kg, 2026-10-15→2027-07-31 ≈ 0.39 kg/wk ≈ 0.53%/wk.
 - ✅ v0.4.0/v0.6.8 **P0 · N-02 Weight MA7 + chart** (R5.3) — AC: MA7 = calendar window [d−6,d], shown only with ≥3 entries (replace current last-7-entries average); inline SVG raw dots + MA line + goal line, 4w/8w/12w/全部, tap tooltip; status chip 正常/偏快/持平; tests for MA math, gap rule, %/wk.
 - ✅ v0.6.0 **P0 · N-03 Templates + 3-tap log** (= item 8; R5.5) — AC: "+"→sheet→template→记录 (×0.5/×1/×1.5) = 3 taps with undo; "存为模板" from plate builder; 3 presets; "复制昨天" with checkbox confirm; tests for multiplier expand + copy-yesterday.
-- **P1 · N-04 Ranked fiber swaps** ⚠ needs research: AC test (oats40/peas100/broc200 top 3) conflicts with the ratio formula on R5.2 values; shipped ranking = replacements first, then ratio. (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks the 7 R5.2 swaps by fiberGain/max(kcalDelta,20), top 3, never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal); test: plan-day returns oats40/peas100/broc200 in top 3.
+- **P1 · N-04 Ranked fiber swaps** — ⚖ **RULED 05:45, see “Rulings R8 · N-04” below; the old “oats40/peas100/broc200 in top 3” test is withdrawn.** (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks swaps per Ruling R8 · N-04; never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal).
 - ✅ v0.7.1 **P1 · N-05 Takeaway quick-add data** (feeds item 4; R5.1) — AC: 20 R5.1 rows as `type:"dish"`, `verified:false`, `source:"fatsecret.cn 估算"`, `defaultPortionG` + `portionNote:"默认份量为假设，建议称重"`; always ≈ + tip line; test 黄焖鸡米饭 500 g → 835 kcal.
 - ✅ v0.5.0 **P1 · N-06 Weekly review** (= item 9; R5.4) — AC: 10-item checklist auto-filled from logs/weights; missing = "未记录"; one decision saved; "−100–150 kcal" updates target with confirm, "维持周" sets kcal = TDEE for 7 days; fixture-week test.
 - ✅ v0.5.0 **P1 · R-09 Tuna counter** (= item 5; R3.3) — AC: foods carry `mercuryClass`; tuna split 淡(鲣鱼/skipjack) / 白(长鳍/albacore); weekly soft note light >3×113 g or albacore >1×113 g, labelled conservative; plan rotates shrimp/salmon.
 - ✅ v0.6.0 **P1 · R-04/R-12 Bedtime & caffeine** (= item 6; R1.4, R3.5) — AC: bedtime setting (default 23:30); "晚餐建议 HH:MM 前吃完" = bedtime−3 h; caffeine items nudge after bedtime−6 h.
-- ✅ v0.5.0 **P1 · R-10 Plateau** (= item 7; R3.6) — AC: trigger only if MA7 change <0.1 kg over ≥14 d AND ≥5 logs/wk; offers −100–150 kcal / +steps / 1–2 wk maintenance (updates goal-date projection); trigger tests incl. sparse-data no-trigger.
+- ✅ v0.5.0 **P1 · R-10 Plateau** (= item 7; R3.6) — ⚖ **exact rule + follow-ups: see “Rulings R8 · R-10” below.** AC: trigger only if MA7 change <0.1 kg over ≥14 d AND ≥5 logs/wk; offers −100–150 kcal / +steps / 1–2 wk maintenance (updates goal-date projection); trigger tests incl. sparse-data no-trigger.
 - ✅ v0.6.8 **P1 · R-08b Daily oil total** (R3.4) — AC: today view sums oil g from recipes/plates vs 膳食指南 25–30 g; test 15 g olive oil = 132.6 kcal / 15 g fat.
 - ✅ v0.7.0 **P2 · R-11b 30-min evening one-tray template** (R4.3) — AC: rice cooker + one tray/air fryer + microwave eggs; shows active minutes, 锅具数, 护腕 flag; ≥5 low-oil sauces rotated so flavour doesn't repeat 2 days running.
 - ✅ v0.7.0 **P2 · N-07 Verify kiwi** — AC: kiwi suggestion shows a number only after FDC 168153 verified via FDC API (`source:"USDA FDC 168153"`).
@@ -135,3 +135,51 @@ v0.5.0 shipped N-06, R-08b, R-09, R-10 (per PM). **Correction:** R-01b expected 
 - ✅ v0.6.9 **P1 · UX-1 First-run defaults disclosure** (code audit, not click-through) — Why: never-saved profile silently shows DEFAULT_PROFILE targets + owner-specific “计划日/计划早餐”. AC: if `S.get('profile')` is unset, today view top card: “目前使用示例目标（1 分钟填写身高/体重/年龄可自动计算） [去设置] [先用示例]”; “先用示例” hides card (flag `onboardSeen`, add to KNOWN_KEYS); targets labelled “示例” until saved; first log still ≤ 1 tap from #today. Tests: no profile → card rendered + label; profile saved → no card; onboardSeen → no card.
 - ✅ v0.6.9 **P1 · UX-2 Blank profile fields become 0** — Why: `views.me.bind` does `d[k] = +d[k]`, so empty inputs overwrite defaults with 0. AC: empty string → keep previous value (or delete key so normalizeProfile default applies); required fields (身高, 体重, 出生日期) block save with inline message “请填写…”; out-of-range clamped by normalizeProfile with visible note. Tests (pure `parseProfileForm(formObj, prev)`): `{bodyFatPct:''}` + prev 20 → 20; `{goalWeight:''}` → prev kept; `{weight:'0'}` → error; `{height:'175.5'}` → 175.5.
 - ✅ v0.6.9 **P1 · UX-3 Quick-add matching & silent 100 g** — Why: exact/`includes` match else `alert()`; unit mode falls back to 100 g with no notice. AC: match ranks name startsWith > includes > pinyin > tag, top 5 suggestions inline (no alert); when food has no `unit`, unit select defaults to 克 with “该食材无单位，按克记录”; not-found shows inline “添加为自定义食材”. Tests (pure `matchFoods(q, foods)`): ‘鸡腿’ returns thigh items first; pinyin ‘jidan’ finds egg; unknown → []; `gramsFor(food without unit, 1, 'unit')` → null, not 100.
+
+### Rulings R8 (needs-research, 2026-10-15 ~05:45 SGT; code read @ fiber.js 2ecd053, review.js 503625c)
+
+#### R8 · N-04 fiber swap ranking — **the formula is right; the old AC was wrong**
+Intent (R5.2): most fiber per extra kcal, never > kcal target +5%, practical portions. Recomputed on the SWAPS values in fiber.js (= R5.2 table + kiwi from R7.2), score = fiberGain / max(kcalDelta, 20):
+| rank | id | fiber g | Δkcal | score |
+|---|---|---|---|---|
+| 1 | sweetpot | 4.4 | −60 | 0.220 |
+| 2 | brownhalf | 2.4 | −14 | 0.120 |
+| 3 | spinach200 | 4.4 | 46 | 0.0957 |
+| 4 | broc200 | 6.6 | 70 | 0.0943 |
+| 5 | peas100 | 5.7 | 81 | 0.0704 |
+| 6 | kiwi2 | 4.5 | 92 | 0.0489 |
+| 7 | mushroom150 | 1.5 | 33 | 0.0455 |
+| 8 | oats40 | 4.2 | 156 | 0.0269 |
+Oats is **last**, so “oats/peas/broc in top 3” contradicts the stated intent; that AC is withdrawn. Two practical rules are added (design choices, not sourced):
+- **(a) Minimum benefit:** drop swaps with fiberGain < 3 g (removes brownhalf, which R5.2 already labels “帮助有限”, and mushroom150).
+- **(b) Replacements need a target:** `replace` swaps are offered only if the day has ≥ that much logged white rice (sweetpot: `riceCooked` ≥ 150 g; brownhalf: ≥ 200 g), and at most one rice-replacement is shown.
+- **(c) Order:** sort by score desc only (drop the “replacements first” pre-sort; the max(Δ,20) floor already ranks them high). Tie → lower Δkcal, then id.
+- Unchanged: room = kcalTarget×1.05 − kcal, filter Δkcal ≤ room; fiber ≥ target → []; gutHigh appends the water tip after the top 3.
+New signature: `suggestFiber({fiber, fiberTarget=28, kcal, kcalTarget, riceG=0, gutHigh=false}, n=3)`.
+Fixtures (expected order exact):
+- F1 plan day: fiber 15, kcal 1782, kcalTarget 1800 (room 108), riceG 400 → **[sweetpot, spinach200, broc200]** (oats 156 > room, brownhalf <3 g).
+- F2 no rice: fiber 10, kcal 1200, kcalTarget 1800, riceG 0 → **[spinach200, broc200, peas100]**.
+- F3 tight: fiber 12, kcal 1880, kcalTarget 1800 (room 10), riceG 200 → **[sweetpot]**.
+- F4 tight, no rice: same as F3 but riceG 0 → **[]**.
+- F5 rice 160 g: fiber 15, kcal 1500, kcalTarget 1800, riceG 160 → **[sweetpot, spinach200, broc200]** (brownhalf ineligible anyway).
+- F6 room 60: fiber 15, kcal 1830, kcalTarget 1800 (room 60), riceG 0 → **[spinach200]**.
+- F7 done: fiber 28 → []. F8 gutHigh with F2 inputs → F2 list + `water` as 4th.
+
+#### R8 · R-10 plateau — exact rule (as shipped in `review.js plateau()`, plus required follow-ups)
+Shipped rule (read from code):
+1. Window = weigh-ins with date in (today−14 d, today], i.e. 14 calendar days today−13 … today (date strings parsed as UTC midnight on both sides; consistent).
+2. Need ≥ 10 weigh-ins in the window (≈ 5/wk), else `{plateau:false, reason:'sparse'}`.
+3. Split: A = today−13 … today−7, B = today−6 … today; each needs ≥ 3 weigh-ins, else sparse.
+4. delta = mean(B) − mean(A) (plain means of the weigh-ins, i.e. this-week calendar average vs previous-week calendar average).
+5. plateau = |delta| < 0.1 kg **or** delta > 0.
+Mismatches vs research text: (i) research said “MA7 change over ≥ 14 d”; code compares two adjacent 7-day calendar means (MA7 today vs MA7 7 days earlier). **Ruling: keep the code's rule** — it uses 14 days of data, which is what “over ≥ 14 d” intended; update the R-10 wording to this. (ii) Rising weight returns plateau:true with no distinction. **Ruling:** return `reason:'up'` when delta ≥ 0.1, `reason:'flat'` when |delta| < 0.1; UI label 上升 vs 持平 (already listed in A8). (iii) No adherence condition. **Ruling:** the “−100–150 kcal” action is offered only if the same review week has `kcalOkDays ≥ 5` and `logged ≥ 5`; otherwise show “先把记录和热量做稳一周再判断” and offer only +步数/保持. (iv) No cooldown. **Ruling:** suppress plateau prompts for 14 days after any saved review decision of −kcal or 维持周, and while `breakState` is active (window must start after the break's `until`). All thresholds (0.1 kg, 10 logs, 3 per half, 5 adherent days, 14-day cooldown) are design choices derived from R3.6, not clinical cut-offs.
+Fixtures (today = 2026-10-15; A = 10-02…10-08, B = 10-09…10-15; daily weigh-ins unless stated; values chosen to be exact in binary):
+- P1 flat: A all 70.25, B all 70.1875 → delta −0.0625 → `{plateau:true, reason:'flat'}`.
+- P2 losing: A 70.25, B 70.125 → delta −0.125 → plateau false.
+- P3 rising: A 70.0, B 70.25 → delta +0.25 → `{plateau:true, reason:'up'}`.
+- P4 sparse: 9 weigh-ins total → reason 'sparse'.
+- P5 half sparse: A 10 entries? impossible (7 days) → use A 7 + B 2 = 9 → sparse; and A 7 + B 3 = 10 with flat values → plateau true.
+- P6 edges: an entry dated 10-01 (today−14) is excluded; 10-02 and 10-15 are included; 10-08 is in A, 10-09 in B.
+- P7 adherence: P1 weights + week review kcalOkDays 3 → plateau true but actions = ['steps','keep'] (no −kcal).
+- P8 cooldown: P1 weights + review decision '−kcal' saved 2026-10-05 → suppressed (until 2026-10-19); same decision saved 2026-09-30 → shown.
+- P9 break: breakState.until 2026-10-10 → suppressed (window overlaps break).

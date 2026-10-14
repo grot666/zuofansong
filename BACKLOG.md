@@ -48,7 +48,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
     - Wall stays ≤ 4 s on CI; if not, split "invariants" vs "determinism" into two files rather than thinning asserts.
   - Tests: the grid file itself; duration still asserted.
 
-- **A52 A45 leftover cleanup in plan split (P3)**
+- **A52 A45 leftover cleanup in plan split (P3)** ✅
   - Why: `plan/portion.js` still ends with a 4-line comment documenting `applyBudget` (now in `budget.js`). `plan/select.js` defines unused `const sum = …`. Harmless, but it confuses the next editor and undoes the "each file owns one concern" goal of A45.
   - AC: remove the orphan comment and the unused `sum`; no behaviour change; A44 snapshots still green.
 

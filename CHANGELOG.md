@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.33
+- A52 remove orphan applyBudget comment and unused sum helper
+
 ## v0.10.32
 - A51 plangrid determinism on every cell (split file)
 

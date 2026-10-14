@@ -147,3 +147,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 07:08 v0.10.31 A50: TUNA extracted to core/tuna.js
 
 - 07:10 v0.10.32 A51 plangrid determinism on every cell (split file)
+
+- 07:10 v0.10.33 A52 remove orphan applyBudget comment and unused sum helper

@@ -1,6 +1,5 @@
 // A45: split from js/core/plan.js (select). Import via js/core/plan.js (facade).
 import { mealScores } from '../scores.js';
-import { totals } from '../foods.js';
 // Weekly plan generator. Pure; takes food lookup fn so it is testable.
 // Each day: breakfast template + lunch + dinner (staple + protein + veg recipe) + optional fruit.
 // Scales staple and protein portions so kcal is within ±5% of target and protein >= target.
@@ -15,7 +14,6 @@ export const PROTEINS = ['thighRoasted', 'breastRoasted', 'shrimpCooked', 'seaba
 export const STAPLES = ['riceCooked', 'brownRiceCooked', 'milletCooked', 'sweetPotatoBaked'];
 // raw-purchase conversion: shopping list buys raw; cooked weight / factor = raw
 
-const sum = (items, food) => totals(items, food);
 
 // A9 split: selectWeek picks *what* (deterministic from seed), portionDay picks *how much*.
 // dinnerProteins[d] is cooked once for dinner(d) and lunch(d+1); lunch(0) uses dinnerProteins[6] (last week's batch).

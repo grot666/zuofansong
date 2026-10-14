@@ -132,7 +132,3 @@ export function generateWeek(targets, food, recipes, opts = {}) {
     return d;
   });
 }
-
-// RESEARCH-R6 §R6.3 greedy. slots: protein id per slot; slotCost(id, i): CNY for slot i with id (protein held constant).
-// options: candidate ids. Returns { slots, cost, swaps, overBudget, steps }.
-// score(id) (optional): among cheaper candidates that alone bring the week within budget, take the best-scoring; else the cheapest.

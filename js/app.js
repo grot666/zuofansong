@@ -10,14 +10,12 @@ import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
 import { RECIPES } from '../data/recipes.js';
 
-export const VERSION = '0.4.0';
-const CHANGELOG = [
-  ['0.4.0', '常用餐模板（一键记录、可撤销、搭配页可存为模板）；纤维不足时给出 3 个最划算的补法；体重 7 日均线图与每周速度；食材 127 种，含 20 种上海常见外卖/早餐估算与点外卖小贴士；糙米替换数据更正（200 g 熟饭 +2.4 g 纤维 / −14 kcal）。'],
-  ['0.3.0', '新增“菜单”页：一周菜单、购物清单（含估价、预算）、周日备餐。'],
-  ['0.2.0', '新增懒人蔬菜（含油克数、筛选）；22 种食材按 USDA FDC 核实；蛋白目标支持自定/去脂体重模式（默认 140 g）；一键记入“我的计划日”；杂粮饭食品安全提示。'],
-  ['0.1.0', '首个版本：我的目标、食材库、杂粮饭配比器、今日饮食、脂肪预算、蛋白补充、饮水纤维。'],
-];
-S.migrate();
+import { VERSION, CHANGELOG } from './core/version.js';
+import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from './core/profile.js';
+import { MULTS, scaleItems } from './core/portion.js';
+import { sleepNotes } from './core/sleep.js';
+import { bootStore, registerSW } from './boot.js';
+bootStore();
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const r1 = n => Math.round(n * 10) / 10;
@@ -25,7 +23,6 @@ const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getT
 const dayOffset = n => { const d = new Date(Date.now() + n * 86400000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
 
 // Owner's plan doc: 1700-2000 kcal, protein 130-160 g, fat 50-70 g.
-const DEFAULT_PROFILE = { sex: 'male', birth: '1997-07-31', height: 173.5, weight: 74, goalWeight: 58, goalDate: '2027-07-31', activity: 'sedentary', deficitPct: 20, proteinMode: 'fixed', proteinTarget: 140, proteinPerKg: 1.6, bodyFatPct: 27.5, proteinPerFfm: 2.5, fatPct: 25, scoopG: 24, maxScoops: 2, trainingDays: 2, usesPowder: false };
 // Owner's sample day (research R4.2): ≈1782 kcal / 149 g P / 62 g F / 15 g fiber.
 const PLAN_DAY = [['eggUSDA', 150], ['riceCooked', 400], ['thighRoasted', 360], ['tunaLight', 100], ['broccoliUSDA', 300], ['carrot', 200], ['oil', 15]];
 // Preset templates (research R5.5).
@@ -34,12 +31,13 @@ const PRESET_TEMPLATES = [
   { id: 'p2', name: '烤鸡腿饭', items: [['thighRoasted', 120], ['riceCooked', 200], ['broccoliUSDA', 250], ['oil', 5]] },
   { id: 'p3', name: '金枪鱼加餐', items: [['tunaLight', 100], ['cucumber', 150]] },
 ];
-const profile = () => ({ ...DEFAULT_PROFILE, ...S.get('profile', {}) });
+const profile = () => normalizeProfile(S.get('profile', {}));
 const allFoods = () => [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
 const food = id => allFoods().find(f => f.id === id);
 const logKey = d => 'log.' + d;
 const getLog = (d = today()) => S.get(logKey(d), { items: [], water: 0 });
 const setLog = (l, d = today()) => S.set(logKey(d), l);
+const tplMult = () => (MULTS.includes(S.get('tplMult', 1)) ? S.get('tplMult', 1) : 1);
 const templates = () => { const user = S.get('templates', []); const use = S.get('templateUse', {}); return [...user, ...PRESET_TEMPLATES].sort((a, b) => (use[b.id] || 0) - (use[a.id] || 0)); };
 
 function totals(items) {
@@ -90,6 +88,7 @@ views.me = () => {
   <div class="row"><label>身高 cm<input type="number" step="0.1" name="height"></label><label>体重 kg<input type="number" step="0.1" name="weight"></label><label>估计体脂 %<input type="number" step="0.5" name="bodyFatPct"></label></div>
   <div class="row"><label>目标体重 kg<input type="number" step="0.1" name="goalWeight"></label><label>目标日期<input type="date" name="goalDate"></label></div>
   <label>活动水平<select name="activity">${ACTIVITY.map(a => `<option value="${a.id}">${a.label}</option>`).join('')}</select></label>
+  <div class="row"><label>睡觉时间<input type="time" name="bedtime"></label><label><input type="checkbox" name="sleepNudges"> 睡前提醒</label></div>
   <div class="row"><label>热量缺口 %<input type="number" name="deficitPct" min="5" max="30"></label><label>脂肪 %<input type="number" min="20" max="35" name="fatPct"></label></div>
   <label>蛋白目标方式<select name="proteinMode"><option value="fixed">自定克数（你的计划 130–160 g）</option><option value="bw">按体重 g/kg</option><option value="ffm">按去脂体重 g/kg</option></select></label>
   <div class="row"><label>自定蛋白 g<input type="number" name="proteinTarget"></label><label>体重 g/kg<input type="number" step="0.1" min="1.2" max="2" name="proteinPerKg"></label><label>去脂 g/kg<input type="number" step="0.1" min="1.6" max="3.1" name="proteinPerFfm"></label></div>
@@ -114,17 +113,24 @@ views.me = () => {
   <section class="card"><h2>数据</h2><div class="row"><button id="exp" class="sec">导出备份</button><label style="margin:0">导入备份<input type="file" id="imp" accept="application/json"></label><button id="rst" class="sec">清空数据</button></div></section>
   <section class="card"><h2>更新日志</h2><ul class="list">${CHANGELOG.map(([v, d]) => `<li><b>v${v}</b> ${d}</li>`).join('')}</ul></section>`;
 };
+function sleepHtml(l, p) {
+  const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  const entries = l.items.filter(i => i.t && food(i.id)).map(i => ({ id: i.id, time: hm(i.t), kcal: food(i.id).kcal * i.g / 100 }));
+  const n = sleepNotes(entries, p);
+  if (!p.sleepNudges) return '';
+  return `<p class="mut">睡前提醒：${n.dinnerBy} 前吃完晚饭，${n.caffeineBy} 后不喝咖啡/茶（按 ${p.bedtime} 睡觉）。</p>${n.lateMeal ? `<p class="warn">${n.lateMeal.time} 吃了约 ${Math.round(n.lateMeal.kcal)} kcal，离睡觉较近，可能影响睡眠。偶尔一次没关系。</p>` : ''}${n.lateCaffeine ? `<p class="warn">${n.lateCaffeine.time} 摄入咖啡因，可能影响今晚入睡。</p>` : ''}`;
+}
 function goalPace(p) {
-  const weeks = (new Date(p.goalDate) - new Date()) / 604800000;
-  if (!(weeks > 0)) return '';
-  const perWeek = (p.weight - p.goalWeight) / weeks;
-  const pct = perWeek / p.weight * 100;
-  return `<p class="mut">距目标 ${r1(p.weight - p.goalWeight)} kg，约 ${Math.round(weeks)} 周，需每周减 ${r1(perWeek)} kg（${r1(pct)}%/周）${pct > 1 ? '<span class="warn">，偏快，可考虑延后目标日期</span>' : '，在 0.5–1%/周的合理范围内'}。</p>`;
+  const r = paceCheck({ currentKg: p.weight, goalKg: p.goalWeight, today: today(), goalDate: p.goalDate });
+  const msg = { incomplete: '填写目标体重和日期后显示节奏。', reached: '已达到目标体重 🎉 可以把热量缺口改为 0% 维持。', gain: '目标体重高于当前体重，本应用按减脂设计。', 'invalid-date': '<span class="warn">目标日期需晚于今天。</span>' }[r.status];
+  if (msg) return `<p class="mut">${msg}</p>`;
+  const tail = { fast: '<span class="warn">，偏快（>1%/周），建议延后目标日期</span>', slow: '，偏慢（<0.25%/周），可以更早达到', ok: '，在合理范围内' }[r.status];
+  return `<p class="mut">距目标 ${r1(p.weight - p.goalWeight)} kg，${r.days} 天（约 ${r1(r.weeks)} 周），需每周减 ${r1(r.kgPerWeek)} kg（${r1(r.pctPerWeek)}%/周）${tail}。</p>`;
 }
 views.me.bind = () => {
   const p = profile(); const f = $('#pf');
   for (const [k, v] of Object.entries(p)) { const el = f.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }
-  f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; S.set('profile', { ...p, ...d }); render(); };
+  f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode', 'bedtime'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; d.sleepNudges = f.elements.sleepNudges.checked; S.set('profile', { ...p, ...d }); render(); };
   $('#wf').onsubmit = e => {
     e.preventDefault(); const w = +e.target.w.value; const date = e.target.d.value || today(); if (!w) return;
     const old = S.get('weights', []); if (old.some(x => x.date === date) && !confirm(`${date} 已有记录，覆盖？`)) return;
@@ -133,7 +139,7 @@ views.me.bind = () => {
     render();
   };
   $('#exp').onclick = () => { const blob = new Blob([JSON.stringify(S.exportAll(), null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zuofansong-backup-${today()}.json`; a.click(); };
-  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); S.importAll(o); alert('导入成功'); render(); } catch { alert('文件格式不正确'); } };
+  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); const n = S.importAll(o); alert('导入成功：' + n + ' 项'); render(); } catch (err) { alert(err.message || '文件格式不正确'); } };
   $('#rst').onclick = () => { if (confirm('确定清空所有本地数据？建议先导出备份。')) { S.resetAll(); render(); } };
 };
 
@@ -240,8 +246,9 @@ views.today = () => {
   纤维 ${r1(x.fiber)} / 28 g${bar(x.fiber, 28)}
   ${swaps.length ? `<p><b>纤维还差 ${Math.round(28 - x.fiber)} g，最划算的补法：</b></p><ul>${swaps.map(s => `<li>${s.text}${s.fiberGain ? `（纤维 +${s.fiberGain} g，热量 ${s.kcalDelta >= 0 ? '+' : ''}${s.kcalDelta} kcal）` : ''}${s.add ? ` <button class="sec" data-swap="${s.id}">+ 记入</button>` : ''}</li>`).join('')}</ul><p class="mut">数据来自 USDA FDC。</p>` : ''}
   ${l.items.length && x.kcal > t.kcal * 1.1 ? '<p class="mut">今天超了也没关系，看一周平均。明天照常吃，不用节食补救。</p>' : ''}
+  ${sleepHtml(l, p)}
   <p class="mut">估算食材成本 ≈ ¥${r1(x.cost)}</p></section>
-  <section class="card"><h2>常用餐</h2><p class="mut">点一下就记入。在“搭配”页可存自己的模板。</p><div>${templates().map(tp => { const k = totals(tp.items.map(([id, g]) => ({ id, g }))).kcal; return `<button class="sec" data-tpl="${tp.id}" style="margin:4px 4px 0 0">${esc(tp.name)} · ${Math.round(k)}</button>`; }).join('')}</div>
+  <section class="card"><h2>常用餐</h2><p class="mut">点一下就记入。在“搭配”页可存自己的模板。</p><div class="row" role="group" aria-label="份量">份量 ${MULTS.map(m => `<button class="${m === tplMult() ? '' : 'sec'}" data-mult="${m}" aria-pressed="${m === tplMult()}">×${m}</button>`).join('')}</div><div>${templates().map(tp => { const k = totals(scaleItems(tp.items, tplMult()).map(([id, g]) => ({ id, g }))).kcal; return `<button class="sec" data-tpl="${tp.id}" style="margin:4px 4px 0 0">${esc(tp.name)} · ${Math.round(k)}</button>`; }).join('')}</div>
   ${undo && undo.date === today() ? `<p class="mut">已记入“${esc(undo.name)}” <button class="sec" id="undo">撤销</button></p>` : ''}</section>
   <section class="card"><h2>快速记录</h2><form id="af"><input list="fdl" name="f" placeholder="食材或外卖名称（如 生煎、黄焖鸡）" aria-label="食材"><datalist id="fdl">${allFoods().map(f => `<option value="${esc(f.name)}">`).join('')}</datalist>
   <div class="row"><input type="number" name="n" value="1" step="any" aria-label="数量"><select name="u" aria-label="单位"><option value="unit">个/碗/份（按食材单位）</option><option value="g">克</option><option value="bowl">碗（熟饭 150 g）</option></select><button>添加</button></div></form>
@@ -262,7 +269,8 @@ views.today.bind = () => {
   const addItem = (id, g) => { S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
   $('#af').onsubmit = e => { e.preventDefault(); const d = e.target; const q = d.f.value.trim(); if (!q) return; const f = allFoods().find(x => x.name === q) || allFoods().find(x => x.name.includes(q) || (x.py || '') === q.toLowerCase()); if (!f) { alert('没找到这个食材，可在“食材”页添加'); return; } const n = +d.n.value || 1; let g = n; if (d.u.value === 'unit') g = n * (f.unit?.g || 100); if (d.u.value === 'bowl') g = n * 150 / (f.yield || 1); addItem(f.id, g); };
   document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { const f = food(b.dataset.r); addItem(f.id, f.unit?.g || 100); });
-  document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { const tp = templates().find(x => x.id === b.dataset.tpl); const use = S.get('templateUse', {}); use[tp.id] = (use[tp.id] || 0) + 1; S.set('templateUse', use); pushItems(tp.items, tp.name); });
+  document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { const tp = templates().find(x => x.id === b.dataset.tpl); const use = S.get('templateUse', {}); use[tp.id] = (use[tp.id] || 0) + 1; S.set('templateUse', use); pushItems(scaleItems(tp.items, tplMult()), tplMult() === 1 ? tp.name : `${tp.name} ×${tplMult()}`); });
+  document.querySelectorAll('[data-mult]').forEach(b => b.onclick = () => { S.set('tplMult', +b.dataset.mult); render(); });
   document.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => { const s = suggestFiber({ fiber: 0, kcal: 0, kcalTarget: 1e9 }, 99).find(x => x.id === b.dataset.swap); if (s) pushItems(s.add, s.text); });
   const u = $('#undo'); if (u) u.onclick = () => { const un = S.get('undo'); const l = getLog(); l.items = l.items.slice(0, un.from); setLog(l); S.set('undo', null); render(); };
   document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const l = getLog(); l.items.splice(+b.dataset.del, 1); setLog(l); S.set('undo', null); render(); });
@@ -281,4 +289,4 @@ function render() {
 $('#ver').textContent = 'v' + VERSION;
 window.addEventListener('hashchange', render);
 render();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+registerSW();

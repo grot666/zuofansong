@@ -2,11 +2,13 @@ import { computeTargets } from './core/targets.js';
 import { weekReview, plateau, lastNDates } from './core/review.js';
 import { weeklyStatus } from './core/weight.js';
 import * as S from './core/store.js';
+import { startBreak } from './core/breaks.js';
+import { bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
 import { FOODS } from '../data/foods.js';
 import { FOODS2 } from '../data/foods2.js';
 import { FOODS3 } from '../data/foods3.js';
 
-const DEFAULT_PROFILE = { sex: 'male', birth: '1997-07-31', height: 173.5, weight: 74, goalWeight: 58, activity: 'sedentary', deficitPct: 20, proteinMode: 'fixed', proteinTarget: 140, fatPct: 25 };
+bootStore();
 const all = [...FOODS, ...FOODS2, ...FOODS3, ...S.get('customFoods', [])];
 const food = id => all.find(f => f.id === id);
 const r1 = n => Math.round(n * 10) / 10;
@@ -23,7 +25,7 @@ const DECISIONS = [
 ];
 
 function render() {
-  const p = { ...DEFAULT_PROFILE, ...S.get('profile', {}) };
+  const p = getProfile();
   const t = computeTargets(p);
   const today = localDate();
   const dates = lastNDates(today, 7);
@@ -56,8 +58,9 @@ function render() {
     const reviews = S.get('reviews', {}); reviews[today] = { decision: d, note: e.target.note.value }; S.set('reviews', reviews);
     let msg = '已保存。';
     if (d === 'minus' && confirm('把热量缺口提高 5%？（可在“我的”页改回）')) { const prof = S.get('profile', {}); prof.deficitPct = Math.min(30, (prof.deficitPct ?? 20) + 5); S.set('profile', prof); msg += '缺口已调整为 ' + prof.deficitPct + '%。'; }
-    if (d === 'break' && confirm('下周把热量设为 TDEE（缺口 0%）？记得一周后改回。')) { const prof = S.get('profile', {}); S.set('breakFrom', prof.deficitPct ?? 20); prof.deficitPct = 0; S.set('profile', prof); msg += '已设为维持热量。'; }
+    if (d === 'break' && confirm('接下来 7 天把热量设为 TDEE（缺口 0%）？7 天后自动恢复。')) { const r = startBreak(S.get('profile', {}), todayStr()); S.set('profile', r.profile); S.set('breakState', r.breakState); msg += `已设为维持热量，${r.breakState.until} 后自动恢复 ${r.breakState.from}% 缺口。`; }
     $('#dmsg').textContent = msg;
   };
 }
 try { render(); } catch (e) { console.error(e); $('#view').innerHTML = `<section class="card"><h2>出错了</h2><p class="mut">${e.message}</p></section>`; }
+registerSW();

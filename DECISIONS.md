@@ -13,3 +13,6 @@
 - 2026-10-15 04:40 SGT — [arch] One VERSION source (js/core/version.js); sw CACHE must equal 'zfs-'+VERSION, enforced by test. Reason: stale caches / mismatched 更新日志.
 - 2026-10-15 04:40 SGT — [arch] SW: network-first for navigations, stale-while-revalidate for static assets, cache only ok same-origin responses. Reason: fast offline start on phone, updates via cache-name bump.
 - 2026-10-15 04:40 SGT — [arch] CI = GitHub Actions running node --check + node --test on push/PR; Pages deploys from main / branch (no build). Reason: §4 no build step; gate for API-connector pushes.
+- 2026-10-15 05:40 SGT — resolveBreak/startBreak live in js/core/breaks.js (not core/review.js as ARCHITECTURE suggested). Reason: called on every page boot; keeps review.js import-free for plan/index pages.
+- 2026-10-15 05:40 SGT — planWeek budget: applyBudget runs on dinner-protein slots (each slot = dinner(d)+lunch(d+1)), slot cost estimated from raw price per protein; final cost/overBudget recomputed from the real shopping list. Lunch(0) = dinner(6) so every swap moves a full batch.
+- 2026-10-15 05:40 SGT — portionDay tops protein back up after staple trimming (protein floor wins over ±3% kcal band; checkWeek still uses ±5%).

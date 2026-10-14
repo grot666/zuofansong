@@ -37,4 +37,9 @@ export const FOODS3 = [
   C('pomfret', '鲳鱼', 'changyu', '蛋白', 140, 18.5, 7.3, 0, 0, 30, ['鱼'], { fatClass: 'high' }),
   C('crucian', '鲫鱼', 'jiyu', '蛋白', 108, 17.1, 2.7, 3.8, 0, 12, ['鱼', '煲汤'], { fatClass: 'high' }),
   C('chickenGizzard', '鸡胗', 'jizhen', '蛋白', 118, 19.2, 2.8, 4.0, 0, 12, ['蛋白', '卤味'], {}),
+  // Caffeine drinks for R-04 sleep nudges. Coffee: USDA FDC 171890 (brewed, 1 kcal/100 g); latte/milk tea are rough estimates.
+  C('coffee', '黑咖啡/美式', 'kafei', '饮品', 1, 0.1, 0, 0, 0, 0, ['饮品', '咖啡因'], { unit: { name: '杯', g: 350 }, source: 'USDA FDC 171890', verified: true, fatClass: 'neutral' }),
+  C('latte', '拿铁(全脂奶)', 'natie', '饮品', 54, 3.0, 2.8, 4.4, 0, 0, ['饮品', '咖啡因'], { unit: { name: '杯', g: 350 }, fatClass: 'neutral', source: '估算' }),
+  T('milkTea', '奶茶(少糖)', 'naicha', 55, 0.8, 2.0, 8.5, '杯', 500, { fiber: 0, cat: '饮品', tags: ['饮品', '咖啡因', '外卖'] }),
+  C('greenTea', '绿茶(无糖)', 'lvcha', '饮品', 1, 0.2, 0, 0, 0, 0, ['饮品', '咖啡因'], { unit: { name: '杯', g: 300 }, fatClass: 'neutral', source: 'USDA FDC 171917' }),
 ];

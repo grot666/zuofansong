@@ -1,14 +1,14 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:05): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A49** shopping twin alias → **A50** extract TUNA → A51/A52. Shipped since last arch review: A40–A46 ✅ (v0.10.15–0.10.21), R-01 ✅, R-11 ✅, VER-10 ✅, R10-D1 ✅ (v0.10.24), CI serial ✅ (v0.10.23). Research still open: R10-F1/F2 fiber in plan, R10-S1/S2 (S1 overlaps A49).
+Next (07:10): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A50** extract TUNA → A51/A52 → **A53** export twin map + re-split portion.js. Shipped since last arch review: A40–A46 ✅, R-01/R-11/VER-10/R10-D1 ✅, R10-F1/F2/S1 ✅ (v0.10.25–0.10.27; S1 closes A49 behaviour). Research still open: R10-S2 (300 g protein note).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 
-### Arch review @4a688c5 (v0.10.24), 2026-10-15 ~07:05 SGT — 180/180 tests on a clean clone (serial)
-Commits since `9390563` (docs(arch) @8e6e1d5 / v0.10.10): R-01, R-11, VER-10, A40–A46, plangrid/CI/perf hardening, R10-D1 data. Probes (not committed): `proteins: []` and all-PROTEINS-missing both throw in `portionDay`; seed-0 shopping list has separate `西兰花` + `西兰花(USDA)` lines (300 g + 100 g); `plan/portion.js` imports `TUNA` from `review.js`; `package.json` `test` script lacks `--test-concurrency=1` while CI has it.
+### Arch review @c339c0f (v0.10.27), 2026-10-15 ~07:10 SGT — tests green on a clean clone (serial)
+Commits since `9390563` (docs(arch) @8e6e1d5 / v0.10.10): R-01, R-11, VER-10, A40–A46, plangrid/CI/perf hardening, R10-D1, **R10-F1/F2/S1**. Probes (not committed): `proteins: []` and all-PROTEINS-missing still throw in `portionDay` @c339c0f; after R10-S1 seed-0 has one `西兰花` line; `plan/portion.js` still imports `TUNA` from `review.js`; `package.json` `test` still lacks `--test-concurrency=1`; `portion.js` is 125 lines (was ≤91 pre-F1).
 
-Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0.10.17 · A43 ✅ v0.10.18 (+ CI serial v0.10.23) · A44 ✅ v0.10.19/0.10.22 · A45 ✅ v0.10.20 · A46 ✅ v0.10.21 · R-01/R-11/VER-10/R10-D1 ✅.
+Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0.10.17 · A43 ✅ v0.10.18 (+ CI serial v0.10.23) · A44 ✅ v0.10.19/0.10.22 · A45 ✅ v0.10.20 · A46 ✅ v0.10.21 · R-01/R-11/VER-10/R10-D1 ✅ · R10-F1 ✅ v0.10.25 · R10-F2 ✅ v0.10.26 · R10-S1 ✅ v0.10.27 (= A49 behaviour).
 
 - **A47 `selectWeek`/`planWeek` crash when no protein is usable (P0)**
   - Why: same class as A40. `proteins = (opts.proteins || PROTEINS).filter(id => food(id))` can be `[]` (empty opts, or every id missing from the index after a data rename). Then `proteins[(d + seed) % proteins.length]` is `undefined`, and `portionDay` does `food(pLunch).kcal` → TypeError. The plan page try/catch shows a raw error card instead of a usable week. Probe @4a688c5: `planWeek(t, food, RECIPES, {proteins: []})` and a food lookup that drops all PROTEINS both throw.
@@ -30,17 +30,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
     - No behaviour change to tests themselves.
   - Tests: text-check `package.json` contains `--test-concurrency=1` (or assert `scripts.test` equals the CI command substring).
 
-- **A49 Shopping-list twin/alias map (P1, unlocks R10-S1)**
-  - Why: `COOKED_TO_RAW` collapses cooked→raw for pricing, but USDA twins are separate food ids with the same display role (`broccoli` / `broccoliUSDA`, and curated chips now prefer the USDA twin). `shoppingList` aggregates by raw id only, so a week that uses both shows two 西兰花 lines. Probe seed 0 @4a688c5: `西兰花(USDA)` 300 g + `西兰花` 100 g. R10-S1 asked for merge; the missing *architecture* piece is a single alias table next to `COOKED_TO_RAW`.
-  - AC:
-    - Exported `SHOP_ALIAS` (or extend `COOKED_TO_RAW`) mapping twin id → canonical raw purchase id (e.g. `broccoliUSDA → broccoli`, `kiwiUSDA → kiwi` if kiwi stays purchasable, `eggUSDA → egg` already via COOKED_TO_RAW).
-    - `shoppingList` (and `totals().cost` if needed for consistency) aggregates through the alias.
-    - Display name = canonical food's name (one line); verified badge can stay on the twin used in the meal.
-    - `keys`/data test: every `*USDA` generator id used in plan has an alias or an explicit "keep separate" allowlist comment.
-  - Tests:
-    - Fixture week containing both `broccoli` and `broccoliUSDA` → one shopping line, grams summed.
-    - Seed-0 list has ≤ 1 line whose name starts with 西兰花.
-    - Cost unchanged within ±¥0.05 vs pre-merge (same unit price on both twins, or document if prices differ).
+- ✅ **A49 Shopping-list twin/alias map (P1)** — behaviour shipped as **R10-S1 (v0.10.27)**: `twinOf` merges `*USDA` → base, pantry/small flags, `listLines` ≤ 32. Residual: export the map next to `COOKED_TO_RAW` → **A53**.
 
 - **A50 Extract `TUNA` out of `review.js` (P2)**
   - Why: A33 correctly shares one weekly gram budget between planner and review, but the constant lives in `review.js` and `plan/portion.js` imports it. That makes plan depend on review (wrong layer: review is a weekly *retrospective*, plan is a *generator*). Future review-only edits risk breaking plan imports.
@@ -61,6 +51,15 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
 - **A52 A45 leftover cleanup in plan split (P3)**
   - Why: `plan/portion.js` still ends with a 4-line comment documenting `applyBudget` (now in `budget.js`). `plan/select.js` defines unused `const sum = …`. Harmless, but it confuses the next editor and undoes the "each file owns one concern" goal of A45.
   - AC: remove the orphan comment and the unused `sum`; no behaviour change; A44 snapshots still green.
+
+- **A53 Export shopping twin map + re-split portion.js after R10-F1 (P2)**
+  - Why: (a) R10-S1's `TWIN`/`twinOf` are private inside `shopping.js`; `totals().cost` and any future export of raw grams still won't share the same alias table as `COOKED_TO_RAW`. (b) A45 AC was each plan/* file < 100 lines; R10-F1 pushed `portion.js` to 125 lines (fiber preference, vegMult, stapleSwap, fiberNote).
+  - AC:
+    - Exported `SHOP_ALIAS` / `twinOf` from `core/foods.js` (next to `COOKED_TO_RAW`) or `core/plan/shopping.js` re-exported through the facade; `shoppingList` uses it; text/data test: every generator `*USDA` id either aliases or is allowlisted.
+    - Peel fiber preference (vegMult / stapleSwap / fiberNote selection) into `plan/fiber.js` or fold into `fiber.js` so `portion.js` ≤ 100 lines again; facade re-exports; SW ASSETS updated.
+    - No behaviour change: R10-F1 / R10-S1 / A44 tests stay green.
+  - Tests: existing r10f1/r10s1/a44; plus `portion.js` line-count or module-split text check; import graph still UI → plan facade.
+
 
 
 ### Arch review @8e6e1d5 (v0.10.10), 2026-10-15 ~06:55 SGT — 161/161 tests on a clean clone

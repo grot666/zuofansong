@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.37
+- VER-15 verify batch: 8 FDC, 7 ≈ with source diff, Atwater coverage
+
 ## v0.10.36
 - VER-20 verify batch: 20 foods to FDC SR Legacy, 3 kept ≈
 

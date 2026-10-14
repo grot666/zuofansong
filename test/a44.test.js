@@ -7,8 +7,8 @@ import { RECIPES } from '../data/recipes.js';
 const food = makeIndex(FOODS, FOODS2, FOODS3);
 const ids = s => selectWeek(food, RECIPES, { seed: s }).flatMap(d => [d.vegL.id, d.vegD.id]);
 test('A44a veg-reuse snapshot seeds 0 and 1', () => {
-  assert.deepEqual(ids(0), ['r16', 'r5', 'r7', 'r19', 'r23', 'r26', 'r31', 'r32', 'r15', 'r3', 'r27', 'r14', 'r10', 'r18']);
-  assert.deepEqual(ids(1), ['r10', 'r8', 'r11', 'r13', 'r17', 'r22', 'r25', 'r28', 'r29', 'r34', 'r1', 'r4', 'r6', 'r21']);
+  assert.deepEqual(ids(0), ['r16', 'r5', 'r7', 'r19', 'r23', 'r25', 'r26', 'r31', 'r32', 'r15', 'r3', 'r27', 'r14', 'r9']);
+  assert.deepEqual(ids(1), ['r3', 'r9', 'r10', 'r8', 'r11', 'r13', 'r17', 'r22', 'r28', 'r29', 'r34', 'r1', 'r4', 'r6']);
 });
 test('A44b reuse never adds more distinct vegetables than reuse:false (seeds 0–5)', () => {
   const t = { kcal: 1800, protein: 140 };

@@ -21,3 +21,14 @@ test('SP cap: ≤3 烤红薯 days/week, fiber ≥25 g on ≥75% of grid days, ev
   assert.ok(hi / n >= 0.8, String(hi / n));
   assert.ok(sp / n <= 3 / 7 + 1e-9, String(sp / n)); // A60: restored
 });
+// A59: select.js schedules sweet potato on at most one 2-day batch (4 staples rotate over the 4 batches), so the cap
+// in day.js is only a backstop; on this grid no day needs a staple swap (stapleSwap / spCap count pinned at 0, v0.10.48).
+test('A59 selectWeek: ≤1 sweet-potato batch by construction; 0 staple swaps on the spcap grid', async () => {
+  const { selectWeek, STAPLES } = await import('../js/core/plan.js');
+  assert.equal(STAPLES.filter(s => s === SP_ID).length, 1); assert.ok(STAPLES.length >= 4);
+  let swaps = 0;
+  for (let seed = 0; seed < 12; seed++) assert.ok(selectWeek(food, RECIPES, { seed }).filter(d => d.staple === SP_ID).length <= 2, String(seed));
+  for (const [kcal, protein] of [[1400, 110], [1617, 160], [1800, 130], [1800, 145], [1800, 160], [2000, 100], [2200, 160]]) for (let seed = 0; seed < 6; seed++)
+    for (const budget of [undefined, 200]) swaps += planWeek({ kcal, protein }, food, RECIPES, { seed, budget }).week.filter(d => d.stapleSwap || d.spCap).length;
+  assert.equal(swaps, 0);
+});

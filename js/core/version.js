@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.6.4';
+export const VERSION = '0.6.5';
 export const CHANGELOG = [
+  ['0.6.5', '一周菜单在低热量/高蛋白目标下也能贴合热量：自动调整早餐份量和水果；做不到时明确提示。'],
   ['0.6.4', '导入备份改为“替换”并可撤销一次；隐私模式/存储已满时顶部提示；页面加载失败时可一键清除离线缓存；新版本生效时提示刷新。'],
   ['0.6.3', '内部整理：各页面拆分为独立模块，加载更稳。'],
   ['0.6.2', '导入旧备份时会正确升级数据；离线缓存后台更新更可靠。'],

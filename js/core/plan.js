@@ -28,30 +28,44 @@ export function selectWeek(food, recipes, opts = {}) {
     vegL: vegs[(d * 2 + seed) % vegs.length], vegD: vegs[(d * 2 + 1 + seed) % vegs.length],
   }));
 }
+export const BF_MULTS = [1, 0.75, 1.25, 0.5];
+export const KIWI_G = [100, 0, 200];
+// A19: closed-form search. Totals are linear in staple g (sg, per meal) and protein g (pg, per meal),
+// so for each breakfast×snack knob and sg we solve the best pg ≥ protein floor directly (no iteration loops).
 export function portionDay(sk, { kcal, protein }, food) {
   const { bf, pDinner, pLunch, staple, vegL, vegD } = sk;
-  let pg = 120, sg = 150;
-  const build = () => {
+  const r5 = x => Math.round(x / 5) * 5;
+  const build = (sg, pg, bm, kiwi) => {
     const meals = [
-      { name: '早餐', title: bf.name, items: bf.items },
+      { name: '早餐', title: bm === 1 ? bf.name : `${bf.name} ×${bm}`, items: bf.items.map(([id, g]) => [id, Math.round(g * bm)]) },
       { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name} + ${vegL.name}`, items: [[staple, sg], [pLunch, pg], ...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] },
       { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name} + ${vegD.name}`, items: [[staple, sg], [pDinner, pg], ...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] },
-      { name: '加餐', title: '猕猴桃', items: [['kiwi', 100]] },
     ];
+    if (kiwi) meals.push({ name: '加餐', title: '猕猴桃', items: [['kiwi', kiwi]] });
     return { meals, tot: sum(meals.flatMap(m => m.items), food) };
   };
-  let r = build();
-  for (let i = 0; i < 40 && r.tot.protein < protein; i++) { pg += 10; r = build(); }
-  for (let i = 0; i < 60; i++) {
-    const diff = r.tot.kcal - kcal;
-    if (Math.abs(diff) <= kcal * 0.03) break;
-    sg = Math.max(50, Math.min(350, sg - Math.sign(diff) * 10)); r = build();
-    if (sg === 50 || sg === 350) break;
-  }
-  // staple trimming also removes some protein; top protein back up (protein floor wins over kcal band)
-  for (let i = 0; i < 20 && r.tot.protein < protein; i++) { pg += 5; r = build(); }
-  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: pg, stapleG: sg };
+  const st = food(staple), pl = food(pLunch), pd = food(pDinner);
+  const sK = 2 * st.kcal / 100, sP = 2 * st.protein / 100;
+  const pK = (pl.kcal + pd.kcal) / 100, pP = (pl.protein + pd.protein) / 100;
+  let best = null;
+  BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => {
+    const base = build(0, 0, bm, kiwi).tot;
+    for (let sg = 50; sg <= 350; sg += 10) {
+      const pgMin = Math.max(60, Math.ceil((protein - base.protein - sg * sP) / pP / 5) * 5);
+      const pg = Math.min(450, Math.max(pgMin, r5((kcal - base.kcal - sg * sK) / pK)));
+      const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
+      const short = Math.max(0, protein - P);
+      // lexicographic: protein floor, then kcal distance, then prefer default knobs
+      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5;
+      if (!best || score < best.score) best = { score, sg, pg, bm, kiwi };
+    }
+  }));
+  const r = build(best.sg, best.pg, best.bm, best.kiwi);
+  const off = (r.tot.kcal - kcal) / kcal;
+  const fit = r.tot.protein < protein - 0.5 ? 'protein-low' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
+  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, fit };
 }
+export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
   return selectWeek(food, recipes, opts).map(sk => portionDay(sk, targets, food));
 }
@@ -79,7 +93,8 @@ export function planWeek(targets, food, recipes, opts = {}) {
   let week = generateWeek(targets, food, recipes, opts);
   const cost = w => shoppingList(w, food).reduce((s, x) => s + x.cost, 0);
   let total = cost(week);
-  if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0 };
+  const infeasible = feasibility(targets);
+  if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible };
   const slots = week.map(d => d.dinnerProtein);
   const pairG = week.map((d, i) => d.proteinG + week[(i + 1) % 7].proteinG); // grams of cooked protein in the pair
   const pairP = slots.map((id, i) => pairG[i] * food(id).protein / 100);
@@ -88,7 +103,7 @@ export function planWeek(targets, food, recipes, opts = {}) {
   const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget });
   week = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots });
   total = cost(week);
-  return { week, cost: total, overBudget: total > opts.budget, swaps: r.swaps };
+  return { week, cost: total, overBudget: total > opts.budget, swaps: r.swaps, infeasible };
 }
 
 export function shoppingList(days, food) {

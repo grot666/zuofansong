@@ -28,6 +28,7 @@ function render() {
   const proteinsUsed = [...new Set(week.map(d => d.dinnerProtein))].map(id => food(id).name);
   $('#view').innerHTML = `<section class="card"><h2>本周菜单 <small class="mut">v${VERSION}</small></h2>
   <p class="mut">每天目标 ${t.kcal} kcal（±5%）、蛋白 ≥ ${t.protein} g。晚餐多做一份 = 第二天午餐（晚上一次做两顿）。主食按熟重。</p>
+  ${plan.infeasible ? `<p class="warn">这个热量下蛋白目标偏高（蛋白占 ${plan.infeasible.pct}% 热量），已优先保证蛋白，部分天热量会超出。可在“我的”降低蛋白目标或热量缺口。</p>` : ''}${week.some(d => d.fit !== 'ok') && !plan.infeasible ? '<p class="mut">个别天无法同时满足热量和蛋白，已优先保证蛋白（标 ⚠）。</p>' : ''}
   <div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" value="${budget}"></label></div></section>
   ${week.map((d, i) => `<section class="card"><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3>
     <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span></li>`).join('')}</ul>

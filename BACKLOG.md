@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION v0.6.x; foods 131; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next: A6 split app.js views · A8 · A11 · R-15 · N-items still open below · price override per food.
+Next: A18 → A17 → A20 → A21 → A22 → A6 split app.js views · A19 · A8 · A11 · R-15 · N-items still open below · price override per food.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/51 pass on a clean clone._
@@ -73,6 +73,27 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
 - **A14 KNOWN_KEYS ↔ docs sync (P3)**
   - Why: v0.6 added the keys `tplMult`, `sleepNoteDay` and `breakState`.
   - AC: a test parses the ARCHITECTURE §3 key table and asserts it matches `KNOWN_KEYS`. Or simpler: keep the table generated from a comment in store.js.
+
+### Arch review @2f32a1a (v0.6.2), 2026-10-15 ~05:25 SGT — new items (probes reproducible, see ARCHITECTURE §3–§5)
+56/56 tests pass on a clean clone. A13/A15/A16 verified shipped. Sequence: **A18 → A17 → A20 → A21 → A22 → A6**; A19 in parallel (core-only).
+- **A18 boot: surface migrate abort + detect non-persistent storage (P0 reliability)**
+  - Why: since A13b, `migrate()` returns early when `backup.preMigration` can't be written, so the page runs v2 code on v1 data. The `storage-error` from that failed write fires **before** `bootStore()` attaches its listener → silent. Probe: backend throwing on `backup.*` → `migrate() === 1`, `breakFrom` kept, no `breakState`, no banner. Separately, blocked/private-mode localStorage silently falls back to `memoryBackend` and everything is lost on reload.
+  - AC: attach the `storage-error` listener first; `bootStore()` checks `migrate() < SCHEMA_VERSION` → banner “数据升级未完成：存储空间不足。请先在“我的”导出备份，再删除旧记录” (export must work on v1 data); `store.isPersistent()` = real localStorage + probe write/remove of `culiang.v1.__probe` succeeds → else banner “当前浏览器不能保存数据（隐私模式？），关闭后记录会丢失”. Tests (core only): `isPersistent()` false with a throwing backend and with memoryBackend; migrate abort returns 1 and `exportAll()` still succeeds.
+- **A17 import: cap legacy version + replace mode + undo (P1 reliability)**
+  - Repro on 2f32a1a (memoryBackend): (1) `importAll({version:99, profile:{}})` → accepted, store version 99, no future migration ever runs; (2) store has `log.2026-10-01`, import an envelope without it → the old day survives (merge, though the UI says it replaces).
+  - AC: compute `incoming = Number(env.schema ?? data.version) || 1` and throw “备份来自更新的版本” if `> SCHEMA_VERSION` for envelope **and** legacy; before writing: `backup.preImport = exportAll()` (abort import if that fails), then `resetAll()` except `backup.*`; whitelisted write; `set('version', incoming)`; `migrate()`. me view: “撤销上次导入” restores `backup.preImport`. Tests: both repros flipped; export → import round-trip deep-equal on `data`; a `weights` value that isn't an array is skipped (count not incremented).
+- **A19 plan feasibility outside the default target (P1 correctness)**
+  - Repro (`generateWeek` + `checkWeek`, seeds 0–8): grid kcal {1400,1500,1800,2000,2200} × protein {110,140,160} → **247/945 days off ±5% kcal**; default 1617/140 → 0/63; **profile at 62 kg (1502 kcal / 140 g) → 9/63**. Two causes: protein floor pushes kcal up at low kcal (1500/140: 8, 1400/160: 46); staple cap 350 g/meal can't reach high kcal at low protein (2200/110: 59). `planweek.test.js` only covers 1800/140.
+  - AC: `portionDay` gets two more knobs before giving up — breakfast ×0.75/×1/×1.25 and snack kiwi 0/100/200 g — and returns `fit: 'ok'|'kcal-high'|'kcal-low'`; `planWeek` returns `infeasible: {reason}` when `protein*4 > 0.45*kcal`; plan-page shows “这个热量下蛋白目标偏高，已优先保证蛋白（热量 +x%）” instead of a silent miss. Test: grid where `protein*4 ≤ 0.40*kcal` → every day kcalOk && proteinOk (must include 1500/140 and 2200/110); outside → every off-band day has `fit !== 'ok'`.
+- **A20 SW update safety (P1)**
+  - AC: precache with `ASSETS.map(u => new Request(u, {cache:'reload'}))` (Pages `max-age=600` can otherwise seed the new cache with old modules); each `*.html` gets a small **non-module** inline script: if the page's main container is still empty 4 s after `load`, or a `script` element fires `error`, show “加载失败 · 清除离线缓存并重新加载” → `getRegistrations().unregister()` + `caches.keys()→delete` + `location.reload()`; it must not reference `localStorage`. boot listens for `navigator.serviceWorker` `controllerchange` → toast “已更新到新版本 · 刷新” (no auto reload). Tests in `sw.test.js`: `cache: 'reload'` present; every html has the hatch marker (e.g. `data-zfs-hatch`) and the hatch text has no `localStorage`.
+- **A21 profile writes freeze defaults (P1 small)**
+  - Why: `app.js` me-view submit and weight logger save `{...p, ...d}` with `p = normalizeProfile(...)` → the first save writes every default into storage (breaks ARCHITECTURE §3 rule 5; e.g. a later change to default `caffeineGapH` never reaches this user).
+  - AC: pure `mergeProfileEdit(stored, edits)` in `core/profile.js` returns `{...stored, ...edits}` (numbers coerced, unknown keys dropped); both writers use `S.get('profile', {})`. Test: `mergeProfileEdit({}, {weight: 73})` has exactly `['weight']`.
+- **A22 core/dates.js (P2 refactor, before A6)**
+  - Why: 6 copies of the local-date helper (boot.localDate, app.today + dayOffset, plan-page, review-page, store.localToday); review.lastNDates uses UTC ms math.
+  - AC: pure `localDate(now = new Date())`, `addDays(str, n)`, `dayNum(str)`; all callers import it (sw ASSETS + A15 test catch the new file). Tests: addDays across 2026-10-31→11-01, 2026-12-31→2027-01-01, 2028-02-28→02-29; localDate for a fixed Date at 23:59 and 00:01 local.
+- **A14 addendum** — `sleepNoteDay` is in KNOWN_KEYS but **no code writes it** (grep @2f32a1a); either implement the R6.2 once-per-day rule with it or drop the key.
 
 ---
 

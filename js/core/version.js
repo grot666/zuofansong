@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.7.9';
+export const VERSION = '0.8.0';
 export const CHANGELOG = [
+  ['0.8.0', '食材库新增 4 种上海食堂套餐估算（一荤两素、红烧肉、鱼块、两素一饭），标“≈”未核对。'],
   ['0.7.9', '记录满 7 天且超过 14 天没导出时，今日页提醒导出备份（可“7 天后再提醒”）。'],
   ['0.7.8', '勾选“我在喝蛋白粉”后，一周菜单在天然食物加餐仍不够时才加蛋白粉（不超过每日勺数上限）。'],
   ['0.7.7', '一周菜单的午餐、晚餐也显示 健康/好做/便宜/好吃 四项评分（与一餐搭配同一算法）。'],

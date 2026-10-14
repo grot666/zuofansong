@@ -36,3 +36,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:50 v0.7.8 G2: plan add-on may use whey powder when usesPowder (≤ maxScoops), after whole-food add-ons.
 
 - 05:51 v0.7.9 G3: backup reminder (lastExport/backupSnooze keys, pure backupDue + test).
+
+- 05:51 v0.8.0 G4: 4 canteen set-meal estimates (verified:false); 137 foods.

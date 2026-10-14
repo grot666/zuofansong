@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.0
+- G4: 4 canteen set-meal estimates (verified:false); 137 foods.
+
 ## v0.7.9
 - G3: backup reminder (lastExport/backupSnooze keys, pure backupDue + test).
 

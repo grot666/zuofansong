@@ -42,4 +42,9 @@ export const FOODS3 = [
   C('latte', '拿铁(全脂奶)', 'natie', '饮品', 54, 3.0, 2.8, 4.4, 0, 0, ['饮品', '咖啡因'], { unit: { name: '杯', g: 350 }, fatClass: 'neutral', source: '估算' }),
   T('milkTea', '奶茶(少糖)', 'naicha', 55, 0.8, 2.0, 8.5, '杯', 500, { fiber: 0, cat: '饮品', tags: ['饮品', '咖啡因', '外卖'] }),
   C('greenTea', '绿茶(无糖)', 'lvcha', '饮品', 1, 0.2, 0, 0, 0, 0, ['饮品', '咖啡因'], { unit: { name: '杯', g: 300 }, fatClass: 'neutral', source: 'USDA FDC 171917' }),
+  // G4: Shanghai canteen set meals (PROMPT §6). Rough composite estimates, unverified.
+  T('canteenMeatSet', '食堂套餐(一荤两素+饭)', 'shitangtaocan', 150, 7, 6, 17, '份', 550, { fiber: 1.2, tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 15 }),
+  T('canteenPorkSet', '食堂红烧肉套餐', 'shitanghongshaorou', 190, 6, 10, 18, '份', 500, { fiber: 0.8, tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 16 }),
+  T('canteenFishSet', '食堂鱼块套餐', 'shitangyukuai', 140, 8, 5, 16, '份', 500, { fiber: 1, fatClass: 'neutral', tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 17 }),
+  T('canteenVegSet', '食堂两素一饭', 'shitangliangsu', 125, 3.5, 4.5, 18, '份', 450, { fiber: 1.5, fatClass: 'neutral', tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 10 }),
 ];

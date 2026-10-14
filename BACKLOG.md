@@ -258,4 +258,4 @@ Line-by-line check of PROMPT.md against the live app (v0.7.6). Covered and verif
 - G1 (P1) §2 "use the 4 scores when suggesting meals": scores live only in the plate view. AC: pure `mealScores(items, food)` in core with tests; plan page shows 健康/好做/便宜/好吃 per lunch/dinner; plate view uses the same function. ✅
 - G2 (P1) A25 follow-up / §2.5: no protein-powder food. AC: `wheyPowder` food (per 100 g, `verified:false`, label-based); plan add-on uses powder (≤ maxScoops × scoopG) only when profile.usesPowder, after whole-food add-ons; test. ✅
 - G3 (P2) §6 reliability "backup reminders": none. AC: store `lastExport` on export; today page shows a dismissable hint when ≥14 days since last export and ≥7 logged days; test the pure check. ✅
-- G4 (P2) §6 nutrition "食堂套餐" estimates missing. AC: ≥3 canteen set-meal entries, `verified:false`, source noted.
+- G4 (P2) §6 nutrition "食堂套餐" estimates missing. AC: ≥3 canteen set-meal entries, `verified:false`, source noted. ✅

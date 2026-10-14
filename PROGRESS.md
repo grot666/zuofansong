@@ -94,3 +94,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:28 v0.10.5 R9-10: maxPrepMin, distinct-veg metric, budget validation.
 
 - 06:29 v0.10.6 A36 golden rankings/add-on scores; A37 explicit tasty booleans; A38 rankProteins documented as snapshot helper + seed-only test; A39 determinism tests.
+
+- 06:32 v0.10.6 A36 golden rankings/add-on scores; A37 explicit tasty booleans; A38 rankProteins documented as snapshot-only + independence test; A39 determinism tests.

@@ -8,3 +8,8 @@
 - 2026-10-15 04:25 SGT — Research lived in grot666/culiang-jianzhi-chufang/docs; merged items R1–R4 into this repo's features/backlog rather than copying docs.
 - 2026-10-15 04:35 SGT — Weekly plan lives on a separate page plan.html (own module) to avoid another full rewrite of js/app.js via the API connector; same nav and storage.
 - 2026-10-15 04:35 SGT — Plan uses cooked-weight staples/proteins; shopping list converts back to raw with estimated yield factors (rice 2.3, chicken 0.75).
+- 2026-10-15 04:40 SGT — [arch] Prefix `culiang.v1.` is a namespace, not the schema version; schema changes bump the stored `version` via a MIGRATIONS registry. Reason: avoids orphaning data on every change.
+- 2026-10-15 04:40 SGT — [arch] No DOM/alert in js/core; store.set reports failure via return value + `storage-error` event. Reason: core must run under node --test.
+- 2026-10-15 04:40 SGT — [arch] One VERSION source (js/core/version.js); sw CACHE must equal 'zfs-'+VERSION, enforced by test. Reason: stale caches / mismatched 更新日志.
+- 2026-10-15 04:40 SGT — [arch] SW: network-first for navigations, stale-while-revalidate for static assets, cache only ok same-origin responses. Reason: fast offline start on phone, updates via cache-name bump.
+- 2026-10-15 04:40 SGT — [arch] CI = GitHub Actions running node --check + node --test on push/PR; Pages deploys from main / branch (no build). Reason: §4 no build step; gate for API-connector pushes.

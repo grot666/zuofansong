@@ -1,4 +1,5 @@
 // View: me (A6). Browser-only.
+import { toast } from '../boot.js';
 import { computeTargets, ACTIVITY, fastLossWarning, projectedBodyFat } from '../core/targets.js';
 import { blend } from '../core/grains.js';
 import { fatWallet, TSP_OIL_G } from '../core/fat.js';
@@ -12,7 +13,7 @@ import { FOODS2 } from '../../data/foods2.js';
 import { FOODS3 } from '../../data/foods3.js';
 import { RECIPES } from '../../data/recipes.js';
 import { VERSION, CHANGELOG } from '../core/version.js';
-import { parseProfileForm, mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
+import { saveProfile, parseProfileForm, mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
@@ -59,7 +60,7 @@ export const view = () => {
   <div class="row"><label>每勺蛋白粉含蛋白 g<input type="number" name="scoopG"></label><label>每天最多几勺<input type="number" name="maxScoops"></label><label>每周力量训练天数<input type="number" name="trainingDays"></label></div>
   <label><input type="checkbox" name="usesPowder" style="width:auto;min-height:auto"> 我在喝蛋白粉（饮水目标提高）</label>
   <p id="pfmsg" class="warn" role="status" aria-live="polite"></p><button>保存</button></form></section>
-  <section class="card"><h2>每日目标</h2><table>
+  <section class="card" id="tgCard"><h2>每日目标</h2><table>
   <tr><td>基础代谢 BMR</td><td>${t.bmr} kcal</td><td class="mut">Mifflin–St Jeor 公式，${t.age} 岁</td></tr>
   <tr><td>每日消耗 TDEE</td><td>${t.tdee} kcal</td><td class="mut">BMR × 活动系数</td></tr>
   <tr><td><b>热量</b></td><td><b>${t.kcal} kcal</b></td><td class="mut">TDEE − ${p.deficitPct}% 缺口</td></tr>
@@ -91,13 +92,12 @@ view.bind = () => {
   f.onsubmit = e => {
     e.preventDefault();
     const stored = S.get('profile', {});
-    const { edits, errors } = parseProfileForm(Object.fromEntries(new FormData(f)), stored);
-    const msg = $('#pfmsg'); if (errors.length) { if (msg) msg.textContent = errors.join('；'); return; }
-    edits.usesPowder = f.elements.usesPowder.checked; edits.sleepNudges = f.elements.sleepNudges.checked;
-    const merged = mergeProfileEdit(stored, edits); const norm = normalizeProfile(merged);
-    const clamped = ['deficitPct', 'fatPct', 'proteinPerKg', 'bodyFatPct'].filter(k => k in edits && norm[k] !== edits[k]);
-    S.set('profile', merged); rerender();
-    if (clamped.length) { const m2 = $('#pfmsg'); if (m2) m2.textContent = '部分数值超出范围，已按 ' + clamped.map(k => `${k}=${norm[k]}`).join('、') + ' 计算。'; }
+    const r = saveProfile(stored, Object.fromEntries(new FormData(f)), { usesPowder: f.elements.usesPowder.checked, sleepNudges: f.elements.sleepNudges.checked });
+    const msg = $('#pfmsg'); if (!r.ok) { if (msg) msg.textContent = r.errors.join('；'); return; }
+    if (!S.set('profile', r.profile)) return; rerender();
+    toast(r.changed.length ? '已保存 · 每日目标已更新' : '已保存（没有改动）');
+    const tc = $('#tgCard'); if (tc) { tc.scrollIntoView({ behavior: 'smooth', block: 'start' }); tc.classList.add('flash'); setTimeout(() => tc.classList.remove('flash'), 1500); }
+    if (r.clamped.length) { const m2 = $('#pfmsg'); if (m2) m2.textContent = '部分数值超出范围，已按 ' + r.clamped.map(k => `${k}=${r.norm[k]}`).join('、') + ' 计算。'; }
   };
   $('#wf').onsubmit = e => {
     e.preventDefault(); const w = +e.target.w.value; const date = e.target.d.value || today(); if (!w) return;

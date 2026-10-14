@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.8.1';
+export const VERSION = '0.8.2';
 export const CHANGELOG = [
+  ['0.8.2', '“我的”页保存资料后提示“已保存 · 每日目标已更新”，并跳到每日目标。'],
   ['0.8.1', '底部导航精简为 5 项（今日/搭配/菜单/回顾/我的），三个页面一致，周回顾一键可达；蔬菜/杂粮饭/食材在“搭配”顶部切换；底部不再遮挡按钮，保存后有提示；周日/周一提醒做周回顾。'],
   ['0.8.0', '食材库新增 4 种上海食堂套餐估算（一荤两素、红烧肉、鱼块、两素一饭），标“≈”未核对。'],
   ['0.7.9', '记录满 7 天且超过 14 天没导出时，今日页提醒导出备份（可“7 天后再提醒”）。'],

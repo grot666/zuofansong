@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.2
+- UX-6: pure saveProfile {ok, changed, clamped}; toast + scroll/highlight 每日目标.
+
 ## v0.8.1
 - UX-4 shared nav (js/nav.js) + reviewDue card; UX-5 --nav-h + safe-area padding, toast; UX-11 5 icon items ≥44px with 搭配 sub-nav.
 

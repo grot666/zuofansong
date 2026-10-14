@@ -56,3 +56,14 @@ export function parseProfileForm(form, prev = {}) {
   }
   return { edits, errors };
 }
+// UX-6: pure save handler. form = FormData entries; bools = checkbox states.
+export function saveProfile(stored = {}, form = {}, bools = {}) {
+  const { edits, errors } = parseProfileForm(form, stored);
+  if (errors.length) return { ok: false, errors, changed: [] };
+  Object.assign(edits, bools);
+  const profile = mergeProfileEdit(stored, edits); const norm = normalizeProfile(profile);
+  const before = normalizeProfile(stored);
+  const changed = Object.keys(DEFAULT_PROFILE).filter(k => norm[k] !== before[k]);
+  const clamped = ['deficitPct', 'fatPct', 'proteinPerKg', 'bodyFatPct'].filter(k => k in edits && norm[k] !== Number(edits[k]));
+  return { ok: true, profile, changed, clamped, norm, errors: [] };
+}

@@ -10,13 +10,17 @@ export const SWAPS = [
   { id: 'mushroom150', text: '炒菜加 150 g 蘑菇', fiberGain: 1.5, kcalDelta: 33, add: [['mushroom', 150]] },
 ];
 
-// Returns top-n swaps that don't push kcal above target*1.05. Replacements first.
-export function suggestFiber({ fiber, fiberTarget = 28, kcal, kcalTarget, gutHigh = false }, n = 3) {
+// Rulings R8 · N-04: filter (fiberGain ≥ 3, kcalDelta ≤ room, rice replacements need logged riceCooked g, ≤1 rice swap),
+// sort score = fiberGain / max(kcalDelta, 20) desc, tie → lower kcalDelta, then id. Top n; gutHigh appends water.
+const RICE_MIN = { sweetpot: 150, brownhalf: 200 };
+const score = s => s.fiberGain / Math.max(s.kcalDelta, 20);
+export function suggestFiber({ fiber, fiberTarget = 28, kcal, kcalTarget, riceG = 0, gutHigh = false }, n = 3) {
   if (fiber >= fiberTarget) return [];
   const room = kcalTarget * 1.05 - kcal;
-  const ok = SWAPS.filter(s => s.kcalDelta <= room);
-  ok.sort((a, b) => (b.replace ? 1 : 0) - (a.replace ? 1 : 0) || b.fiberGain / Math.max(b.kcalDelta, 20) - a.fiberGain / Math.max(a.kcalDelta, 20));
-  const out = ok.slice(0, n);
+  const ok = SWAPS.filter(s => s.fiberGain >= 3 && s.kcalDelta <= room && (!s.replace || riceG >= (RICE_MIN[s.id] ?? Infinity)))
+    .sort((a, b) => score(b) - score(a) || a.kcalDelta - b.kcalDelta || a.id.localeCompare(b.id));
+  const out = []; let rice = false;
+  for (const s of ok) { if (s.replace) { if (rice) continue; rice = true; } out.push(s); if (out.length === n) break; }
   if (gutHigh) out.push({ id: 'water', text: '多喝 500 ml 水（加纤维时一定要配水）', fiberGain: 0, kcalDelta: 0 });
   return out;
 }

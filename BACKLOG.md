@@ -162,7 +162,7 @@ Status from CHANGELOG/PROGRESS @13c48c4 (not runtime-verified — tests not yet 
 - ✅ v0.6.0 **P0 · R-01b Pace check** — AC: profile shows kg/wk and %BW/wk to goal date; >1%/wk amber, <0.25%/wk info; test 74→58 kg, 2026-10-15→2027-07-31 ≈ 0.39 kg/wk ≈ 0.53%/wk.
 - ✅ v0.4.0/v0.6.8 **P0 · N-02 Weight MA7 + chart** (R5.3) — AC: MA7 = calendar window [d−6,d], shown only with ≥3 entries (replace current last-7-entries average); inline SVG raw dots + MA line + goal line, 4w/8w/12w/全部, tap tooltip; status chip 正常/偏快/持平; tests for MA math, gap rule, %/wk.
 - ✅ v0.6.0 **P0 · N-03 Templates + 3-tap log** (= item 8; R5.5) — AC: "+"→sheet→template→记录 (×0.5/×1/×1.5) = 3 taps with undo; "存为模板" from plate builder; 3 presets; "复制昨天" with checkbox confirm; tests for multiplier expand + copy-yesterday.
-- **P1 · N-04 Ranked fiber swaps** — ⚖ **RULED 05:45, see “Rulings R8 · N-04” below; the old “oats40/peas100/broc200 in top 3” test is withdrawn.** (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks swaps per Ruling R8 · N-04; never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal).
+- ✅ v0.7.3 **P1 · N-04 Ranked fiber swaps** — ⚖ **RULED 05:45, see “Rulings R8 · N-04” below; the old “oats40/peas100/broc200 in top 3” test is withdrawn.** (R5.2, completes R-15) — AC: `js/core/fiber.js` ranks swaps per Ruling R8 · N-04; never > kcal target +5%, water tip when gut risk high; copy exactly as R5.2 (incl. corrected brown200: +2.4 g / −14 kcal).
 - ✅ v0.7.1 **P1 · N-05 Takeaway quick-add data** (feeds item 4; R5.1) — AC: 20 R5.1 rows as `type:"dish"`, `verified:false`, `source:"fatsecret.cn 估算"`, `defaultPortionG` + `portionNote:"默认份量为假设，建议称重"`; always ≈ + tip line; test 黄焖鸡米饭 500 g → 835 kcal.
 - ✅ v0.5.0 **P1 · N-06 Weekly review** (= item 9; R5.4) — AC: 10-item checklist auto-filled from logs/weights; missing = "未记录"; one decision saved; "−100–150 kcal" updates target with confirm, "维持周" sets kcal = TDEE for 7 days; fixture-week test.
 - ✅ v0.5.0 **P1 · R-09 Tuna counter** (= item 5; R3.3) — AC: foods carry `mercuryClass`; tuna split 淡(鲣鱼/skipjack) / 白(长鳍/albacore); weekly soft note light >3×113 g or albacore >1×113 g, labelled conservative; plan rotates shrimp/salmon.
@@ -190,7 +190,7 @@ v0.5.0 shipped N-06, R-08b, R-09, R-10 (per PM). **Correction:** R-01b expected 
 
 ### Rulings R8 (needs-research, 2026-10-15 ~05:45 SGT; code read @ fiber.js 2ecd053, review.js 503625c)
 
-#### R8 · N-04 fiber swap ranking — **the formula is right; the old AC was wrong**
+#### ✅ v0.7.3 R8 · N-04 fiber swap ranking — **the formula is right; the old AC was wrong**
 Intent (R5.2): most fiber per extra kcal, never > kcal target +5%, practical portions. Recomputed on the SWAPS values in fiber.js (= R5.2 table + kiwi from R7.2), score = fiberGain / max(kcalDelta, 20):
 | rank | id | fiber g | Δkcal | score |
 |---|---|---|---|---|
@@ -217,7 +217,7 @@ Fixtures (expected order exact):
 - F6 room 60: fiber 15, kcal 1830, kcalTarget 1800 (room 60), riceG 0 → **[spinach200]**.
 - F7 done: fiber 28 → []. F8 gutHigh with F2 inputs → F2 list + `water` as 4th.
 
-#### R8 · R-10 plateau — exact rule (as shipped in `review.js plateau()`, plus required follow-ups)
+#### ✅ v0.7.3 R8 · R-10 plateau — exact rule (as shipped in `review.js plateau()`, plus required follow-ups)
 Shipped rule (read from code):
 1. Window = weigh-ins with date in (today−14 d, today], i.e. 14 calendar days today−13 … today (date strings parsed as UTC midnight on both sides; consistent).
 2. Need ≥ 10 weigh-ins in the window (≈ 5/wk), else `{plateau:false, reason:'sparse'}`.

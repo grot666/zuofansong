@@ -39,7 +39,7 @@ export const view = () => {
   const recents = [...new Set(S.get('recents', []))].slice(0, 8);
   const lowItems = l.items.filter(i => food(i.id)?.fatClass === 'low');
   const hasTakeaway = l.items.some(i => food(i.id)?.cat === '外食');
-  const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, gutHigh: gr.level === 'high' }) : [];
+  const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
   const undo = S.get('undo', null);
   const demo = S.get('profile', null) == null;
   const onboard = demo && !S.get('onboardSeen', false) ? `<section class="card" id="onboard"><p>目前使用<b>示例目标</b>（1 分钟填写身高/体重/年龄可自动计算）。</p><div class="row"><a class="btn" href="#me">去设置</a><button class="sec" id="obSkip">先用示例</button></div></section>` : '';

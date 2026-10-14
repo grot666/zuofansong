@@ -143,3 +143,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 07:07 v0.10.29 A47: no-protein guard (infeasible no-protein, never throws)
 
 - 07:08 v0.10.30 A48: npm test serial like CI
+
+- 07:08 v0.10.31 A50: TUNA extracted to core/tuna.js

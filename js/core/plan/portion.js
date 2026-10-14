@@ -1,5 +1,5 @@
 // A45: split from js/core/plan.js (portion). Import via js/core/plan.js (facade).
-import { TUNA } from '../review.js';
+import { TUNA } from '../tuna.js';
 import { totals } from '../foods.js';
 import { selectWeek } from './select.js';
 const sum = (items, food) => totals(items, food);
@@ -117,7 +117,7 @@ function portionCore(sk, { kcal, protein }, food, opts = {}) {
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
-  // A33: tuna grams across all meals and add-ons stay within TUNA.tunaLight.max (review.js).
+  // A33: tuna grams across all meals and add-ons stay within TUNA.tunaLight.max (core/tuna.js).
   // Snack variety: each add-on item costs ADDON_REPEAT_W × (days it was already used this week).
   let tunaG = 0; const used = {};
   return selectWeek(food, recipes, opts).map(sk => {

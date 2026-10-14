@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.30';
+export const VERSION = '0.10.31';
 export const CHANGELOG = [
+  ['0.10.31', '内部：金枪鱼上限独立成模块'],
   ['0.10.30', '内部：测试命令与 CI 一致'],
   ['0.10.29', '修复：蛋白质食材数据缺失时菜单页不再报错，改为提示'],
   ['0.10.28', '高蛋白目标下每餐肉量控制在 250 g 内，优先用蛋、酸奶、豆腐补'],

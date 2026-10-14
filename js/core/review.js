@@ -2,7 +2,8 @@ import { dayNum, addDays } from './dates.js';
 // Weekly review math (research R5.4, R3.3, R3.4, R3.6). Pure.
 // logs: { 'YYYY-MM-DD': {items:[{id,g}], water} }, food: id -> food
 import { totals } from './foods.js';
-export const TUNA = { tunaLight: { kind: 'light', max: 3 * 113 }, tunaAlbacore: { kind: 'albacore', max: 113 } };
+import { TUNA } from './tuna.js';
+export { TUNA }; // back-compat re-export (A50)
 
 export const dayTotals = (items, food) => totals(items, food);
 

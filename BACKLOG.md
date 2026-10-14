@@ -32,7 +32,7 @@ Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0
 
 - ✅ **A49 Shopping-list twin/alias map (P1)** — behaviour shipped as **R10-S1 (v0.10.27)**: `twinOf` merges `*USDA` → base, pantry/small flags, `listLines` ≤ 32. Residual: export the map next to `COOKED_TO_RAW` → **A53**.
 
-- **A50 Extract `TUNA` out of `review.js` (P2)**
+- ✅ **A50 Extract `TUNA` out of `review.js` (P2)**
   - Why: A33 correctly shares one weekly gram budget between planner and review, but the constant lives in `review.js` and `plan/portion.js` imports it. That makes plan depend on review (wrong layer: review is a weekly *retrospective*, plan is a *generator*). Future review-only edits risk breaking plan imports.
   - AC:
     - New `js/core/tuna.js` (or `limits.js`) exporting `TUNA` (+ maybe `TUNA_ADDON_G` movers).

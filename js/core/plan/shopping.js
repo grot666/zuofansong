@@ -40,3 +40,5 @@ export function parseBudget(raw) {
 }
 // R9-10 reuse metric: distinct vegetable ids in a week (fewer = more reuse, less waste).
 export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;
+// R10-F2: 7-day average fiber (g/day) for the plan header.
+export const weekFiber = days => (days.length ? days.reduce((s, d) => s + (d.tot?.fiber || 0), 0) / days.length : 0);

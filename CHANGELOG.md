@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.26
+- R10-F2: weekly fiber line
+
 ## v0.10.25
 - R10-F1: fiber-aware portioning (veg multiplier, staple alternatives, fiberNote)
 

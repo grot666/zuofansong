@@ -1,5 +1,5 @@
 import { computeTargets } from './core/targets.js';
-import { parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
+import { parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek, weekFiber } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS, TRAY_BAKE } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces, trayPlan } from './core/sauces.js';
@@ -42,7 +42,7 @@ function render() {
   const cost = list.reduce((s, x) => s + x.cost, 0);
   const proteinsUsed = [...new Set(week.map(d => d.dinnerProtein))].map(id => food(id).name);
   const ti = todayIndex(localDate());
-  $('#view').innerHTML = `<nav class="seg" aria-label="菜单分区"><a href="#menu">菜单</a><a href="#list">购物清单</a><a href="#prep">备餐</a></nav><section class="card" id="menu"><h2>本周菜单</h2>
+  $('#view').innerHTML = `<nav class="seg" aria-label="菜单分区"><a href="#menu">菜单</a><a href="#list">购物清单</a><a href="#prep">备餐</a></nav><section class="card" id="menu"><h2>本周菜单</h2><p class="mut" id="fiberLine">膳食纤维 7 天平均 ${Math.round(weekFiber(week))} g/天（目标 25–30 g）${weekFiber(week) >= 25 ? ' ✓' : ''}</p>
   <p class="mut">每天目标 ${t.kcal} kcal（±5%）、蛋白 ≥ ${t.protein} g。晚餐多做一份 = 第二天午餐（晚上一次做两顿）。主食按熟重。带 ≈ 的食材营养值为估算、未逐条核对。</p>
   ${plan.infeasible?.reason === 'no-veg' ? '<p class="warn">没有可用的蔬菜做法（食材数据缺失），本周菜单暂不含蔬菜。请刷新或在“我的”导出备份后反馈。</p>' : plan.infeasible ? `<p class="warn">这个热量下蛋白目标偏高（蛋白占 ${plan.infeasible.pct}% 热量），已优先保证蛋白，部分天热量会超出。可在“我的”降低蛋白目标或热量缺口。</p>` : ''}${week.some(d => d.fit !== 'ok') && !plan.infeasible ? '<p class="mut">个别天无法同时满足热量和蛋白，已优先保证蛋白（标 ⚠）。</p>' : ''}
   <p class="mut tip">本周用到 ${distinctVeg(week, food)} 种蔬菜（种类少 = 好买、少浪费）。</p>${planTips(plan).map(x => `<p class="mut tip">${x}</p>`).join('')}<div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" min="1" value="${budget}"></label><label>蔬菜做法时间<select id="prepMax">${[[0, '不限'], [5, '≤5 分钟'], [10, '≤10 分钟']].map(([v, l]) => `<option value="${v}"${v === maxPrep ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div></section>

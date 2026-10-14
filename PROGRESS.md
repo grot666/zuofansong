@@ -133,3 +133,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:59 v0.10.24 R10-D1: data fixes and citations, verified chip twins, Atwater test
 
 - 07:02 v0.10.25 R10-F1: fiber-aware portioning (veg multiplier, staple alternatives, fiberNote)
+
+- 07:03 v0.10.26 R10-F2: weekly fiber line

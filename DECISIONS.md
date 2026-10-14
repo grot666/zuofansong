@@ -24,3 +24,5 @@
 - 05:45 A25: meat ≤300 g/meal; firm tofu main may reach 450 g (PORTION_MULT) since 300 g tofu cannot meet 40%-protein targets; add-ons go to 加餐.
 
 - 05:45 A26: no log compaction while backup.preImport exists (until undo or a later replace). Archived days keep compaction-time cost; price edits never re-price archives.
+
+- 05:48 A25 note: no powder add-on in the plan (no powder food id exists); the plan stays whole-food and today's 蛋白补充 card still covers any gap with powder (usesPowder/maxScoops). Cap kept at 300 g, not 250: the A19 grid needed egg-white/yogurt plus the tofu 1.5× rule just to stay green at 300.

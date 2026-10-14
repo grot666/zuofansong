@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.21
+- A46: bounded loops in core + grep test
+
 ## v0.10.20
 - A45: split plan.js into plan/{select,portion,budget,shopping}.js behind facade
 

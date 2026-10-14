@@ -47,6 +47,7 @@ export const MIGRATIONS = {
 export function migrate({ today = localDate() } = {}) {
   let v = Number(get('version', 0)) || 0;
   if (v >= 1 && v < SCHEMA_VERSION && !set('backup.preMigration', exportAll())) return v;
+  // bounded: v increases by 1 up to SCHEMA_VERSION.
   while (v < SCHEMA_VERSION) { v++; if (MIGRATIONS[v]) MIGRATIONS[v]({ today }); set('version', v); }
   return v;
 }

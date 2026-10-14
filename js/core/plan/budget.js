@@ -8,7 +8,9 @@ export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap =
   const cur = [...slots]; const steps = [];
   const total = () => fixed + cur.reduce((s, id, i) => s + slotCost(id, i), 0);
   let cost = total();
-  while (budget != null && cost > budget) {
+  // bounded: each step strictly lowers one slot's cost over a finite option list; hard cap slots × options.
+  const maxSteps = cur.length * Math.max(1, options.length);
+  while (budget != null && cost > budget && steps.length < maxSteps) {
     let worst = 0;
     for (let i = 1; i < cur.length; i++) if (slotCost(cur[i], i) > slotCost(cur[worst], worst)) worst = i;
     const now = slotCost(cur[worst], worst);

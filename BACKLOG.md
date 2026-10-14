@@ -70,7 +70,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - sw ASSETS updated (A15 test enforces).
     - Each new file < 100 lines.
     - Do it after A40/A44 so the snapshots guard the move.
-- **A46 Bounded loops in core (P3)**
+- ✅ **A46 Bounded loops in core (P3)**
   - Why: A40 shows that an unbounded `while` in a pure function freezes the UI.
   - AC:
     - Grep-based test: every `while (` in `js/core/**` sits in a function with an explicit max-iterations constant, or is listed in an allowlist with a comment.

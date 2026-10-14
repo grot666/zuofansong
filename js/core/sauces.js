@@ -12,6 +12,7 @@ export function rotateSauces(enabled, days, startIdx = 0) {
   let i = startIdx % enabled.length;
   for (let d = 0; d < days; d++) {
     let tries = 0;
+    // bounded: tries++ < enabled.length.
     while (families.size > 1 && out.length && enabled[i].family === out[out.length - 1].family && tries++ < enabled.length) i = (i + 1) % enabled.length;
     out.push(enabled[i]); i = (i + 1) % enabled.length;
   }

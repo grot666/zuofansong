@@ -11,6 +11,7 @@ import { quickChips, matchFoods, gramsFor } from '../core/foods.js';
 import { addDays, backupDue } from '../core/dates.js';
 import { reviewDue } from '../core/review.js';
 import { rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, allFoods, food, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
+import { preAllocate, socialCopy, SOCIAL_TYPES, NEXT_DAY_LINE } from '../core/social.js';
 
 function sleepHtml(l, p) {
   const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
@@ -18,6 +19,16 @@ function sleepHtml(l, p) {
   const n = sleepNotes(entries, p);
   if (!p.sleepNudges) return '';
   return `<p class="mut">睡前提醒：${n.dinnerBy} 前吃完晚饭，${n.caffeineBy} 后不喝咖啡/茶（按 ${p.bedtime} 睡觉）。</p>${n.lateMeal ? `<p class="warn">${n.lateMeal.time} 吃了约 ${Math.round(n.lateMeal.kcal)} kcal，离睡觉较近，可能影响睡眠。偶尔一次没关系。</p>` : ''}${n.lateCaffeine ? `<p class="warn">${n.lateCaffeine.time} 摄入咖啡因，可能影响今晚入睡。</p>` : ''}`;
+}
+// R11-5: 聚餐 mode card (pre-allocate fat to the social meal; neutral next-day line).
+function socialHtml(t) {
+  const sc = S.get('social', null);
+  if (sc && sc.date === today()) {
+    const r = preAllocate(t, { meal: sc.meal }); const c = socialCopy(sc.type, sc.meal, r.reserveFatG);
+    return `<section class="card" id="social"><h2>${c.title}</h2><p>${c.reserve}</p><p>${c.order}</p><p class="mut">${c.low}</p><p class="mut">${c.broth}</p><p class="mut">蘸料（可计量的脂肪）：${c.dip}。</p><p class="mut">${c.week}</p><button class="sec" id="socialOff">取消聚餐</button></section>`;
+  }
+  const y = sc && sc.date === dayOffset(-1) ? `<p class="mut">${NEXT_DAY_LINE}</p>` : '';
+  return `<section class="card" id="social"><h2>今天有聚餐？</h2>${y}<div class="row" role="group" aria-label="聚餐类型">${Object.entries(SOCIAL_TYPES).map(([k, v]) => `<button class="sec" data-social="${k}">晚餐${v}</button>`).join('')}</div></section>`;
 }
 // R-13: neutral slip recovery — show the 7-day average of logged days.
 function slipNote(t) {
@@ -55,6 +66,7 @@ export const view = () => {
   ${l.items.length && x.kcal > t.kcal * 1.1 ? slipNote(t) : ''}
   ${sleepHtml(l, p)}
   <p class="mut">估算食材成本 ≈ ¥${r1(x.cost)}</p></section>
+  ${socialHtml(t)}
   <section class="card"><h2>常用餐</h2><p class="mut">点一下就记入。在“搭配”页可存自己的模板。</p><div class="row" role="group" aria-label="份量">份量 ${MULTS.map(m => `<button class="${m === tplMult() ? '' : 'sec'}" data-mult="${m}" aria-pressed="${m === tplMult()}">×${m}</button>`).join('')}</div><div>${templates().map(tp => { const k = totals(scaleItems(tp.items, tplMult()).map(([id, g]) => ({ id, g }))).kcal; return `<button class="sec" data-tpl="${tp.id}" style="margin:4px 4px 0 0">${esc(tp.name)} · ${Math.round(k)}</button>`; }).join('')}</div>
   ${undo && undo.date === today() ? `<p class="mut">已记入“${esc(undo.name)}” <button class="sec" id="undo">撤销</button></p>` : ''}</section>
   <section class="card"><h2>快速记录</h2><form id="af"><input list="fdl" name="f" placeholder="食材或外卖名称（如 生煎、黄焖鸡）" aria-label="食材"><datalist id="fdl">${allFoods().map(f => `<option value="${esc(f.name)}">`).join('')}</datalist>
@@ -106,6 +118,8 @@ view.bind = () => {
   document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { const f = food(b.dataset.r); addItem(f.id, f.unit?.g || 100); });
   document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { const tp = templates().find(x => x.id === b.dataset.tpl); const use = S.get('templateUse', {}); use[tp.id] = (use[tp.id] || 0) + 1; S.set('templateUse', use); pushItems(scaleItems(tp.items, tplMult()), tplMult() === 1 ? tp.name : `${tp.name} ×${tplMult()}`); });
   document.querySelectorAll('[data-mult]').forEach(b => b.onclick = () => { S.set('tplMult', +b.dataset.mult); rerender(); });
+  document.querySelectorAll('[data-social]').forEach(b => b.onclick = () => { S.set('social', { date: today(), meal: 'dinner', type: b.dataset.social }); rerender(); });
+  { const so = $('#socialOff'); if (so) so.onclick = () => { S.set('social', null); rerender(); }; }
   document.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => { const s = suggestFiber({ fiber: 0, kcal: 0, kcalTarget: 1e9 }, 99).find(x => x.id === b.dataset.swap); if (s) pushItems(s.add, s.text); });
   const u = $('#undo'); if (u) u.onclick = () => { const un = S.get('undo'); const l = getLog(); l.items = l.items.slice(0, un.from); setLog(l); S.set('undo', null); rerender(); };
   document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const l = getLog(); l.items.splice(+b.dataset.del, 1); setLog(l); S.set('undo', null); rerender(); });

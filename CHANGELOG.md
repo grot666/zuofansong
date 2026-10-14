@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.7
+- UX-10: 3-step onboarding (onboardStep/saveOnboardStep saving only step keys, pace text, first-meal templates, skip).
+
 ## v0.8.6
 - UX-12: quickChips (recents, foodUse counts, curated padding) + per-row log button in 食材库.
 

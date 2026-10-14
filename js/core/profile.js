@@ -67,3 +67,20 @@ export function saveProfile(stored = {}, form = {}, bools = {}) {
   const clamped = ['deficitPct', 'fatPct', 'proteinPerKg', 'bodyFatPct'].filter(k => k in edits && norm[k] !== Number(edits[k]));
   return { ok: true, profile, changed, clamped, norm, errors: [] };
 }
+// UX-10: 3-step onboarding. Returns the step to show (1-3) or 0 when hidden.
+export const ONBOARD_FIELDS = { 1: ['sex', 'birth', 'height', 'weight'], 2: ['goalWeight', 'goalDate'] };
+export function onboardStep({ storedProfile, onboardSeen, step = 1 }) {
+  if (onboardSeen) return 0;
+  if (step > 1) return Math.min(3, step);
+  return storedProfile == null ? 1 : 0;
+}
+// Save only the fields of this step (A21: never freeze defaults).
+export function saveOnboardStep(stored, step, form) {
+  const keys = ONBOARD_FIELDS[step] || [];
+  const sub = Object.fromEntries(Object.entries(form).filter(([k]) => keys.includes(k)));
+  const { edits, errors } = parseProfileForm(sub, stored || {});
+  if (step === 1) for (const k of ['height', 'weight', 'birth']) if (!String(sub[k] ?? '').trim() && !errors.some(e => e.includes(REQUIRED[k]))) errors.push(`请填写${REQUIRED[k]}`);
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, profile: mergeProfileEdit(stored || {}, edits) };
+}
+export const PACE_TEXT = { fast: '偏快（每周 >1% 体重），建议把目标日期往后放', ok: '速度合适', slow: '偏慢，可以再积极一点', reached: '已达到目标体重', gain: '目标高于当前体重（本应用以减脂为主）', 'invalid-date': '目标日期需在今天之后', incomplete: '' };

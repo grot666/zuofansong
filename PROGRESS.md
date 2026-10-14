@@ -50,3 +50,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 05:59 v0.8.5 UX-13 proteinFill (≤3 eggs, ≤1 serving others); UX-14 wristSafe on every recipe/tray step, 拌黄瓜片, gentler prep copy.
 
 - 06:00 v0.8.6 UX-12: quickChips (recents, foodUse counts, curated padding) + per-row log button in 食材库.
+
+- 06:02 v0.8.7 UX-10: 3-step onboarding (onboardStep/saveOnboardStep saving only step keys, pace text, first-meal templates, skip).

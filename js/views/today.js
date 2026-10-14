@@ -11,7 +11,7 @@ import { FOODS2 } from '../../data/foods2.js';
 import { FOODS3 } from '../../data/foods3.js';
 import { RECIPES } from '../../data/recipes.js';
 import { VERSION, CHANGELOG } from '../core/version.js';
-import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
+import { DEFAULT_PROFILE, normalizeProfile, paceCheck, onboardStep, saveOnboardStep, PACE_TEXT } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan, quickChips, matchFoods, gramsFor } from '../core/foods.js';
@@ -32,6 +32,7 @@ function slipNote(t) {
   const avg = days.reduce((a, lg) => a + totals(lg.items).kcal, 0) / days.length;
   return `<p class="mut">没关系，继续。近 7 天有记录的 ${days.length} 天平均 <b>${Math.round(avg)} kcal</b>（目标 ${t.kcal}）${avg <= t.kcal * 1.05 ? '，整体仍在计划内' : ''}。明天照常吃，不用节食补救。</p>`;
 }
+let obStep = 1; // UX-10: session-only onboarding step
 export const view = () => {
   const p = profile(); const t = computeTargets(p); const l = getLog(); const x = totals(l.items);
   const fw = fatWallet(t.fat, l.items.map(i => { const f = food(i.id); return f ? { fat: f.fat * i.g / 100, fatClass: f.fatClass || 'neutral' } : { fat: 0 }; }));
@@ -44,7 +45,13 @@ export const view = () => {
   const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
   const undo = S.get('undo', null);
   const demo = S.get('profile', null) == null;
-  const onboard = demo && !S.get('onboardSeen', false) ? `<section class="card" id="onboard"><p>目前使用<b>示例目标</b>（1 分钟填写身高/体重/年龄可自动计算）。</p><div class="row"><a class="btn" href="#me">去设置</a><button class="sec" id="obSkip">先用示例</button></div></section>` : '';
+  const ob = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: S.get('onboardSeen', false), step: obStep });
+  const skip = '<button type="button" class="sec" id="obSkip">跳过，先看看</button>';
+  const onboard = !ob ? '' : `<section class="card" id="onboard" aria-label="新手引导"><h2>开始使用 · 第 ${ob}/3 步</h2>${ob === 1 ? `<p class="mut">目前显示的是示例数据。填 4 项（1 分钟）即可算出你的每日目标。</p><form id="obf">
+  <div class="row"><label>性别<select name="sex"><option value="male">男</option><option value="female">女</option></select></label><label>出生日期<input type="date" name="birth" required></label></div>
+  <div class="row"><label>身高 cm<input type="number" step="0.1" name="height" required></label><label>体重 kg<input type="number" step="0.1" name="weight" required></label></div>
+  <p id="obmsg" class="warn" role="status"></p><div class="row"><button>下一步</button>${skip}</div></form>` : ob === 2 ? `<form id="obf"><div class="row"><label>目标体重 kg<input type="number" step="0.1" name="goalWeight"></label><label>目标日期<input type="date" name="goalDate"></label></div>
+  <p id="obpace" class="mut" role="status"></p><div class="row"><button>下一步</button>${skip}</div></form>` : `<p>记第一餐：点一个常见搭配，之后可在下方修改。</p><div class="row">${PRESET_TEMPLATES.map(tp => `<button class="sec" data-obtpl="${tp.id}">${esc(tp.name)}</button>`).join('')}</div><div class="row">${skip.replace('跳过，先看看', '完成')}</div>`}</section>`;
   const bk = backupDue({ lastExport: S.get('lastExport', null), snoozeUntil: S.get('backupSnooze', null), logDays: S.keys().filter(k => k.startsWith('log.')).length, today: today() }) ? `<section class="card" id="bkHint"><p>已记录多天，建议导出一次备份（数据只存在这台手机的浏览器里）。</p><div class="row"><a class="btn" href="#me">去“我的”导出</a><button class="sec" id="bkSnooze">7 天后再提醒</button></div></section>` : '';
   const rv = reviewDue(today(), S.get('reviews', {})) ? `<section class="card" id="rvHint"><p>新的一周：花 1 分钟看看上周，定一个小目标。</p><a class="btn" href="review.html">做本周回顾</a></section>` : '';
   return `${onboard}${bk}${rv}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
@@ -74,7 +81,17 @@ export const view = () => {
 };
 view.bind = () => {
   const bs = $('#bkSnooze'); if (bs) bs.onclick = () => { S.set('backupSnooze', addDays(today(), 7)); rerender(); };
-  const ob = $('#obSkip'); if (ob) ob.onclick = () => { S.set('onboardSeen', true); rerender(); };
+  const obs = $('#obSkip'); if (obs) obs.onclick = () => { S.set('onboardSeen', true); obStep = 1; rerender(); };
+  const obf = $('#obf');
+  if (obf) {
+    const step = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: false, step: obStep });
+    const pace = () => { const p = profile(); const el = $('#obpace'); if (!el) return; const r = paceCheck({ currentKg: p.weight, goalKg: +obf.goalWeight.value, today: today(), goalDate: obf.goalDate.value }); el.textContent = PACE_TEXT[r.status] ? '减重速度：' + PACE_TEXT[r.status] + (r.kgPerWeek ? `（约 ${r1(r.kgPerWeek)} kg/周）` : '') : ''; };
+    if (step === 2) { const p = profile(); obf.goalWeight.value = p.goalWeight; obf.goalDate.value = p.goalDate; obf.oninput = pace; pace(); }
+    obf.onsubmit = e => { e.preventDefault(); const r = saveOnboardStep(S.get('profile', null), step, Object.fromEntries(new FormData(obf)));
+      if (!r.ok) { const m = $('#obmsg'); if (m) m.textContent = r.errors.join('；'); return; }
+      S.set('profile', r.profile); obStep = step + 1; rerender(); };
+  }
+  document.querySelectorAll('[data-obtpl]').forEach(b => b.onclick = () => { const tp = PRESET_TEMPLATES.find(x => x.id === b.dataset.obtpl); const l = getLog(); l.items.push(...tp.items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('onboardSeen', true); obStep = 1; rerender(); });
   const pushItems = (items, name) => { const l = getLog(); const n0 = l.items.length; l.items.push(...items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('undo', { date: today(), from: n0, name }); rerender(); };
   const addItem = (id, g) => { const u = S.get('foodUse', {}); u[id] = (u[id] || 0) + 1; S.set('foodUse', u); S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
   const afMsg = t => { $('#afmsg').innerHTML = t; };

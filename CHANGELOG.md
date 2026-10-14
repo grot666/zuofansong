@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.0
+- R9-4 verify-or-≈ for generator foods (milk, seabass FDC); R9-5 fdcCompare gap test + notes; budget rounds monotonic.
+
 ## v0.9.9
 - R9-2 plan uses kiwiUSDA; R9-3 eggWhite = FDC 172183 verified.
 

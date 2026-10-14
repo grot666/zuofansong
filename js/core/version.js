@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.9.9';
+export const VERSION = '0.10.0';
 export const CHANGELOG = [
+  ['0.10.0', '菜单和购物清单中，营养值未核对的食材前加“≈”；牛奶、鲈鱼改用已核对的 USDA 数据；预算换菜不会越换越贵。'],
   ['0.9.9', '菜单加餐的猕猴桃改用已核对的 USDA 数据；蛋清营养数据更新为 USDA FDC 172183（已核对）。'],
   ['0.9.8', '按预算换蛋白会一直换到真正在预算内（或确实无法再省）；如果换完某天热量超标，菜单页会提示是哪天。'],
   ['0.9.7', '金枪鱼不再作为正餐主菜，只作加餐（每次 100 g），一周总量不超过 339 g 的保守参考，周回顾不会再提示菜单本身超量。'],

@@ -141,7 +141,7 @@ export function planWeek(targets, food, recipes, opts = {}) {
   if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible, unfit: [] };
   // R9-1: loop on the *real* regenerated cost (portions change after a swap), max 7 rounds.
   // A34: report days that were ok before swapping but are not ok after (`unfit`), so the page can warn.
-  const base = week; let swaps = 0;
+  const base = week; let swaps = 0, stalled = false;
   const options = (opts.proteins || PROTEINS).filter(id => food(id));
   for (let round = 0; round < 7 && total > opts.budget; round++) {
     const slots = week.map(d => d.dinnerProtein);
@@ -150,10 +150,12 @@ export function planWeek(targets, food, recipes, opts = {}) {
     const fixed = total - slots.reduce((s, id, i) => s + proteinCost(food, id, pairP[i]), 0);
     const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget, score: id => proteinScore(id, food) });
     if (!r.swaps) break;
-    swaps += r.swaps;
-    week = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots });
-    total = cost(week);
+    const next = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots }); const nextCost = cost(next);
+    if (nextCost >= total) { stalled = true; break; } // estimate disagreed with real portions: keep the cheaper week (monotonic)
+    swaps += r.swaps; week = next; total = nextCost;
   }
+  // Still over budget: fall back to the cheapest week the greedy can reach (budget 0), so cost never rises as budget falls.
+  if (stalled && total > opts.budget && opts.budget > 0) { const m = planWeek(targets, food, recipes, { ...opts, budget: 0 }); if (m.cost < total) { week = m.week; total = m.cost; swaps = m.swaps; } }
   const unfit = week.map((d, i) => (base[i].fit === 'ok' && d.fit !== 'ok' ? i : -1)).filter(i => i >= 0);
   return { week, cost: total, overBudget: total > opts.budget, swaps, infeasible, unfit };
 }

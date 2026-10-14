@@ -26,15 +26,15 @@ export const FOODS2 = [
   E('tofuUSDA', '老豆腐(USDA 外国硬豆腐近似)', 'laodoufu', '蛋白', 144, 17.3, 8.72, 2.78, 2.3, 4, ['豆制品'], { source: 'USDA FDC 172475 (近似)' }),
   E('garlic', '大蒜', 'dasuan', '蔬菜', 128, 4.5, 0.2, 27.6, 1.1, 6, ['调味'], {}),
   E('greenPepper', '青椒', 'qingjiao', '蔬菜', 20, 0.86, 0.17, 4.64, 1.7, 4, [], { source: 'USDA FDC 170427', verified: true }),
-  E('eggplant', '茄子', 'qiezi', '蔬菜', 23, 1.1, 0.2, 4.9, 1.3, 3, ['微波'], {}),
-  E('celery', '西芹', 'xiqin', '蔬菜', 17, 0.8, 0.1, 3.9, 1.4, 3, ['高纤'], {}),
+  E('eggplant', '茄子', 'qiezi', '蔬菜', 25, 0.98, 0.18, 5.88, 3.0, 3, ['微波'], {source:'USDA FDC 169228',verified:true,fdcVerifiedAt:'2026-10-15'}),
+  E('celery', '西芹', 'xiqin', '蔬菜', 14, 0.69, 0.17, 2.97, 1.6, 3, ['高纤'], {source:'USDA FDC 169988',verified:true,fdcVerifiedAt:'2026-10-15'}),
   E('cauliflower', '花菜', 'huacai', '蔬菜', 25, 1.92, 0.28, 4.97, 2.0, 4, ['烤蔬菜'], { source: 'USDA FDC 169986', verified: true }),
   E('kongxincai', '空心菜', 'kongxincai', '蔬菜', 23, 2.2, 0.3, 4.0, 1.4, 4, ['绿叶菜'], {}),
   E('oyster', '蠔油', 'haoyou', '调味', 114, 1.6, 0.1, 26.5, 0.2, 10, ['调味'], { unit: { name: '勺', g: 10 } }),
   E('soy', '生抽', 'shengchou', '调味', 63, 5.6, 0.1, 10.1, 0.2, 8, ['调味'], { unit: { name: '勺', g: 10 } }),
-  E('kiwiGold', '金果猕猴桃', 'jinguo', '水果', 63, 1.0, 0.3, 15.8, 1.4, 20, ['水果', '助眠'], { unit: { name: '个', g: 90 } }),
-  E('orange', '橙子', 'chengzi', '水果', 48, 0.8, 0.2, 11.1, 0.6, 6, ['水果'], { unit: { name: '个', g: 150 } }),
-  E('edamame', '毛豆', 'maodou', '蛋白', 131, 13.1, 5.0, 10.5, 4.0, 8, ['豆类', '高纤', '速冻'], {}),
+  E('kiwiGold', '金果猕猴桃', 'jinguo', '水果', 63, 1.02, 0.28, 15.8, 1.4, 20, ['水果', '助眠'], {unit: { name: '个', g: 90 }, source:'USDA FDC 168211',verified:true,fdcVerifiedAt:'2026-10-15'}),
+  E('orange', '橙子', 'chengzi', '水果', 47, 0.94, 0.12, 11.8, 2.4, 6, ['水果'], {unit: { name: '个', g: 150 }, source:'USDA FDC 169097',verified:true,fdcVerifiedAt:'2026-10-15'}),
+  E('edamame', '毛豆', 'maodou', '蛋白', 121, 11.9, 5.2, 8.91, 5.2, 8, ['豆类', '高纤', '速冻'], {source:'USDA FDC 168411',verified:true,fdcVerifiedAt:'2026-10-15'}),
 ];
 // A31: 好吃 flag lives in data (read by core/scores.js); custom foods may set `tasty: true` too.
 for (const f of FOODS2) if (['shrimpCooked', 'thighRoasted', 'eggUSDA', 'salmon'].includes(f.id)) f.tasty = true;

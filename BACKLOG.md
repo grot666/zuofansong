@@ -499,3 +499,5 @@ cbe10f9 (A36–A39) was authored/committed by `grot666 <grot666@users.noreply.gi
 - ✅ **R10-S2 (P2) Per-meal protein still hits 300 g cooked** at p145/p160 (R9-8 follow-up). AC/test as R9-8, re-run on v0.10.10.
 
 - **SPCAP 烤红薯 variety cap ≤3 days/week (P2)** ✅
+
+- **VER-20 Verify batch of 20 foods with clear FDC equivalents (P2)** ✅

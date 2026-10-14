@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.36
+- VER-20 verify batch: 20 foods to FDC SR Legacy, 3 kept ≈
+
 ## v0.10.35
 - sweet-potato variety cap (≤3 days/week) with 杂粮 staples and peas side
 

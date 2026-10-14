@@ -1,9 +1,67 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (06:45): no open P0/P1. Shipped v0.10.0–v0.10.10: R9-4…R9-10 ✅, A36–A39 ✅, veg reuse ✅, PERF-1 (planWeek ~7 ms) ✅, 龙利鱼 in PROTEINS ✅, WALK-1/2 ✅. Open in order: R-01 remainder (pace %/wk in onboarding + review warning), R-11 remainder (30-min evening one-tray variant), verify batch (10 most-used unverified generator foods; 110/137 foods unverified), R-15 (ranked fiber swaps, unscoped).
+Next (07:05): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A49** shopping twin alias → **A50** extract TUNA → A51/A52. Shipped since last arch review: A40–A46 ✅ (v0.10.15–0.10.21), R-01 ✅, R-11 ✅, VER-10 ✅, R10-D1 ✅ (v0.10.24), CI serial ✅ (v0.10.23). Research still open: R10-F1/F2 fiber in plan, R10-S1/S2 (S1 overlaps A49).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Arch review @4a688c5 (v0.10.24), 2026-10-15 ~07:05 SGT — 180/180 tests on a clean clone (serial)
+Commits since `9390563` (docs(arch) @8e6e1d5 / v0.10.10): R-01, R-11, VER-10, A40–A46, plangrid/CI/perf hardening, R10-D1 data. Probes (not committed): `proteins: []` and all-PROTEINS-missing both throw in `portionDay`; seed-0 shopping list has separate `西兰花` + `西兰花(USDA)` lines (300 g + 100 g); `plan/portion.js` imports `TUNA` from `review.js`; `package.json` `test` script lacks `--test-concurrency=1` while CI has it.
+
+Verified shipped this window: A40 ✅ v0.10.15 · A41 ✅ v0.10.16 · A42 ✅ v0.10.17 · A43 ✅ v0.10.18 (+ CI serial v0.10.23) · A44 ✅ v0.10.19/0.10.22 · A45 ✅ v0.10.20 · A46 ✅ v0.10.21 · R-01/R-11/VER-10/R10-D1 ✅.
+
+- **A47 `selectWeek`/`planWeek` crash when no protein is usable (P0)**
+  - Why: same class as A40. `proteins = (opts.proteins || PROTEINS).filter(id => food(id))` can be `[]` (empty opts, or every id missing from the index after a data rename). Then `proteins[(d + seed) % proteins.length]` is `undefined`, and `portionDay` does `food(pLunch).kcal` → TypeError. The plan page try/catch shows a raw error card instead of a usable week. Probe @4a688c5: `planWeek(t, food, RECIPES, {proteins: []})` and a food lookup that drops all PROTEINS both throw.
+  - AC:
+    - Guard: if `!proteins.length`, `selectWeek` still returns 7 days with `pDinner`/`pLunch` = `null` (or skip protein slots safely).
+    - `portionDay` treats null protein as no meat items (or early-returns a day with `fit: 'protein-low'`).
+    - `planWeek` returns `{…, infeasible: {reason: 'no-protein'}}` without throwing; plan-page shows a notice (mirror the no-veg copy).
+    - Existing A40 no-veg path unchanged.
+  - Tests:
+    - `planWeek(t, food, RECIPES, {seed:0, proteins: []})` returns within 50 ms with `infeasible.reason === 'no-protein'` and does not throw.
+    - Food index missing every PROTEINS id → same.
+    - Normal grid (A44d) unchanged.
+
+- **A48 `npm test` must match CI serial concurrency (P1)**
+  - Why: v0.10.23 made CI `node --test --test-concurrency=1` so A43's 25/40 ms guards measure the planner, not 2-vCPU contention. `package.json` still has `"test": "node --test test/"`, so local runs are parallel and can flake (or look fine while CI fails). Two sources of truth for "how to run tests".
+  - AC:
+    - `package.json` scripts.test = `node --test --test-concurrency=1 test/`.
+    - Optional: a one-line note in ARCHITECTURE §6 / README if present.
+    - No behaviour change to tests themselves.
+  - Tests: text-check `package.json` contains `--test-concurrency=1` (or assert `scripts.test` equals the CI command substring).
+
+- **A49 Shopping-list twin/alias map (P1, unlocks R10-S1)**
+  - Why: `COOKED_TO_RAW` collapses cooked→raw for pricing, but USDA twins are separate food ids with the same display role (`broccoli` / `broccoliUSDA`, and curated chips now prefer the USDA twin). `shoppingList` aggregates by raw id only, so a week that uses both shows two 西兰花 lines. Probe seed 0 @4a688c5: `西兰花(USDA)` 300 g + `西兰花` 100 g. R10-S1 asked for merge; the missing *architecture* piece is a single alias table next to `COOKED_TO_RAW`.
+  - AC:
+    - Exported `SHOP_ALIAS` (or extend `COOKED_TO_RAW`) mapping twin id → canonical raw purchase id (e.g. `broccoliUSDA → broccoli`, `kiwiUSDA → kiwi` if kiwi stays purchasable, `eggUSDA → egg` already via COOKED_TO_RAW).
+    - `shoppingList` (and `totals().cost` if needed for consistency) aggregates through the alias.
+    - Display name = canonical food's name (one line); verified badge can stay on the twin used in the meal.
+    - `keys`/data test: every `*USDA` generator id used in plan has an alias or an explicit "keep separate" allowlist comment.
+  - Tests:
+    - Fixture week containing both `broccoli` and `broccoliUSDA` → one shopping line, grams summed.
+    - Seed-0 list has ≤ 1 line whose name starts with 西兰花.
+    - Cost unchanged within ±¥0.05 vs pre-merge (same unit price on both twins, or document if prices differ).
+
+- **A50 Extract `TUNA` out of `review.js` (P2)**
+  - Why: A33 correctly shares one weekly gram budget between planner and review, but the constant lives in `review.js` and `plan/portion.js` imports it. That makes plan depend on review (wrong layer: review is a weekly *retrospective*, plan is a *generator*). Future review-only edits risk breaking plan imports.
+  - AC:
+    - New `js/core/tuna.js` (or `limits.js`) exporting `TUNA` (+ maybe `TUNA_ADDON_G` movers).
+    - `review.js` and `plan/portion.js` import from there; re-export from review optional for back-compat.
+    - SW ASSETS + A15 updated.
+    - Text test: no file under `js/core/plan/` imports `review.js`.
+  - Tests: existing A33 / tunaNotes tests still pass; new import-graph text test.
+
+- **A51 Restore full plangrid determinism coverage under serial CI (P2)**
+  - Why: v0.10.22 thinned deep-equal re-checks to ~⅓ of the grid to stay under the wall-clock budget. CI is now serial and the 4 s guard has headroom (~1.5 s locally @ review). A non-deterministic path that only hits the skipped cells would slip through.
+  - AC:
+    - `plangrid.test.js` deep-equals **every** (target × seed × budget) cell again, or documents a fixed sample with ≥ 80% coverage and why.
+    - Wall stays ≤ 4 s on CI; if not, split "invariants" vs "determinism" into two files rather than thinning asserts.
+  - Tests: the grid file itself; duration still asserted.
+
+- **A52 A45 leftover cleanup in plan split (P3)**
+  - Why: `plan/portion.js` still ends with a 4-line comment documenting `applyBudget` (now in `budget.js`). `plan/select.js` defines unused `const sum = …`. Harmless, but it confuses the next editor and undoes the "each file owns one concern" goal of A45.
+  - AC: remove the orphan comment and the unused `sum`; no behaviour change; A44 snapshots still green.
+
 
 ### Arch review @8e6e1d5 (v0.10.10), 2026-10-15 ~06:55 SGT — 161/161 tests on a clean clone
 Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × seeds 0–5 × budget {none, 1, .9, .8, .7, .5}×free (180 planWeek runs, PRICE_REFS merged). Scripts not committed.

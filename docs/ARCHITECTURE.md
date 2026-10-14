@@ -1,7 +1,7 @@
 # 做饭松 — Architecture
 
-Status: reflects `main` at be96ed1 (v0.8.7). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
-Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22 opened) · 836ac40 (v0.7.1: A23–A27 opened) · **be96ed1 (v0.8.7, 2026-10-15 ~06:05 SGT: A23–A27 + G1–G4 + UX-4…14 verified shipped, 123/123 tests local; new → A28–A32, §10)**.
+Status: reflects `main` at 4a688c5 (v0.10.24). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
+Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · **4a688c5 (v0.10.24, 2026-10-15 ~07:05 SGT: A40–A46 + R-01/R-11/VER-10/R10-D1 verified shipped, 180/180 tests local; new → A47–A52, §11)**.
 
 ## 1. Principles
 - Static GitHub Pages, plain HTML/CSS/ES modules, **no build step**, no runtime deps, no network calls except same-origin assets.
@@ -12,37 +12,44 @@ Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22 opened) · 836ac40 (v0.7
 - Data modules (`data/*.js`) are JS (not JSON) so they work offline and in Node without fetch (DECISIONS 04:00).
 - **Every page entry does the same boot:** `bootStore()` → render → `registerSW()` (✅ v0.6.0, enforced by `test/version.test.js`).
 
-## 2. Module layout @v0.8.7 (A6 ✅, A22 ✅, A24 ✅)
+## 2. Module layout @v0.10.24 (A6 ✅, A22 ✅, A24 ✅, A45 ✅)
 ```
 index.html            SPA shell, hash routes #today #plate #veg #rice #foods #me (+ A20 non-module escape hatch)
-plan.html             weekly plan; in-page sections #menu #list #prep (UX-7)
-review.html           每周复盘
-sw.js                 service worker (CACHE = 'zfs-' + VERSION)
+plan.html             weekly plan; in-page sections #menu #list #prep (UX-7); R-11 trayCard per weekday
+review.html           每周复盘 (A42 canDeepen reasons)
+sw.js                 service worker (CACHE = 'zfs-' + VERSION); ASSETS includes js/core/plan/{select,portion,budget,shopping}.js
 manifest.webmanifest, icon.svg, .nojekyll, css/app.css (--nav-h + safe-area padding, UX-5)
 js/boot.js            bootStore(), toast(msg,{action,ms}), shouldShowUpdate (UX-8), getProfile(), registerSW()
-js/nav.js             NAV (5 items, UX-11), COOK_TOOLS sub-nav, navHtml/navHref/markNav — shared by all 3 pages (UX-4)
-js/app.js             index router only (2.5 KB): hash → views[name].{view(), view.bind()}
-js/ui.js              index page context: food() / allFoods() / refreshFoods() via foodIndexFromStore, profile(), getLog/setLog, today(), PRESET_TEMPLATES
-js/views/             today (16 KB), me (12 KB), foods, rice, plate, veg
-js/plan-page.js       plan page (planWeek, mealScores, regenWeek undo toast)
-js/review-page.js     review page (weekReview, plateauAdvice, decision radio → reviews / profile / breakState)
+js/nav.js             NAV (5 items, UX-11), COOK_TOOLS sub-nav, navHtml/navHref/markNav
+js/app.js             index router only (~1.6 KB): hash → views[name].{view(), view.bind()}
+js/ui.js              index page context: foodIndexFromStore, profile(), getLog/setLog, today(), PRESET_TEMPLATES
+js/views/             today, me, foods, rice, plate, veg (A30: no data/foods* or makeIndex imports)
+js/plan-page.js       plan page (planWeek, mealScores, regenWeek undo toast, maxPrepMin, trayPlan)
+js/review-page.js     review page (weekReview, plateauAdvice, canDeepen → reviews / profile / breakState)
 js/core/
-  version.js   VERSION + CHANGELOG          profile.js  DEFAULT_PROFILE, normalizeProfile, paceCheck, parseProfileForm, saveProfile (UX-6), onboardStep/saveOnboardStep (UX-10)
-  store.js     culiang.v1.* + migrations    foods.js    makeIndex({base,partials}), foodIndexFromStore, totals, priceOf, COOKED_TO_RAW, quickChips (UX-12), gramsFor, matchFoods
-  dates.js     localDate/addDays/dayNum, backupDue (G3), todayIndex (UX-7)
-  plan.js      selectWeek, portionDay (A25 cap + ADDONS + powderAddons G2), planWeek, applyBudget, shoppingList, checkWeek, feasibility, regenWeek (UX-9)
-  scores.js    mealScores (G1)              review.js   weekReview, plateau / plateauAdvice (R-10 R8), reviewDue (UX-4), lastNDates
-  protein.js   proteinGap, gutRisk, proteinFill (UX-13)     fiber.js  suggestFiber (N-04 R8)
-  retention.js compact/compactStore (A11, A26)   breaks.js, sleep.js, portion.js, targets.js, grains.js, fat.js, weight.js, sauces.js
-data/foods.js, foods2.js, foods3.js (137 foods), recipes.js (34), sauces.js, prices.js
-test/  30 files, 123 tests @v0.8.7
-.github/workflows/ci.yml  node --check + node --test on push/PR
+  version.js   VERSION + CHANGELOG          profile.js  DEFAULT_PROFILE, normalizeProfile, paceCheck, parseProfileForm, saveProfile, onboardStep/saveOnboardStep (A29)
+  store.js     culiang.v1.* + migrations + afterImport (A41)    foods.js  makeIndex({base,partials}), foodIndexFromStore, totals, priceOf, COOKED_TO_RAW, quickChips, gramsFor, matchFoods
+  dates.js     localDate/addDays/dayNum, backupDue (G3), todayIndex
+  plan.js      A45 re-export facade → plan/{select,portion,budget,shopping}.js (+ COOKED_TO_RAW)
+  plan/select.js   BREAKFASTS/PROTEINS/STAPLES, rankVeg/rankProteins, pickReuse (A40/A46), selectWeek
+  plan/portion.js  portionDay, generateWeek, FITS (A28), ADDONS, powderAddons, feasibility, tuna gates (A33)
+  plan/budget.js   applyBudget, planWeek (R9-1 real-cost loop, A34 unfit, budget-revert)
+  plan/shopping.js shoppingList, checkWeek, regenWeek, planTips, meatNote, parseBudget, distinctVeg
+  scores.js    mealScores (G1)              review.js   weekReview, plateau / plateauAdvice, reviewDue, TUNA (⚠ imported by plan/portion — see A50)
+  protein.js   proteinGap, gutRisk, proteinFill     fiber.js  suggestFiber (N-04)
+  retention.js compact/compactStore (A11, A26)   breaks.js, sleep.js, portion.js, targets.js (canDeepen A42), grains.js, fat.js, weight.js, sauces.js (trayPlan R-11)
+data/foods.js, foods2.js, foods3.js (~137 foods), recipes.js (34), sauces.js, prices.js
+test/  59 files, 180 tests @v0.10.24 (serial in CI)
+.github/workflows/ci.yml  node --check + node --test --test-concurrency=1 on push/PR
 ```
 Dependency rule: `UI (pages, views, ui.js, nav.js) → boot → core → data`. Core never imports boot/UI; data imports nothing.
+Plan split (A45): UI and tests keep importing `js/core/plan.js`; implementation lives under `js/core/plan/*.js`. SW ASSETS lists both the facade and the four split files (A15).
 
-Remaining duplication / drift (A30):
-- `views/today.js`, `views/veg.js`, `views/rice.js` still import `makeIndex` and `FOODS/FOODS2/FOODS3` but never call them (dead imports left by A24). Harmless at runtime, but they invite a second hand-built index again.
-- `review.js` `plateau`/`plateauAdvice` parse dates with `new Date(str)` while `reviewDue` uses `dayNum`. Both are UTC midnight, so results agree today; use `dayNum` everywhere.
+Remaining coupling / drift (open A*):
+- `plan/portion.js` imports `TUNA` from `review.js` (A50): plan should not depend on review.
+- `selectWeek` with zero usable proteins crashes in `portionDay` (A47, same class as A40).
+- Shopping list does not merge USDA twins (`broccoli` vs `broccoliUSDA`) — twin/alias map missing (A49 / R10-S1).
+- Dead comment block at end of `plan/portion.js` still documents `applyBudget` (moved to budget.js).
 
 ## 3. Storage schema — `localStorage`, prefix `culiang.v1.`
 All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSION = 2`. Keys @v0.6.2:
@@ -99,33 +106,35 @@ Export envelope `{app:'zuofansong', schema, exportedAt, data}` (skips `backup.*`
 ### Errors / persistence ✅ (A18)
 `set()` returns false + emits `storage-error`; boot shows the banner, including migrate-abort and memory-backend fallback.
 
-## 4. Service worker @v0.8.7 (A7, A15, A20 ✅)
+## 4. Service worker @v0.10.24 (A7, A15, A20 ✅)
 - `CACHE === 'zfs-' + VERSION` (tested); install precaches ASSETS with `new Request(u, {cache:'reload'})` + `skipWaiting`; activate deletes other caches + `clients.claim`.
 - Navigations: network-first 3 s → cached page (ignoreSearch) → `index.html`. Assets: stale-while-revalidate kept alive with `waitUntil`; miss + offline → `Response.error()`, never HTML. Only `ok && basic` cached.
-- `sw.test.js` enforces disk ⊆ ASSETS ⊆ disk, no dups (A15) — it caught `js/nav.js` and `js/core/scores.js` in v0.8.x.
+- `sw.test.js` enforces disk ⊆ ASSETS ⊆ disk, no dups (A15) — caught `js/nav.js` / `js/core/scores.js` in v0.8.x and the four `js/core/plan/*.js` files at A45.
 - A20 escape hatch: a non-module inline script in each page offers 清除离线缓存并重新加载 (unregisters SW, deletes caches, never touches localStorage).
 - Update toast (UX-8): shown once per new version; `updateSeen` stores the version already shown.
 
-## 5. Weekly plan @v0.8.7 (A9, A16, A19, A23, A25, G1, G2, UX-9 ✅)
+## 5. Weekly plan @v0.10.24 (A9, A16, A19, A23, A25, A33–A46, G1, G2, UX-9, R9-10, PERF-1 ✅)
 ```
-selectWeek(food, recipes, {seed, proteins, dinnerProteins}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL, vegD}
-portionDay(skel, {kcal, protein}, food, {powderScoops}) → {day, meals, tot, proteinG, stapleG, bfMult, kiwiG, addon, fit}
-generateWeek / planWeek(t, food, recipes, {seed, budget, powderScoops}) → {week, cost, overBudget, swaps, infeasible}
-regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // the week is a pure function of (targets, seed, opts); undo = restore prevSeed
+selectWeek(food, recipes, {seed, proteins, dinnerProteins, maxPrepMin, reuse}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL|null, vegD|null}
+portionDay(skel, {kcal, protein}, food, {powderScoops, noTuna, addonUse}) → {day, meals, tot, proteinG, stapleG, bfMult, kiwiG, addon, fit}
+generateWeek / planWeek(t, food, recipes, {seed, budget, powderScoops, maxPrepMin, revert}) → {week, cost, overBudget, swaps, infeasible, unfit}
+regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // week = f(targets, seed, opts); undo = restore prevSeed
 ```
-- Search (A19 closed-form): knobs BF_MULTS(4) × KIWI_G(3) × add-ons (12 whole-food + 2 per powder scoop) × staple g 30…350 step 10; protein g solved directly and capped at `MAX_PROTEIN_G_PER_MEAL = 300` (A25; tofu × `PORTION_MULT` 1.5). Score = protein shortfall × 1e6 + |kcal − target| + knob penalties (bf/kiwi × 5, add-on index × 8), so add-ons are tried in list order and powder comes last (G2).
-- Cost: every path prices via `priceOf(food, id)` on the raw purchase (A23); today/plate `totals().cost` uses the same function (A27).
-- Measured @be96ed1: `planWeek({1800,140}, budget 150, powderScoops 2)` ≈ 40 ms in Node 20 (box). Fine on a phone today, but the search grows linearly with add-ons; see A32.
-- `fit` values: `ok` | `kcal-high` | `kcal-low` | `protein-high` (⚠ misnamed, means protein **short**; A28).
-- Lunch/dinner show `mealScores` (G1, same function as the plate view).
+- Search (A19 closed-form + PERF-1): knobs BF_MULTS(4) × KIWI_G(3) × add-ons (whole-food list + 2 per powder scoop) × staple g 30…350 step 10; protein g solved directly and capped at `MAX_PROTEIN_G_PER_MEAL = 300` (A25; tofu × `PORTION_MULT` 1.5). Zero-staple base is precomputed per part (veg/bf/kiwi/addon) so planWeek median is ~5–7 ms. Score = protein shortfall × 1e6 + |kcal − target| + knob penalties + meat weight + add-on repeat; powder last (G2).
+- Veg: `pickReuse` (REUSE_WINDOW 5) prefers recipes adding fewest new vegetables; empty vegs → `[]` / `vegL|vegD = null` / `infeasible.reason === 'no-veg'` (A40). Loops bounded (A46).
+- Budget: R9-1 loops on *real* regenerated cost (≤7 rounds); A34 reports `unfit` days; optional one-slot revert when still over. Cost via `priceOf` (A23/A27).
+- Tuna: add-on only, weekly gram budget shared with review via `TUNA` (A33; extraction → A50).
+- Measured @4a688c5: A43 guard median < 25 ms (7 runs), grid p95 < 40 ms (30 mixed). CI runs tests serially so the guard measures the planner, not contention (v0.10.23).
+- `fit` ∈ `FITS` = `ok` | `kcal-high` | `kcal-low` | `protein-low` (A28).
+- Lunch/dinner show `mealScores` (G1). Plan page also shows distinct veg count, meat notes (R9-8), trayPlan (R-11).
 
-## 6. Testing (A1, A8 ✅)
-- `npm test` = `node --test test/` (Node 20+, no deps), CI on push/PR. **123 tests in 30 files @v0.8.7**, all pass on a clean clone (06:03 SGT).
+## 6. Testing (A1, A8, A32/A43, A44, A46 ✅)
+- Local `npm test` = `node --test test/` (Node 20+, no deps). **CI** uses `node --test --test-concurrency=1 test/` (v0.10.23) so A43 perf guards are stable. **180 tests in 59 files @v0.10.24**, all pass on a clean clone (07:02 SGT). Local script still parallel — see A48.
 - Unit tests per core module; feature tests are named after their backlog id (`a23`, `g1`…`g3`, `r8`, `ux4`…`ux14`), which makes "is X covered" a filename lookup.
 - Data (`data.test.js`): ids, source/verified, kcal≈4P+4C+9F, recipe ingredients exist, UX-14 wrist rule (no 拍/剁/砸/颠锅 unless `wristSafe:false` + `wristNote`).
 - Store/keys: migrations, envelope, replace-import + undo, persistence, KNOWN_KEYS ↔ §3 table (`keys.test.js`, A14).
 - Text-level: `version.test.js` (CACHE/VERSION, boot order, SW fallback), `sw.test.js` (ASSETS), `ux4.test.js` (shared nav, `viewport-fit=cover`).
-- Gaps: no DOM-level test for index views (onboarding flow across reload, see A29); no perf guard for the plan search (A32); `mealScores` only checked for range/shape (A31).
+- Gaps closed since v0.8.7: A29 onboardStep persistence, A32/A43 perf guards, A31/A36 golden scores, A44 snapshots + plangrid (4 s CI wall), A46 bounded-while grep. Open: empty-protein crash (A47), npm↔CI concurrency drift (A48), shopping twin merge (A49), plan→review TUNA import (A50).
 
 ### §4 coverage map
 | PROMPT §4 item | test today | gap |
@@ -144,7 +153,7 @@ regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // the week is a pure fun
 | storage/migrations | store.test.js ✅ incl. A13 | A17 import cases, A18 persistence detection |
 
 ## 7. CI / Pages
-- `.github/workflows/ci.yml` ✅: push to main + PR; Node 20; `node --check` every tracked js; `node --test test/`.
+- `.github/workflows/ci.yml` ✅: push to main + PR; Node 20; `node --check` every tracked js; `node --test --test-concurrency=1 test/` (serial for stable A43).
 - Pages: branch deploy from `main` `/` (enabled 05:03). CI is the gate; engineer checks it before declaring an iteration done.
 - Hygiene: an accidental nested clone `zuofansong/` was untracked and git-ignored in 6ab7969; `node --check $(git ls-files)` is unaffected.
 
@@ -172,3 +181,25 @@ Design decisions recorded this round:
 - **Views get foods only through `ui.js` / `foodIndexFromStore`** (A30, enforced by a text test).
 - **Taste/ease heuristics live in data, not in `scores.js`** (A31), so adding a food never needs a code edit.
 New items: A28–A32 in BACKLOG.md.
+
+## 11. Review @4a688c5 (v0.10.24, 2026-10-15 ~07:05 SGT)
+Commits reviewed: `9390563` (docs(arch) @v0.10.10) → `4a688c5` (v0.10.24). 180/180 tests on a clean clone (serial).
+
+Verified shipped:
+- **A40** no-veg guard + bounded `pickReuse` (v0.10.15)
+- **A41** `afterImport` in core/store (v0.10.16)
+- **A42** `canDeepen` → `{ok, reason}` + break guard (v0.10.17)
+- **A43** tighter perf guards (v0.10.18) + CI serial (v0.10.23)
+- **A44** veg-reuse snapshots, revert fixture, `plangrid.test.js` (v0.10.19; wall 4 s @v0.10.22)
+- **A45** `js/core/plan/{select,portion,budget,shopping}.js` behind `plan.js` facade (v0.10.20)
+- **A46** bounded-loop grep test (v0.10.21)
+- Also: R-01 pace %/wk (v0.10.12), R-11 weekday tray (v0.10.13), VER-10 top-10 verify (v0.10.14), R10-D1 data + Atwater + SG_MAX kcal fill (v0.10.24)
+
+Design decisions this round:
+- **Empty protein list must fail closed like empty veg (A47).** `proteins: []` (or every PROTEINS id missing from the food index) currently crashes `portionDay` on `food(undefined).kcal`. Mirror A40: guard in `selectWeek`, `infeasible.reason === 'no-protein'`, plan-page notice, no throw.
+- **Local `npm test` must match CI serial concurrency (A48).** Perf guards are meaningless if developers run parallel and CI runs serial (or the reverse).
+- **Shopping needs a twin/alias map (A49),** same layer as `COOKED_TO_RAW`: USDA twins (`broccoliUSDA`↔`broccoli`) must collapse to one raw line. Probe @4a688c5 seed 0: two 西兰花 lines (300 g + 100 g).
+- **`TUNA` belongs outside `review.js` (A50).** `plan/portion.js` importing review couples two domains; extract to `core/tuna.js` (or `limits.js`) with a text test that `plan/**` never imports `review.js`.
+
+New items: A47–A52 in BACKLOG.md.
+

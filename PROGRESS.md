@@ -23,7 +23,7 @@
 - 2026-10-15 ~04:00 SGT — v0.1.0 scaffold: features 1–8 basic, PWA, export/import/reset, 更新日志.
 
 Current state: Pages live https://grot666.github.io/zuofansong/ (200 on index/plan/review); CI green; headless-Chrome smoke OK on local and live.
-Current gaps (07:20, v0.10.36): 77/137 foods unverified (7 of them ≈ with an FDC comparison note; most of the rest are 外食/饮品 composites with no FDC row); prices are estimates (per-food override exists); meat per meal soft-capped at 250 g (R10-S2, MEAT_OVER_G; hard cap 300); 烤红薯 ≤3 days/week; fiber ≥25 g on ~77% of grid days (target 80% → oats breakfast option next); R-15 covered in substance (fiber-low flag, N-04 ranked swaps v0.7.3, planner fiber preference R10-F1 v0.10.25) — no open sub-item.
+Current gaps (07:40, v0.10.43): 69/137 foods unverified (14 of them ≈ with an FDC comparison note; most of the rest are 外食/饮品 composites with no FDC row); prices are estimates (per-food override exists); meat per meal soft-capped at 250 g (R10-S2, MEAT_OVER_G; hard cap 300); 烤红薯 ≤3 days/week; fiber ≥25 g on 88.6% of spcap-grid days (7 targets × 6 seeds × budget none/¥200, v0.10.43; 94% with the oats breakfast option); R-15 covered in substance (fiber-low flag, N-04 ranked swaps v0.7.3, planner fiber preference R10-F1 v0.10.25) — no open sub-item.
 
 - 05:45 v0.7.5 A25 protein cap + add-ons, 97 tests green.
 

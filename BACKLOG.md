@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0–2) → verify batch of the next 10–15 most-used unverified foods (VER-15) → new R11/A54+ items → oats breakfast option (opts.breakfast) toward 80% fiber days. Shipped since 07:10: A47 v0.10.29 · A48 v0.10.30 · A50 v0.10.31 · A51 v0.10.32 · A52 v0.10.33 · A53 v0.10.34 · 烤红薯 cap v0.10.35 · VER-20 v0.10.36. **Arch order for the "A54+" slot (07:25):** A54 (P1) single fiber constants/computed swaps → A55 (P1) keep 2-day staple batch through sweet-potato cap and fiber swaps → A56 perf guard robust to parallel `node --test` → A57 release script into repo (doubled `(vX)`, PROGRESS order) → A58 sweet-potato cap in plangrid/snapshots → A59 cap-aware select. **Arch @07:45:** A54/A55/R11-2 verified ✅. Next pick: **A60** (commented-out assertion in spcap.test, 5 min) → **A58+A62** → A57 → A61 → A56 → A59 → A63.
+Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + fiberSide in plangrid/A44 snapshot → A56 parallel-robust perf guard → A59 cap-aware select → R11-5 聚餐 mode → R11-3 two-trip list → R11-4 leftovers → rest of R11-6. Feature freeze ~09:30. Shipped 07:20–07:37: VER-15 v0.10.37 · A54 v0.10.38 · A55 v0.10.39 · R11-1 v0.10.40 · R11-2 v0.10.41 · oats breakfast v0.10.42 · UX-375 v0.10.43. **Arch @07:45:** A54/A55/R11-2 verified ✅. Next pick: **A60** (commented-out assertion in spcap.test, 5 min) → **A58+A62** → A57 → A61 → A56 → A59 → A63.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 
@@ -73,7 +73,7 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
   - `sed "2s/$O/$V/"` assumes VERSION is on line 2.
   - → A57.
 
-- **A54 Single source for fiber constants and swap numbers (P1)** ✅
+- ✅ **A54 Single source for fiber constants and swap numbers (P1)** ✅ (v0.10.38)
   - Why: (c) above. The today view shows "/ 28 g" while the plan aims at 25 g and its note says "25–30". The swap gains are literals that drift from the food data.
   - AC:
     - `core/fiber.js` exports `FIBER_TARGET = {min: 25, goal: 28}`. `plan/fiber.js` imports it (`FIBER_MIN = FIBER_TARGET.min`), and today.js and `fiberNote` use it.
@@ -83,7 +83,7 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
     - `suggestFiber` values equal `totals(add).fiber` within 0.1 g for every swap.
     - Grep test: no literal `28` or `25` fiber targets outside `core/fiber.js`.
     - Existing N-04 fixture order unchanged (or updated deliberately, with a DECISIONS line).
-- **A55 Keep the 2-day staple batch intact when the cap or fiber swaps change a staple (P1)** ✅
+- ✅ **A55 Keep the 2-day staple batch intact when the cap or fiber swaps change a staple (P1)** ✅ (v0.10.39)
   - Why: `select.js` plans one staple per 2-day batch (cook once in the rice cooker, eat two days, per the 周日备餐 copy), but `plan/day.js` decides swaps per day. Probe: 90/324 batch pairs end up with different staples. The cap swaps day d+1 after day d used the 3rd sweet-potato slot, and fiber alts pick per day. Shopping/prep then lists a half-batch of each.
   - AC:
     - Decide the staple per **batch** in `generateWeek`: evaluate both days with each candidate staple and pick the best summed score.

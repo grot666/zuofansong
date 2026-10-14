@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.18
+- A43: perf guard median<25 ms, grid p95<40 ms
+
 ## v0.10.17
 - A42: canDeepen {ok, reason} with per-reason copy; hidden during 维持周
 

@@ -117,3 +117,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:49 v0.10.16 A41: afterImport sets lastExport = max(imported, today)
 
 - 06:50 v0.10.17 A42: canDeepen {ok, reason} with per-reason copy; hidden during 维持周
+
+- 06:50 v0.10.18 A43: perf guard median<25 ms, grid p95<40 ms

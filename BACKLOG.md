@@ -47,7 +47,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - Each reason.
     - Existing walk.test grid unchanged for `ok`.
     - Choosing break then minus within the break → minus not offered.
-- **A43 Tighten the perf guard to the new baseline (P2)**
+- ✅ **A43 Tighten the perf guard to the new baseline (P2)**
   - Why: A32 asserts median < 60 ms, but the median is now ~5 ms (p95 9 ms). A 6× regression (e.g. losing the precomputed base) would still pass.
   - AC:
     - Median of 7 runs < 25 ms in `a32.test.js`.

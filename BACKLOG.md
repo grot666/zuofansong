@@ -19,7 +19,7 @@ Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R
 - **A32 Plan search perf guard (P3)** ✅
   - Why: the A25/G2 add-on loop made `portionDay` 4 × 3 × (12 + 2·scoops) × 33 knob combos per day. Measured ≈ 40 ms per `planWeek` (1800/140, budget 150, 2 scoops) in Node on the box; phones are ~3–5× slower and budget swaps call it again. Fine now, but the next add-on list growth is invisible.
   - AC: test runs `planWeek` for the default profile with `powderScoops: 3` and a tight budget and asserts < 150 ms median of 5 runs in Node (generous, catches 5× regressions). If it ever fails: prune add-ons whose protein can't close the remaining gap before the staple loop.
-- **A31 Taste heuristic in data, golden scores (P3, G1 follow-up)**
+- **A31 Taste heuristic in data, golden scores (P3, G1 follow-up)** ✅
   - Why: `scores.js` hardcodes a 12-id list for 好吃 (seabass, shrimp, thighRoasted, …). New foods (G4 canteen meals, custom foods) can never score as tasty without a code edit. Tests only check range and the 便宜 order.
   - AC: food field `tasty: true` (default false) in data for those ids; `mealScores` reads it. Golden test: 3 fixed meals (rice + thigh + 青菜 + 6 g oil; tofu + cabbage; salmon 400 g) pinned to exact `{health, easy, cheap, tasty}` so later weight changes are deliberate.
 _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/51 pass on a clean clone._

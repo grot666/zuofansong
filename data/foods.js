@@ -74,3 +74,5 @@ export const FOODS = [
   F('gaijiaofan','盖浇饭(外卖≈)','gaijiaofan','外食',150,6,6,18,1,0,['外卖'],{fatClass:'low',source:'estimate',unit:{name:'份',g:500}}),
   F('wonton','鲜肉馄饨(≈)','huntun','外食',140,6,5,18,0.8,0,['外食'],{fatClass:'low',source:'estimate',unit:{name:'碗',g:350}}),
 ];
+// A31: 好吃 flag lives in data (read by core/scores.js); custom foods may set `tasty: true` too.
+for (const f of FOODS) if (['seabass', 'shrimp', 'leanBeef', 'chickenThigh', 'egg', 'porkLoin'].includes(f.id)) f.tasty = true;

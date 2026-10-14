@@ -36,3 +36,5 @@ export const FOODS2 = [
   E('orange', '橙子', 'chengzi', '水果', 48, 0.8, 0.2, 11.1, 0.6, 6, ['水果'], { unit: { name: '个', g: 150 } }),
   E('edamame', '毛豆', 'maodou', '蛋白', 131, 13.1, 5.0, 10.5, 4.0, 8, ['豆类', '高纤', '速冻'], {}),
 ];
+// A31: 好吃 flag lives in data (read by core/scores.js); custom foods may set `tasty: true` too.
+for (const f of FOODS2) if (['shrimpCooked', 'thighRoasted', 'eggUSDA', 'salmon'].includes(f.id)) f.tasty = true;

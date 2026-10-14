@@ -48,3 +48,5 @@ export const FOODS3 = [
   T('canteenFishSet', '食堂鱼块套餐', 'shitangyukuai', 140, 8, 5, 16, '份', 500, { fiber: 1, fatClass: 'neutral', tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 17 }),
   T('canteenVegSet', '食堂两素一饭', 'shitangliangsu', 125, 3.5, 4.5, 18, '份', 450, { fiber: 1.5, fatClass: 'neutral', tags: ['食堂', '上海'], source: '估算：按常见食堂配菜（米饭 200 g + 荤菜 + 素菜）拆分加总，未核对', priceCNYPer500g: 10 }),
 ];
+// A31: 好吃 flag lives in data (read by core/scores.js); custom foods may set `tasty: true` too.
+for (const f of FOODS3) if (['hairtail', 'pomfret', 'canteenMeatSet', 'canteenPorkSet'].includes(f.id)) f.tasty = true;

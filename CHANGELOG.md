@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.3
+- A31: tasty flag in data (incl. canteen meat sets), scores.js reads it; golden score test.
+
 ## v0.9.2
 - A30: drop dead data/makeIndex imports from views/app; review.js dates via dayNum/addDays; guard test.
 

@@ -51,7 +51,12 @@ async function main([v, cn, en, id, msg]) {
   } catch (e) { spawnSync('git', ['checkout', '--', ...FILES]); die(e.message); }
   t = test(); if (t.status !== 0) { spawnSync('git', ['checkout', '--', ...FILES]); die(`tests red after bump; edits reverted\n${(t.stdout.match(/^not ok .*$/gm) || []).join('\n')}`); }
   sh(`git add ${FILES.join(' ')}`); sh(`git commit -q -m ${JSON.stringify(commitSubject(msg, v))}`);
-  if (spawnSync('git', ['push', '-q'], { stdio: 'inherit' }).status !== 0) die('push failed; release commit is local only');
+  // Teammates push docs concurrently: on a rejected push, rebase once (fail-closed on conflicts/markers) and retry.
+  if (spawnSync('git', ['push', '-q'], { stdio: 'inherit' }).status !== 0) {
+    if (spawnSync('git', ['pull', '-q', '--rebase'], { stdio: 'inherit' }).status !== 0) { spawnSync('git', ['rebase', '--abort']); die('push rejected and rebase failed; release commit is local only'); }
+    if (sh('git grep -lE "^(<<<<<<<|>>>>>>>) " || true')) die('conflict markers after rebase; not pushed');
+    if (spawnSync('git', ['push', '-q'], { stdio: 'inherit' }).status !== 0) die('push failed twice; release commit is local only');
+  }
   const sha = sh('git rev-parse HEAD'); console.log(sh('git log --oneline -1'));
   if (process.env.RELEASE_NO_CI === '1') return;
   for (let i = 0; i < 40; i++) { // wait up to ~4 min for the CI run of this commit

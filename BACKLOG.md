@@ -3,21 +3,76 @@
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION v0.6.x; foods 131; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
 Next: A6 split app.js views · A8 · A11 · R-15 · N-items still open below · price override per food.
 
-## Architecture items (see docs/ARCHITECTURE.md) — slot A1–A3 right after item 2
-_Arch review @12d5f2e (v0.5.0), 2026-10-15 ~05:00 SGT._
+## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+_Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/51 pass on a clean clone._
 
-- **A1 CI workflow** — ✅ shipped 6c3edfb (node --check + node --test; green per 9908066). Remaining: A3/A7 consistency tests below run in the same workflow.
-- ✅ v0.6.0 **A2 store.js hardening + migrations** — Why: `alert()` inside core (throws in Node), `exportAll` JSON.parse unguarded, `importAll` writes any key with no validation/version check, migrate() has no registry. **@v0.5.0 still open:** `store.js` unchanged; `plan-page.js` and `review-page.js` never call `S.migrate()` (only app.js does) — a user who opens plan.html/review.html first after a future schema bump reads un-migrated data; export is still the bare object; 5 keys added since v0.3 (`templates`, `templateUse`, `undo`, `reviews`, `breakFrom`) are undocumented and would be dropped by a key whitelist. AC: injectable backend (`useBackend`), `MIGRATIONS` map + `SCHEMA_VERSION` loop; **every page entry calls `S.migrate()` before first `S.get`** (or store.js runs it lazily on first access); set() returns false + dispatches `storage-error` (UI shows message); export envelope `{app,schema,exportedAt,data}`; import accepts envelope + legacy, rejects schema>current and keys not in `KNOWN_KEYS` (incl. the 5 above and `log.*` pattern); `test/store.test.js` covers quota failure, corrupted JSON value, export→reset→import round-trip (incl. `reviews`, `templates`), migrate idempotent.
-- ✅ v0.6.0 **A3 single version source** — Why: drift recurs every release. **@v0.5.0:** app.js `VERSION='0.4.0'` and CHANGELOG top = 0.4.0, sw `CACHE='zfs-0.5.0'`, plan-page.js hard-codes `<small>v0.4.0</small>`, review page shows no version → 更新日志 misses v0.5.0. (Implementation is the engineer's; architecture only fixes the invariants.) AC (CI-enforced, `test/version.test.js` reading files as text): `sw.js` CACHE === `'zfs-' + VERSION`; `CHANGELOG[0][0] === VERSION`; no `.js`/`.html` other than the version source contains a literal `v0.\d+.\d+`.
-- ✅ v0.6.1 **A4 shared profile defaults** — Why: DEFAULT_PROFILE now has **3** copies (app.js full; plan-page.js and review-page.js reduced, without goalDate/bodyFatPct/proteinPerFfm/usesPowder/scoopG…) → a never-saved user can see different targets per page. AC: `js/core/profile.js` exports DEFAULT_PROFILE + `normalizeProfile(p)` (types, clamps); all three pages import it; test: computeTargets(normalizeProfile({})) deep-equals across code paths.
-- ✅ v0.6.1 **A5 food index + shared totals in core** — Why: `food(id)` is a linear find (app.js rebuilds allFoods() on every call); totals now duplicated **3×** (app.js `totals`, plan.js `sum`, review.js `dayTotals`). AC: `js/core/foods.js` `buildIndex(builtIn, custom)` → Map, single `totals(items, food)` returning the union of fields (kcal…fiber, cost, oil, lowFat, takeaway, powderProtein, veg); app.js, plan.js, review.js use it; existing review.test.js values unchanged; tests for unknown id ignored and cost math.
-- **A6 split app.js by view** — Why: app.js is now 34 KB single file edited via full-file API writes = high conflict/regression risk. AC: `js/views/{today,plate,veg,rice,foods,me}.js` each exporting `{render, bind}`; app.js ≤ 3 KB router; no behavior change (smoke test passes); sw ASSETS updated.
-- ✅ v0.6.0 **A7 service worker strategy** — **@v0.5.0:** ✅ review.html, review-page.js, core/{fiber,weight,review}.js, data/foods3.js are in ASSETS; ✅ only `ok && basic` responses cached. Still open: **plan.html and review.html do not register the SW** (only app.js calls `register`) → a user who lands on plan.html first gets no offline support; offline miss falls back to index.html for *any* request (a missing JS asset gets HTML → module parse error); all assets network-first. AC: a tiny shared `js/sw-register.js` (or one line) imported by all three page entries; navigations network-first w/ 3 s timeout → cache → index.html; non-navigation miss → `Response.error()`/404, never HTML; static assets stale-while-revalidate; `test/sw.test.js` asserts ASSETS ⊇ all js/data/css/html files on disk, every ASSETS path exists, and every `*.html` page's entry module registers the SW.
-- **A8 core test gaps vs §4** — Why: see coverage map in ARCHITECTURE §5. **@v0.5.0:** `test/review.test.js` exists (6 tests: lastNDates, oil, takeaway kcal, tuna, missing days, plateau dense/sparse/down). Open gaps: female BMR, each activity factor, kcal<BMR warning, BMI≥30 goal-weight protein, multi-grain blend + soak/water ratio, fatWallet over budget, gutRisk low + monotonic in fiber, shoppingList raw grams exact for rice (cooked/2.3), generateWeek deterministic per seed and valid at 1500 & 2200 kcal; **review:** kcalOkDays/proteinOkDays boundaries (exactly ±10% counts, −10.1% doesn't), lowFatPct with a `fatClass:'low'` food, plateau when weight *rises* (delta>0 → plateau true — confirm intended, label it “上升” not “持平”), plateau window edges (day 0 excluded, day 14 included), lastNDates across month end (2026-11-01 → 10-26…11-01).
-- ✅ v0.6.0 **A9 plan generator honours weekly budget** — Why: §3.10; **@v0.5.0 still not enforced** — `generateWeek(t, food, RECIPES, {seed})` ignores `weeklyBudget`; plan-page only prints “超出预算”. Test spec/fixtures: see “R6 update · A9” below (do not duplicate). **Prerequisite interface split (do first, no behavior change):** in plan.js extract `selectWeek(targets, food, recipes, {seed, proteins}) → skeleton[7] {bf, pLunch, pDinner, staple, vegL, vegD}` and `portionDay(skel, targets, food) → {meals, tot, proteinG, stapleG}`; `generateWeek` = selectWeek → map portionDay, return shape unchanged (plan.test.js passes untouched). Then add pure `applyBudget(skeleton, food, budget, {maxUsesPerProtein:3}) → {skeleton, swaps}` (greedy per R6) and `planWeek(targets, food, recipes, {seed, budget}) → {days, list, cost, overBudget, swaps}`; plan-page switches to planWeek. Why split: budget swaps change *which* protein, portioning changes *how much*; mixing them inside the 40/60-iteration scaling loop makes the R6 fixture untestable. AC: R6 fixture runs against `applyBudget` directly; planWeek at budget 150 vs 400 → cost(150) ≤ cost(400), every day still passes checkWeek.
-- ✅ v0.6.1 **A10 data integrity tests** — Why: PROMPT §2.6 forbids silent invented numbers; recipe bugs (item 10) slipped through. AC: `test/data.test.js`: kcal vs 4P+4C+9F within 15% or `note` explains; every food has `source` and boolean `verified`; recipe names' key ingredient present in items (allowlist map); cooked foods have a COOKED_TO_RAW or `yield`; ids unique across foods/foods2/**foods3**.
-- **A11 log retention** — Why: one `log.YYYY-MM-DD` key per day grows forever toward the ~5 MB quota. AC: after 180 days, logs collapse into `logArchive.YYYY-MM` daily totals (migration-safe); export includes both; review.js reads archive for weeks older than 180 d; test with synthetic 400 days.
-- ✅ v0.6.0 **A12 maintenance-week auto-revert (new)** — Why: review-page “维持周” sets `profile.deficitPct=0` and stores `breakFrom`, but nothing ever restores it → the user silently stays at maintenance (“记得一周后改回” relies on memory). AC: store `breakState = {from: deficitPct, until: 'YYYY-MM-DD'}` (today+7) instead of bare `breakFrom` (migration maps old key, until = unknown → today); pure `resolveBreak(profile, breakState, today) → {profile, breakState, restored}` in core/review.js, called on every page load; today view shows “维持周还剩 N 天”; tests: before until → unchanged, on/after until → deficit restored and state cleared, missing state → no-op.
+### Verified (closed)
+- ✅ **A1 CI**: 6c3edfb.
+- ✅ **A2 store hardening + migrations** (06fe449). Injectable backend, MIGRATIONS registry with SCHEMA_VERSION=2, export envelope, KNOWN_KEYS whitelist, no alert in core, `storage-error` banner in boot.js. Follow-ups are A13/A14.
+- ✅ **A3 single VERSION** (06fe449). `test/version.test.js` checks: CACHE === 'zfs-'+VERSION, changelog head, no literal v0.x.y.
+- ✅ **A4 shared profile defaults**. One `DEFAULT_PROFILE` in `core/profile.js`. Plan and review pages use `getProfile()` → `normalizeProfile`.
+- ✅ **A7 service worker** (06fe449). Navigations: network-first 3 s → cache → index.html. Assets: stale-while-revalidate, and a miss → `Response.error()`, never HTML. Only same-origin `ok && basic` responses are cached. All 3 pages run `bootStore()` → render → `registerSW()`, and this order is tested. Follow-up is A15.
+- ✅ **A9 budget-aware planWeek** (06fe449). selectWeek/portionDay split; `applyBudget` matches the R6 fixture step by step; `planWeek` swaps each dinner(d)+lunch(d+1) pair together, wrapping lunch(0)=dinner(6). Follow-up is A16.
+- ✅ **A5 food index + shared totals** (53dcc5d): `core/foods.js` `makeIndex`/`totals`; plan.js `sum` and review.js `dayTotals` delegate to it; all 3 pages use the index; `foods.js` is in sw ASSETS.
+- ✅ **A10 data integrity**: `test/data.test.js` (53dcc5d).
+- ✅ **A12 maintenance-week auto-revert**: `core/breaks.js` startBreak/resolveBreak, migration v2 (`breakFrom` → `breakState`), `resolveBreak` called in boot.
+
+### Open, in priority order
+- **A13 migration test hardening (P0)**
+  - Why: `store.test.js` covers v1→v2 with `breakFrom` and a second `migrate()`, but not these paths:
+    - (1) Importing a legacy bare export with no `version` key but a `breakFrom`, while the current version is already 2. `importAll` → `migrate()` is a no-op, so `breakFrom` lingers forever and `breakState` is never created.
+    - (2) The `backup.preMigration` write fails (quota) and the migration proceeds silently. That backup also roughly doubles storage, which is exactly when the quota bites.
+    - (3) Migration 2 reads the device clock (`new Date()`), so `until` can't be tested.
+    - (4) v0 → v2 on a fresh device that has data but no version: no backup is taken.
+  - AC:
+    - (a) `importAll` treats a payload with no `version` as schema 1: write `version=1` before `migrate()`. Test: legacy `{breakFrom:20, profile:{…}}` imported into a v2 store → `breakState.from === 20`, and no `breakFrom` key.
+    - (b) If the backup `set()` returns false, `migrate()` aborts without bumping the version and emits `storage-error`. Test with a backend that throws on `backup.preMigration`.
+    - (c) `migrate({today})` / `MIGRATIONS[2](api, today)` accepts an injected date. Test: `until === today`.
+    - (d) Running `MIGRATIONS[2]` twice on the same state is a no-op (direct call, not via the version gate).
+    - (e) After a successful migration, `backup.preMigration` is cleared on the next app version, or capped to one copy. Test that only one backup key exists.
+- **A15 sw.test.js: reverse ASSETS check (P0)**
+  - Why: `version.test.js` checks that every ASSETS entry exists, but not that every shipped file is in ASSETS. Today the list is complete (checked by script @6ab7969), but nothing enforces it. A6 will add ~7 `js/views/*.js` files. Missing one means that offline, the page fails to import it: the miss returns `Response.error()` (correct), but the page then breaks.
+  - AC: move the SW checks to `test/sw.test.js`.
+    - Every `*.html` file, everything under `js/**/*.js`, `data/*.js` and `css/*.css`, plus `manifest.webmanifest` and `icon.svg`, must be in ASSETS.
+    - No duplicates.
+    - Keep the existing direction (every ASSETS entry exists on disk).
+    - Must land **before A6**.
+- **A16 planWeek pairing and budget invariants beyond the R6 fixture (P1)**
+  - Why: the test checks pairing for d<6 only, at one seed and one budget. It doesn't check:
+    - the wraparound case lunch(0)=dinner(6) after swaps
+    - kcal ±5% after swaps
+    - that `overBudget` is reported when the budget can't be met
+    - the per-protein cap of 3
+  - AC: `r6.test.js` (or `plan.test.js`) loops over seeds 0..3 × budgets {∞, 0.85×free, 0.5×free}.
+    - For all 7 d: `week[(d+1)%7].lunch protein === week[d].dinnerProtein`.
+    - `checkWeek` passes on every day.
+    - No protein appears in more than 3 slots.
+    - At 0.5×free: `overBudget === (cost > budget)`, and cost is non-increasing as the budget tightens.
+    - Determinism: the same seed and budget give a deep-equal week.
+- **A8 core test gaps (P1)**. Still open:
+  - female BMR; TDEE for each activity factor
+  - warning when kcal < BMR
+  - BMI ≥30 uses goal-weight protein
+  - multi-grain blend: needsSoak and waterRatio
+  - fatWallet over budget
+  - gutRisk low case, and monotonic in fiber
+  - shoppingList raw grams: rice = cooked/2.3, exact
+  - review: the ±10% boundary, lowFatPct, plateau on rising weight labelled 上升, window edges, month-end dates
+  - new: `normalizeProfile` clamps and fills defaults (fatPct <20 → 20; strings → numbers)
+  - new: `sleep.js` midnight wrap is covered by r6; add the `sleepNoteDay` once-per-day rule
+  - AC: one test per bullet; total test count ≥ 60.
+- **A6 split app.js (P2, sequenced after A5)**
+  - Why: `app.js` is 35 KB. A5 has landed, so views import `makeIndex`/`totals` from core. Do A15 first so every new view file is forced into ASSETS. One view per commit keeps every step green.
+  - AC, in this order, each its own commit with CI green:
+    - (1) `js/views/shared.js` (the `$`, `esc`, `r1`, `bar` helpers, plus the food index)
+    - (2) `veg` → (3) `rice` → (4) `foods` → (5) `plate` → (6) `me` → (7) `today` (most state last)
+    - `app.js` ≤ 3 KB router.
+    - A15 test passes; the SW test catches each new file.
+- **A11 log retention (P3)**
+  - AC: as before.
+- **A14 KNOWN_KEYS ↔ docs sync (P3)**
+  - Why: v0.6 added the keys `tplMult`, `sleepNoteDay` and `breakState`.
+  - AC: a test parses the ARCHITECTURE §3 key table and asserts it matches `KNOWN_KEYS`. Or simpler: keep the table generated from a comment in store.js.
 
 ---
 

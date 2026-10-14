@@ -1,6 +1,6 @@
 # 做饭松 — Architecture
 
-Status: reflects `main` at 12d5f2e (v0.5.0 每周复盘). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
+Status: verified against `main` at 6ab7969 (v0.6.1). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`; see §8 for the v0.6.x verification.
 
 ## 1. Principles
 - Static GitHub Pages, plain HTML/CSS/ES modules, **no build step**, no runtime deps, no network calls except same-origin assets.
@@ -140,3 +140,28 @@ planWeek(targets, food, recipes, {seed, budget})  -> {days, list, cost, overBudg
 ## 7. CI / Pages (A1)
 - `.github/workflows/ci.yml` ✅ (6c3edfb): on push + PR to main; Node 20; `node --check` all js; `node --test test/`.
 - Pages: branch deploy from `main` `/` (engineer item 1). No build workflow needed; CI is the gate the engineer checks (`gh run list`) before declaring an iteration done.
+
+## 8. v0.6.x verification (6ab7969, 2026-10-15 ~05:20 SGT)
+`node --test` on a clean clone: 51/51 pass.
+
+| check | result |
+|---|---|
+| Boot order | ✅ `js/boot.js` `bootStore()` = migrate → resolveBreak (restore + remove breakState) → storage-error banner. All 3 entries: `bootStore()` → `render()` → `registerSW()`; asserted by `version.test.js`. |
+| Migration v2 | ✅ `breakFrom` → `breakState{from, until=today}`; guarded so it is idempotent; backup taken when v≥1. ⚠ Gaps (A13): legacy import without `version` skips v2; a failed backup write doesn't abort; device clock not injectable; no backup from v0. |
+| SW | ✅ navigation network-first 3 s → cache → index.html; asset SWR with miss → `Response.error()`; only one `index.html` fallback (asserted); ASSETS currently complete. ⚠ Revalidation promise not passed to `e.waitUntil` (low impact). ⚠ No disk→ASSETS test (A15) before A6 adds files. |
+| planWeek pairing | ✅ `dinnerProteins[d]` feeds dinner(d) and lunch((d+1)%7); costs pair grams the same way. ⚠ Test checks only d<6, one seed and one budget (A16). |
+| A4 profile | ✅ single `DEFAULT_PROFILE` in `core/profile.js`; pages use `getProfile()`. |
+| A5 food index | ✅ `core/foods.js` `makeIndex`/`totals` used by all pages and by plan.js and review.js. |
+
+### Storage keys added since §3 (v0.6.0)
+| key | shape | written by |
+|---|---|---|
+| `breakState` | `{from: deficitPct, until: 'YYYY-MM-DD'}` replaces `breakFrom` (migration v2) | review (startBreak), boot (clears) |
+| `tplMult` | number 0.5 / 1 / 1.5, last template portion multiplier | today |
+| `sleepNoteDay` | 'YYYY-MM-DD' (sleep nudge shown at most once a day) | today |
+| `backup.preMigration` | export envelope; excluded from export; one copy | store.migrate |
+
+### Decisions
+- A legacy import with no `version` key is treated as schema 1, so all migrations run (A13a).
+- `migrate()` must not bump the version if the pre-migration backup can't be written (A13b). Losing the backup is acceptable only on a fresh install (v0).
+- Sequence: A13 → A15 → A6. A6 goes one view per commit, starting with the least-stateful view (veg) and ending with today.

@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.16';
+export const VERSION = '0.10.17';
 export const CHANGELOG = [
+  ['0.10.17', '回顾页：维持周期间不再提供“再减热量”；资料不全、已达上限、低于基础代谢分别给出原因'],
   ['0.10.16', '导入旧备份后不会马上提醒备份'],
   ['0.10.15', '修复：蔬菜数据缺失时菜单页不再卡死，改为提示'],
   ['0.10.14', '核对 10 种菜单常用食材：全麦面包、番茄、生菜改用 USDA 数据；其余标 ≈ 并注明与 USDA 的差异原因'],

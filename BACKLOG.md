@@ -37,7 +37,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - Import a backup with `lastExport: today-20` → `backupDue(...) === false`.
     - A backup without `lastExport` → `lastExport === today`.
     - `undoImport` → the pre-import `lastExport` is back.
-- **A42 `canDeepen` edge cases (P1)**
+- ✅ **A42 `canDeepen` edge cases (P1)**
   - Why:
     - (a) With BMR unknown (no `birth`/`height` → `computeTargets` returns `bmr:null`, `kcal:null`), `canDeepen` is false, and the review shows "热量目标已接近基础代谢" (target is close to BMR). That's wrong copy; the real issue is an incomplete profile.
     - (b) During an active 维持周 (`breakState`, deficitPct 0), `canDeepen` is true (probe), so "再减热量" (cut calories further) is offered mid-break, and choosing it overwrites the deficit that `resolveBreak` will later restore.

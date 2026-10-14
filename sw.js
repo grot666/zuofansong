@@ -1,5 +1,5 @@
 // Must equal 'zfs-' + VERSION in js/core/version.js (test/version.test.js).
-const CACHE = 'zfs-0.10.16';
+const CACHE = 'zfs-0.10.17';
 const ASSETS = ['./', 'index.html', 'plan.html', 'review.html', 'css/app.css', 'js/app.js', 'js/boot.js', 'js/ui.js', 'js/views/today.js', 'js/views/me.js', 'js/views/plate.js', 'js/views/foods.js', 'js/views/rice.js', 'js/views/veg.js', 'js/plan-page.js', 'js/review-page.js', 'js/core/version.js', 'js/core/profile.js', 'js/core/portion.js', 'js/core/dates.js', 'js/core/retention.js', 'js/core/sauces.js', 'js/core/scores.js', 'js/nav.js', 'js/core/foods.js', 'js/core/sleep.js', 'js/core/breaks.js', 'js/core/targets.js', 'js/core/grains.js', 'js/core/fat.js', 'js/core/protein.js', 'js/core/store.js', 'js/core/plan.js', 'js/core/fiber.js', 'js/core/weight.js', 'js/core/review.js', 'data/foods.js', 'data/foods2.js', 'data/foods3.js', 'data/recipes.js', 'data/sauces.js', 'data/prices.js', 'manifest.webmanifest', 'icon.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

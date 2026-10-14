@@ -115,3 +115,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:49 v0.10.15 A40: no-veg guard (pickReuse/selectWeek hang), infeasible no-veg
 
 - 06:49 v0.10.16 A41: afterImport sets lastExport = max(imported, today)
+
+- 06:50 v0.10.17 A42: canDeepen {ok, reason} with per-reason copy; hidden during 维持周

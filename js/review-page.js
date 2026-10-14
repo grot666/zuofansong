@@ -1,4 +1,4 @@
-import { computeTargets, canDeepen } from './core/targets.js';
+import { computeTargets, canDeepen, DEEPEN_COPY } from './core/targets.js';
 import { weekReview, plateauAdvice, lastNDates } from './core/review.js';
 import { weeklyStatus, fastNote } from './core/weight.js';
 import * as S from './core/store.js';
@@ -33,6 +33,7 @@ function render() {
   const st = weeklyStatus(ws);
   const pl = plateauAdvice(ws, today, { kcalOkDays: r.kcalOkDays, logged: r.logged, reviews: S.get('reviews', {}), breakState: S.get('breakState', null) });
   const saved = S.get('reviews', {})[today];
+  const deep = canDeepen(p, { breakState: S.get('breakState', null), today });
   const oilWarn = r.avgOil != null && r.avgOil > 30;
   $('#view').innerHTML = `<section class="card"><h2>最近 7 天 <small class="mut">${dates[0]} – ${dates[6]}</small></h2>
   <p class="mut">自动从记录里统计。没记的显示“未记录”，不算失败。</p>
@@ -50,8 +51,8 @@ function render() {
   ${r.tunaNotes.map(x => `<p class="warn">${x}。可换成虾、三文鱼、鲳鱼等低汞鱼类（FDA/EPA 对敏感人群的建议，作保守参考）。</p>`).join('')}
   ${fastNote(st) ? `<p class="warn">${fastNote(st)}</p>` : ''}
   ${pl.show ? `<p class="warn">最近 2 周体重均值${pl.reason === 'up' ? '上升' : '基本持平'}，且记录充分。${pl.adherent ? '可以选“热量再减约 125 kcal”、“多走步”或 1–2 周“维持周”。' : '先把记录和热量做稳一周再判断；这周可以先“多走步”或“保持”。'}</p>` : ''}</section>
-  <section class="card"><h2>下周只做一个决定</h2><form id="df">${DECISIONS.filter(([id]) => !pl.show || pl.actions.includes(id) || !['minus', 'break'].includes(id)).filter(([id]) => id !== 'minus' || canDeepen(p)).map(([id, label]) => `<label><input type="radio" name="d" value="${id}" style="width:auto;min-height:auto" ${saved?.decision === id ? 'checked' : ''}> ${label}</label>`).join('')}
-  ${canDeepen(p) ? '' : '<p class="mut">热量目标已接近基础代谢（或缺口已达 30%），这周不建议再减热量。</p>'}<label>备注<input name="note" value="${saved?.note ? String(saved.note).replace(/"/g, '&quot;') : ''}"></label><button>保存</button></form><p id="dmsg" class="mut"></p></section>`;
+  <section class="card"><h2>下周只做一个决定</h2><form id="df">${DECISIONS.filter(([id]) => !pl.show || pl.actions.includes(id) || !['minus', 'break'].includes(id)).filter(([id]) => id !== 'minus' || deep.ok).map(([id, label]) => `<label><input type="radio" name="d" value="${id}" style="width:auto;min-height:auto" ${saved?.decision === id ? 'checked' : ''}> ${label}</label>`).join('')}
+  ${deep.ok ? '' : `<p class="mut">${DEEPEN_COPY[deep.reason]}</p>`}<label>备注<input name="note" value="${saved?.note ? String(saved.note).replace(/"/g, '&quot;') : ''}"></label><button>保存</button></form><p id="dmsg" class="mut"></p></section>`;
   $('#df').onsubmit = e => {
     e.preventDefault(); const d = e.target.d.value; if (!d) return;
     const reviews = S.get('reviews', {}); reviews[today] = { decision: d, note: e.target.note.value }; S.set('reviews', reviews);

@@ -71,8 +71,16 @@ export function projectedBodyFat(weight, bodyFatPct, goalWeight) {
   const lean = weight * (1 - bodyFatPct / 100);
   return Math.max(0, (1 - lean / goalWeight) * 100);
 }
-// Walkthrough 2: the review must not offer "deficit +5%" when that target would fall below BMR (or past the 30% cap).
-export function canDeepen(p) {
-  const d = p.deficitPct ?? 20; if (d + 5 > 30) return false;
-  const t = computeTargets({ ...p, deficitPct: d + 5 }); return t.kcal >= t.bmr;
+// A42: may the review offer "deficit +5%"? Returns {ok, reason}; reason ∈ bmr-unknown | on-break | cap | below-bmr.
+export function canDeepen(p = {}, { breakState = null, today = null } = {}) {
+  if (breakState && (!today || !breakState.until || today <= breakState.until)) return { ok: false, reason: 'on-break' };
+  const t0 = computeTargets(p); if (!(t0.bmr > 0) || !(t0.kcal > 0)) return { ok: false, reason: 'bmr-unknown' };
+  const d = p.deficitPct ?? 20; if (d + 5 > 30) return { ok: false, reason: 'cap' };
+  const t = computeTargets({ ...p, deficitPct: d + 5 }); return t.kcal >= t.bmr ? { ok: true, reason: null } : { ok: false, reason: 'below-bmr' };
 }
+export const DEEPEN_COPY = {
+  'bmr-unknown': '先在“我的”补全出生日期和身高，才能判断能否再减热量。',
+  'on-break': '正在“维持周”，结束后再决定是否减热量。',
+  cap: '热量缺口已达 30% 上限，这周不建议再减热量。',
+  'below-bmr': '再减 5% 会低于基础代谢，这周不建议再减热量。',
+};

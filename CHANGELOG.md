@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.17
+- A42: canDeepen {ok, reason} with per-reason copy; hidden during 维持周
+
 ## v0.10.16
 - A41: afterImport sets lastExport = max(imported, today)
 

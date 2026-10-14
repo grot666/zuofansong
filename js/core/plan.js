@@ -23,6 +23,9 @@ export function rankVeg(vegs, food) {
   const sc = new Map(vegs.map(r => [r.id, vegScore(r, food)]));
   return [...vegs].sort((a, b) => sc.get(b.id) - sc.get(a.id) || a.id.localeCompare(b.id, 'en', { numeric: true }));
 }
+// Proteins ranked by the 4 scores of a standard plate (rice 150 + protein 150 + 上海青 250 + oil 6); seed 0 starts at the best.
+export const proteinScore = (id, food) => { const sc = mealScores([['riceCooked', 150], [id, 150], ['shanghaiQing', 250], ['oil', 6]], food); return sc.health + sc.easy + sc.cheap + sc.tasty; };
+export const rankProteins = (ids, food) => { const sc = new Map(ids.map(id => [id, proteinScore(id, food)])); return [...ids].sort((a, b) => sc.get(b) - sc.get(a) || ids.indexOf(a) - ids.indexOf(b)); };
 export function selectWeek(food, recipes, opts = {}) {
   const seed = opts.seed ?? 0;
   const proteins = (opts.proteins || PROTEINS).filter(id => food(id));
@@ -107,7 +110,8 @@ export function generateWeek(targets, food, recipes, opts = {}) {
 
 // RESEARCH-R6 §R6.3 greedy. slots: protein id per slot; slotCost(id, i): CNY for slot i with id (protein held constant).
 // options: candidate ids. Returns { slots, cost, swaps, overBudget, steps }.
-export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap = 3 }) {
+// score(id) (optional): among cheaper candidates that bring the week within budget, take the best-scoring; else the cheapest.
+export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap = 3, score }) {
   const cur = [...slots]; const steps = [];
   const total = () => fixed + cur.reduce((s, id, i) => s + slotCost(id, i), 0);
   let cost = total();
@@ -118,7 +122,8 @@ export function applyBudget({ slots, options, slotCost, fixed = 0, budget, cap =
     const cand = options.filter(id => slotCost(id, worst) < now && cur.filter(x => x === id).length < cap)
       .sort((a, b) => slotCost(a, worst) - slotCost(b, worst));
     if (!cand.length) return { slots: cur, cost, swaps: steps.length, overBudget: true, steps };
-    cur[worst] = cand[0]; cost = total(); steps.push(cost);
+    const fits = score ? cand.filter(id => cost - now + slotCost(id, worst) <= budget).sort((a, b) => score(b) - score(a)) : [];
+    cur[worst] = fits[0] || cand[0]; cost = total(); steps.push(cost);
   }
   return { slots: cur, cost, swaps: steps.length, overBudget: false, steps };
 }
@@ -135,7 +140,7 @@ export function planWeek(targets, food, recipes, opts = {}) {
   const pairP = slots.map((id, i) => pairG[i] * food(id).protein / 100);
   const fixed = total - slots.reduce((s, id, i) => s + proteinCost(food, id, pairP[i]), 0);
   const options = (opts.proteins || PROTEINS).filter(id => food(id));
-  const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget });
+  const r = applyBudget({ slots, options, slotCost: (id, i) => proteinCost(food, id, pairP[i]), fixed, budget: opts.budget, score: id => proteinScore(id, food) });
   week = generateWeek(targets, food, recipes, { ...opts, dinnerProteins: r.slots });
   total = cost(week);
   return { week, cost: total, overBudget: total > opts.budget, swaps: r.swaps, infeasible };

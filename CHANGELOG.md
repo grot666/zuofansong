@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.5
+- Budget swaps weigh meal scores (best-scoring protein that fits budget; else cheapest).
+
 ## v0.9.4
 - Snack variety: per-week repeat penalty on add-on items (≤4 days each), new add-ons milk/千张/虾/豆干.
 

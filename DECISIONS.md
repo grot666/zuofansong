@@ -58,3 +58,4 @@
 - 07:40 R10-S2: portionDay penalises non-tofu meat above 250 g/meal (MEAT_OVER_W 3/g) so add-ons fill first; >250 g meat meals at p145/p160 grid: 0–2 of 168 (was 15–42), each still noted.
 - A51: full-grid determinism restored in test/plangrid-det.test.js (split by seed parity, each test <4 s); plangrid.test.js keeps invariants only.
 - A53: fiber constants → plan/fiber.js; portionDay+generateWeek → plan/day.js (avoids portion↔fiber import cycle); SHOP_ALIAS/twinOf moved to core/foods.js beside COOKED_TO_RAW; plan/* ≤100 lines enforced by test.
+- 烤红薯 cap (07:07): ≤3 sweet-potato days/week tracked in generateWeek (spCapped, memo key). Capped days fall back to 糙米/小米饭 and may add 青豆 80 g per lunch/dinner (FIBER_SIDE, only when capped and still short). Grid 7×6: 烤红薯 47%→34% of days, fiber ≥25 g 75%→77%. Oats were not used: breakfast is seed-chosen and changing it would break the f(targets, seed, opts) breakfast rotation; 杂粮 staples + peas cover the gap.

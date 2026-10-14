@@ -31,12 +31,12 @@ export function powderAddons(n) {
 }
 export function portionCore(sk, { kcal, protein }, food, opts = {}) {
   const { bf, pDinner, pLunch, staple, vegL, vegD } = sk;
-  const r5 = x => Math.round(x / 5) * 5;
+  const side = opts.side || []; // fiber side per meal (e.g. peas), see fiber.js FIBER_SIDE
   const build = (sg, pg, bm, kiwi, addon = [], vm = 1) => {
     const meals = [
       { name: '早餐', title: bm === 1 ? bf.name : `${bf.name} ×${bm}`, items: bf.items.map(([id, g]) => [id, Math.round(g * bm)]) },
-      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name}${vegL ? ' + ' + vegL.name : ''}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...(vegL ? [...vegL.items.map(([id, g]) => [id, g / 2 * vm]), ['oil', vegL.oil / 2 * vm]] : [])] },
-      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name}${vegD ? ' + ' + vegD.name : ''}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...(vegD ? [...vegD.items.map(([id, g]) => [id, g / 2 * vm]), ['oil', vegD.oil / 2 * vm]] : [])] },
+      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name}${vegL ? ' + ' + vegL.name : ''}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...(vegL ? [...vegL.items.map(([id, g]) => [id, g / 2 * vm]), ['oil', vegL.oil / 2 * vm]] : []), ...side] },
+      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name}${vegD ? ' + ' + vegD.name : ''}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...(vegD ? [...vegD.items.map(([id, g]) => [id, g / 2 * vm]), ['oil', vegD.oil / 2 * vm]] : []), ...side] },
     ];
     const snack = [...(kiwi ? [[food('kiwiUSDA') ? 'kiwiUSDA' : 'kiwi', kiwi]] : []), ...addon]; // R9-2: verified FDC twin when available
     if (snack.length) meals.push({ name: '加餐', title: snack.map(([id, g]) => `${food(id).name} ${g} g`).join(' + '), items: snack });

@@ -7,3 +7,10 @@ export const fiberNote = f => `膳食纤维约 ${Math.round(f)} g（目标 25–
 // R10-F1: when a day still misses fiber, also try higher-fiber staples in order (STAPLE_ALT_W penalty) and keep the better score.
 export const FIBER_ALT = { riceCooked: ['brownRiceCooked', 'sweetPotatoBaked'], brownRiceCooked: ['sweetPotatoBaked'], milletCooked: ['sweetPotatoBaked'] };
 export const STAPLE_ALT_W = 20;
+// 烤红薯 variety cap (07:07 order): at most SP_MAX_PER_WEEK sweet-potato days; once reached, a sweet-potato day falls back to 杂粮 staples and fiber swaps skip it.
+export const SP_ID = 'sweetPotatoBaked';
+export const SP_MAX_PER_WEEK = 3;
+export const SP_CAP_ALT = ['brownRiceCooked', 'milletCooked'];
+export const stapleOptions = (staple, capped) => (capped && staple === SP_ID ? SP_CAP_ALT : [staple]);
+export const fiberAlts = (staple, capped) => (FIBER_ALT[staple] || []).filter(id => !(capped && id === SP_ID));
+export const FIBER_SIDE = [['peas', 80]]; // 青豆 per lunch/dinner when the cap leaves a day short of fiber

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.35
+- sweet-potato variety cap (≤3 days/week) with 杂粮 staples and peas side
+
 ## v0.10.34
 - A53 export SHOP_ALIAS/twinOf; split fiber preference (plan/fiber.js, plan/day.js)
 

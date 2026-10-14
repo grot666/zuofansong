@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.34';
+export const VERSION = '0.10.35';
 export const CHANGELOG = [
+  ['0.10.35', '烤红薯每周最多 3 天，其余用糙米/小米饭和青豆补纤维'],
   ['0.10.34', '规划器拆分：纤维偏好独立模块，购物别名表共享'],
   ['0.10.33', '规划器代码清理'],
   ['0.10.32', '规划网格确定性测试恢复为全量'],

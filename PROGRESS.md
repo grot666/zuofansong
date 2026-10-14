@@ -62,3 +62,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 06:10 v0.9.1 A28: fit 'protein-high' → 'protein-low'; export FITS.
 
 - 06:11 v0.9.2 A30: drop dead data/makeIndex imports from views/app; review.js dates via dayNum/addDays; guard test.
+
+- 06:11 A32 perf guard test added (planWeek median ~38 ms in Node, limit 150 ms).

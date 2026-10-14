@@ -16,7 +16,7 @@ Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R
 - **A30 Views never build a food index (P3, A24 guard)** ✅
   - Why: `views/today.js`, `views/veg.js`, `views/rice.js` still import `makeIndex` and `FOODS/FOODS2/FOODS3` but don't use them (dead since A24). `review.js` mixes `new Date(str)` and `dayNum` for the same dates.
   - AC: remove the dead imports. `review.js` uses `dayNum` only. Text test: no file under `js/views/`, `js/plan-page.js` or `js/review-page.js` imports `data/foods*.js` or `data/prices.js` or calls `makeIndex(`; only `core/foods.js` imports those data files.
-- **A32 Plan search perf guard (P3)**
+- **A32 Plan search perf guard (P3)** ✅
   - Why: the A25/G2 add-on loop made `portionDay` 4 × 3 × (12 + 2·scoops) × 33 knob combos per day. Measured ≈ 40 ms per `planWeek` (1800/140, budget 150, 2 scoops) in Node on the box; phones are ~3–5× slower and budget swaps call it again. Fine now, but the next add-on list growth is invisible.
   - AC: test runs `planWeek` for the default profile with `powderScoops: 3` and a tight budget and asserts < 150 ms median of 5 runs in Node (generous, catches 5× regressions). If it ever fails: prune add-ons whose protein can't close the remaining gap before the staple loop.
 - **A31 Taste heuristic in data, golden scores (P3, G1 follow-up)**

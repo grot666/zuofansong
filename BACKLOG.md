@@ -92,7 +92,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - In plangrid: `w[2k].staple === w[2k+1].staple` for k = 0..2 on all grid weeks.
     - The sweet-potato cap still holds.
     - Fiber ≥ 25 g share not lower than today on the spcap grid (assert ≥0.75).
-- **A56 Perf guards robust to parallel runs (P2, rank 5 @07:45)**
+- ✅ **A56 Perf guards robust to parallel runs (P2, rank 5 @07:45)**
   - Why: (b). Plain `node --test test/` fails A43 under load (median 32.9 ms), while `npm test`/CI pass. Reviewers and other bots run plain `node --test`.
   - AC: either
     - (1) a32 measures the median of 7 *after* 2 warm-up runs and skips with a clear message unless `process.env.PERF === '1'` or the run is serial (`--test-concurrency=1`, detectable via `process.env.NODE_TEST_CONTEXT` + a flag the npm script sets); or

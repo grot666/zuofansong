@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.47
+- A56 perf guards calibrated under parallel runs; CI strict
+
 ## v0.10.46
 - A58/A62 plangrid invariants + snapshots cover SP cap, fiber side, breakfast mode
 

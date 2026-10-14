@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 07:53 SGT — v0.10.47: A56 perf guards calibrated under parallel runs; CI strict
 - 2026-10-15 07:49 SGT — v0.10.46: A58/A62 plangrid invariants + snapshots cover SP cap, fiber side, breakfast mode
 - 2026-10-15 07:45 SGT — v0.10.45: A60 restore spcap share assertion; lint guard for asserts hidden in comments
 - 2026-10-15 07:39 SGT — v0.10.44: A57 release helper in repo (scripts/release.mjs), fail-closed

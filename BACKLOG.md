@@ -138,7 +138,7 @@ Verified, no action needed:
     - Feasibility test asserts `proteinG ≤ MAX` on every grid day, keeps the existing green condition (protein×4 ≤ 0.40×kcal → ok), and reports `fit:'protein-high'` beyond it.
     - Test: 1800/140 seed 0 has every `proteinG ≤ 300`.
     - DECISIONS line records the chosen cap.
-- **A26 Retention × import round-trip test (P2)**
+- **A26 Retention × import round-trip test (P2)** ✅
   - Why: the safety above holds by construction but isn't tested. Compaction is irreversible for >180-day detail and runs on every index load, including the first load after an import.
   - AC: test with an in-memory store:
     - Import a 400-day legacy backup → `compactStore` → `undoImport` → keys deep-equal the pre-import snapshot, with no `logArchive.*` left.

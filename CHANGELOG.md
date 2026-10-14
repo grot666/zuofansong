@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.7.6
+- A26: compactStore is a no-op while backup.preImport exists; import→compact→undo round-trip test. Archives are not re-priced.
+
 ## v0.7.5
 - A25: per-meal protein cap MAX_PROTEIN_G_PER_MEAL=300 g; egg-white/yogurt/egg/tofu add-ons (加餐) are tried before raising meat; tofu mains scale 1.5×.
 

@@ -26,3 +26,5 @@ Current state: Pages live https://grot666.github.io/zuofansong/ (200 on index/pl
 Current gaps: app.js still monolithic (A6 view split); prices are estimates with no per-food override; no per-day sleep-note dedupe; weekly plan budget swap estimates slot cost from raw price (final cost from shopping list).
 
 - 05:45 v0.7.5 A25 protein cap + add-ons, 97 tests green.
+
+- 05:45 v0.7.6 A26 import/compact/undo safety.

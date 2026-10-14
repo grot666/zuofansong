@@ -17,7 +17,10 @@ export function compact(logs, archives, today, food, keepDays = 180) {
   return { archives: out, removed };
 }
 // S: store module. Writes the archive before removing any day log (crash-safe: worst case duplicate data).
+// A26: skipped while an import can still be undone, so undo restores the exact pre-import state.
+// Archived days keep the cost computed at compaction time; later price edits do not re-price them.
 export function compactStore(S, today, food, keepDays = 180) {
+  if (S.get('backup.preImport', null)) return 0;
   const logs = {}; const archives = {};
   for (const k of S.keys()) {
     if (k.startsWith('log.')) logs[k.slice(4)] = S.get(k);

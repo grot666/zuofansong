@@ -22,3 +22,5 @@
 - 2026-10-15 05:25 SGT — [arch] Plan generator never silently misses its band: portionDay reports `fit`, planWeek reports `infeasible`; protein floor still wins. Reason: 9/63 days off-band at this user's 62 kg target (A19).
 
 - 05:45 A25: meat ≤300 g/meal; firm tofu main may reach 450 g (PORTION_MULT) since 300 g tofu cannot meet 40%-protein targets; add-ons go to 加餐.
+
+- 05:45 A26: no log compaction while backup.preImport exists (until undo or a later replace). Archived days keep compaction-time cost; price edits never re-price archives.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planWeek, FITS } from '../js/core/plan.js';
+import { planWeek, FITS, SP_ID, SP_MAX_PER_WEEK } from '../js/core/plan.js';
 import { makeIndex } from '../js/core/foods.js';
 import { PRICE_REFS } from '../data/prices.js';
 import { FOODS } from '../data/foods.js'; import { FOODS2 } from '../data/foods2.js'; import { FOODS3 } from '../data/foods3.js';
@@ -16,6 +16,8 @@ test('A44d plan grid: paired, every non-ok day is flagged (determinism: plangrid
       const o = { seed, budget: f == null ? undefined : f * free }; const r = planWeek(t, food, RECIPES, o);
       r.week.forEach((d, i) => { const lunch = r.week[(i + 1) % 7].meals[1].items[1][0]; assert.equal(lunch, d.dinnerProtein, `pair ${seed} ${i}`); assert.ok(FITS.includes(d.fit)); });
       if (r.week.some(d => d.fit !== 'ok')) assert.ok(r.overBudget || r.infeasible || r.unfit.length, `silent non-ok ${JSON.stringify(t)} ${seed} ${f}`);
+      for (let k = 0; k < 3; k++) assert.equal(r.week[2 * k].staple, r.week[2 * k + 1].staple, `A55 batch ${seed} ${f} ${k}`); // A55: 2-day staple batch intact
+      assert.ok(r.week.filter(d => d.staple === SP_ID).length <= SP_MAX_PER_WEEK); for (const d of r.week) if (d.spCap) assert.notEqual(d.staple, SP_ID); // A58
     }
   }
   const ms = performance.now() - t0; console.log('plangrid ms', ms.toFixed(0)); assert.ok(ms < 4000, String(ms)); // AC ≤2 s locally; 4 s guard for slower CI runners (DECISIONS)

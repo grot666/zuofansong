@@ -14,34 +14,52 @@ export function portionDay(sk, targets, food, opts = {}) {
     const tot = sum(meals.flatMap(m => m.items), food);
     return { day: sk.day, meals, tot, dinnerProtein: null, staple: sk.staple, proteinG: 0, stapleG: 150, bfMult: 1, kiwiG: 0, vegMult: 1, addon: [], score: Infinity, fit: 'protein-low', fiberNote: null };
   }
-  const cap = !!opts.spCapped; let best = null;
-  for (const s0 of stapleOptions(sk.staple, cap)) if (food(s0)) { const b = portionCore({ ...sk, staple: s0 }, targets, food, opts); if (!best || b.score < best.score) best = s0 === sk.staple ? b : { ...b, stapleSwap: sk.staple, spCap: true }; }
-  if (!best) best = portionCore(sk, targets, food, opts);
-  for (const alt of fiberAlts(best.staple, cap)) {
-    if (!best.fiberNote || !food(alt)) break;
-    const b = portionCore({ ...sk, staple: alt }, targets, food, opts);
-    if (b.score + STAPLE_ALT_W < best.score) best = { ...b, stapleSwap: sk.staple, ...(best.spCap ? { spCap: true } : {}) };
+  return dayWith(sk, sk.staple, targets, food, opts);
+}
+// One day with a given staple; capped days may add the peas side (FIBER_SIDE) when still short of fiber.
+function dayWith(sk, staple, targets, food, opts) {
+  const key = opts.memo && [sk.bf.name, sk.pLunch, sk.pDinner, sk.staple, staple, sk.vegL?.id, sk.vegD?.id, opts.noTuna, opts.spCapped, JSON.stringify(opts.addonUse || {})].join('|');
+  const hit = key && opts.memo.get(key); if (hit) return { ...hit, day: sk.day };
+  let d = portionCore({ ...sk, staple }, targets, food, opts);
+  if (d.fiberNote && opts.spCapped && FIBER_SIDE.every(([id]) => food(id))) {
+    const b = portionCore({ ...sk, staple }, targets, food, { ...opts, side: FIBER_SIDE });
+    if (b.score + STAPLE_ALT_W < d.score) d = { ...b, fiberSide: true };
   }
-  if (best.fiberNote && cap && FIBER_SIDE.every(([id]) => food(id))) {
-    const b = portionCore({ ...sk, staple: best.staple }, targets, food, { ...opts, side: FIBER_SIDE });
-    if (b.score + STAPLE_ALT_W < best.score) best = { ...b, ...(best.stapleSwap ? { stapleSwap: best.stapleSwap, spCap: best.spCap } : {}), fiberSide: true };
+  if (staple !== sk.staple) d = { ...d, stapleSwap: sk.staple, ...(opts.spCapped && sk.staple === SP_ID ? { spCap: true } : {}) };
+  if (key) opts.memo.set(key, d);
+  return d;
+}
+// A55: the staple is decided per 2-day batch (selectWeek gives days 2k, 2k+1 the same staple: cook once, eat twice).
+// Each candidate staple is evaluated over the whole batch in order (tuna/add-on state carries over) and the best summed score wins.
+function batch(sks, st, targets, food, opts) {
+  const run = staple => {
+    let tunaG = st.tunaG; const used = { ...st.used }; let score = 0; const days = [];
+    for (const sk of sks) {
+      const noTuna = tunaG + TUNA_ADDON_G > TUNA.tunaLight.max;
+      const d = { ...(food(sk.pLunch) && food(sk.pDinner) ? dayWith(sk, staple, targets, food, { ...opts, noTuna, spCapped: st.capped, addonUse: used }) : portionDay(sk, targets, food, opts)), day: sk.day };
+      tunaG += d.meals.flatMap(m => m.items).filter(([id]) => id === 'tunaLight').reduce((t, [, g]) => t + g, 0);
+      for (const id of new Set(d.addon.map(([id]) => id))) used[id] = (used[id] || 0) + 1;
+      score += d.score; days.push(d);
+    }
+    return { days, score: score + (staple === sks[0].staple ? 0 : STAPLE_ALT_W * sks.length), tunaG, used };
+  };
+  let best = null;
+  for (const s0 of stapleOptions(sks[0].staple, st.capped)) if (food(s0)) { const r = run(s0); if (!best || r.score < best.score) best = r; }
+  if (!best) best = run(sks[0].staple);
+  for (const alt of fiberAlts(best.days[0].staple, st.capped)) {
+    if (!best.days.some(d => d.fiberNote) || !food(alt)) break;
+    const r = run(alt); if (r.score < best.score) best = r;
   }
   return best;
 }
 export function generateWeek(targets, food, recipes, opts = {}) {
   // A33: tuna grams across all meals and add-ons stay within TUNA.tunaLight.max (core/tuna.js).
   // Snack variety: each add-on item costs ADDON_REPEAT_W × (days it was already used this week).
-  let tunaG = 0, spDays = 0; const used = {};
-  return selectWeek(food, recipes, opts).map(sk => {
-    const noTuna = tunaG + TUNA_ADDON_G > TUNA.tunaLight.max, spCapped = spDays >= SP_MAX_PER_WEEK;
-    // Perf: planWeek passes opts.memo (one Map per planWeek call) so budget rounds reuse days whose inputs did not change.
-    const key = opts.memo && [sk.bf.name, sk.pLunch, sk.pDinner, sk.staple, sk.vegL?.id, sk.vegD?.id, noTuna, spCapped, JSON.stringify(used)].join('|');
-    let d = key && opts.memo.get(key);
-    if (!d) { d = portionDay(sk, targets, food, { ...opts, noTuna, spCapped, addonUse: used }); if (key) opts.memo.set(key, d); }
-    d = { ...d, day: sk.day };
-    tunaG += d.meals.flatMap(m => m.items).filter(([id]) => id === 'tunaLight').reduce((t, [, g]) => t + g, 0);
-    if (d.staple === SP_ID) spDays++;
-    for (const id of new Set(d.addon.map(([id]) => id))) used[id] = (used[id] || 0) + 1;
-    return d;
-  });
+  // 烤红薯 cap: a batch may use sweet potato only if the week stays ≤ SP_MAX_PER_WEEK days (so ≤ 1 full batch + 1 single day).
+  const sks = selectWeek(food, recipes, opts); const out = []; let st = { tunaG: 0, used: {} }, spDays = 0;
+  for (let i = 0; i < sks.length; i += 2) {
+    const grp = sks.slice(i, i + 2); const r = batch(grp, { ...st, capped: spDays + grp.length > SP_MAX_PER_WEEK }, targets, food, opts);
+    st = { tunaG: r.tunaG, used: r.used }; for (const d of r.days) { if (d.staple === SP_ID) spDays++; out.push(d); }
+  }
+  return out;
 }

@@ -39,7 +39,7 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
     - `suggestFiber` values equal `totals(add).fiber` within 0.1 g for every swap.
     - Grep test: no literal `28` or `25` fiber targets outside `core/fiber.js`.
     - Existing N-04 fixture order unchanged (or updated deliberately, with a DECISIONS line).
-- **A55 Keep the 2-day staple batch intact when the cap or fiber swaps change a staple (P1)**
+- **A55 Keep the 2-day staple batch intact when the cap or fiber swaps change a staple (P1)** ✅
   - Why: `select.js` plans one staple per 2-day batch (cook once in the rice cooker, eat two days, per the 周日备餐 copy), but `plan/day.js` decides swaps per day. Probe: 90/324 batch pairs end up with different staples. The cap swaps day d+1 after day d used the 3rd sweet-potato slot, and fiber alts pick per day. Shopping/prep then lists a half-batch of each.
   - AC:
     - Decide the staple per **batch** in `generateWeek`: evaluate both days with each candidate staple and pick the best summed score.

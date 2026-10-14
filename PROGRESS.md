@@ -161,3 +161,5 @@ Current gaps (07:20, v0.10.36): 77/137 foods unverified (7 of them ≈ with an F
 - 07:21 v0.10.37 VER-15 verify batch: 8 FDC, 7 ≈ with source diff, Atwater coverage
 
 - 07:23 v0.10.38 A54 single source for fiber targets; swap numbers computed from food data
+
+- 07:25 v0.10.39 A55 staple decided per 2-day batch; SP cap per batch; fiber days 77%→84%

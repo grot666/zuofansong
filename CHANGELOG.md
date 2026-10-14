@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.39
+- A55 staple decided per 2-day batch; SP cap per batch; fiber days 77%→84%
+
 ## v0.10.38
 - A54 single source for fiber targets; swap numbers computed from food data
 

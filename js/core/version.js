@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.38';
+export const VERSION = '0.10.39';
 export const CHANGELOG = [
+  ['0.10.39', '主食按两天一批决定（电饭煲做一次吃两天），烤红薯上限按批计算；纤维达标天数提高到约 84%'],
   ['0.10.38', '纤维目标统一来源；补纤维建议的数值按食材数据实时计算'],
   ['0.10.37', '再核对 15 种常用食材：8 种对上 USDA FDC，7 种中国特有食材保留≈并注明差异'],
   ['0.10.36', '又核对 20 种食物（水果/蔬菜/坚果/鸡蛋/鸡肉）到 USDA FDC；虾仁/芋头/莲藕保留≈'],

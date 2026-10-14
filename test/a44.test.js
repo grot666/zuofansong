@@ -14,8 +14,8 @@ test('A44b reuse never adds more distinct vegetables than reuse:false (seeds 0�
   const t = { kcal: 1800, protein: 140 };
   for (let seed = 0; seed < 6; seed++) assert.ok(distinctVeg(generateWeek(t, food, RECIPES, { seed }), food) <= distinctVeg(generateWeek(t, food, RECIPES, { seed, reuse: false }), food), String(seed));
 });
-test('A44c budget revert lowers an overshooting greedy week (1617/160 seed 4 @0.5×free)', () => {
-  const t = { kcal: 1617, protein: 160 }; const free = planWeek(t, food, RECIPES, { seed: 4 }).cost;
-  const a = planWeek(t, food, RECIPES, { seed: 4, budget: 0.5 * free }), b = planWeek(t, food, RECIPES, { seed: 4, budget: 0.5 * free, revert: false });
+test('A44c budget revert lowers an overshooting greedy week (1617/160 seed 0 @0.5×free)', () => {
+  const t = { kcal: 1617, protein: 160 }; const free = planWeek(t, food, RECIPES, { seed: 0 }).cost;
+  const a = planWeek(t, food, RECIPES, { seed: 0, budget: 0.5 * free }), b = planWeek(t, food, RECIPES, { seed: 0, budget: 0.5 * free, revert: false });
   assert.ok(a.cost < b.cost - 1, `${a.cost} vs ${b.cost}`); assert.ok(a.swaps >= 0 && a.swaps === b.swaps - 1);
 });

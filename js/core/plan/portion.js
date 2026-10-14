@@ -11,6 +11,8 @@ export const MAX_PROTEIN_G_PER_MEAL = 300;
 // Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
 export const MEAT_W = 0.5;
 export const SG_MAX = 350; // staple g per meal
+export const MEAT_OVER_G = 250; // = MEAT_NOTE_G (shopping.js)
+export const MEAT_OVER_W = 3;
 // R10-F1: prefer variants reaching 25 g fiber (veg portion ×1/×1.5/×2, kiwi, staple) when kcal/protein still fit.
 export const VEG_MULTS = [1, 1.5, 2];
 export const FIBER_MIN = 25;
@@ -71,6 +73,9 @@ function portionCore(sk, { kcal, protein }, food, opts = {}) {
   const repA = addons.map(a => a.reduce((s, [id]) => s + (opts.addonUse?.[id] || 0), 0) * ADDON_REPEAT_W);
   const free = sK - pK * sP / pP; let bs = Infinity, bsg = 0, bpg = 0, bvi = 0, bbi = 0, bki = 0, bai = 0;
   const cl = x => (x < 30 ? 30 : x > SG_MAX ? SG_MAX : x);
+  // R10-S2: grams of non-tofu meat above MEAT_OVER_G per meal cost MEAT_OVER_W each, so add-ons are tried first.
+  const meatMeals = [pLunch, pDinner].filter(id => id !== 'tofuFirm').map(pm);
+  const over = pg => meatMeals.reduce((s, m) => s + Math.max(0, pg * m - MEAT_OVER_G), 0) * MEAT_OVER_W;
   const sgs = new Array(10);
   // Plain loops (perf, R10-F1): k(sg) is piecewise linear, so only sg next to the kcal-exact points (pg free / pg 60 / pg cap / protein floor) and the ends can win.
   for (let vi = 0; vi < VEG_MULTS.length; vi++) for (let bi = 0; bi < BF_MULTS.length; bi++) for (let ki = 0; ki < KIWI_G.length; ki++) for (let ai = 0; ai < addons.length; ai++) {
@@ -91,7 +96,7 @@ function portionCore(sk, { kcal, protein }, food, opts = {}) {
         const pg = t ? pg1 : pg0;
         const k = bK + sg * sK + pg * pK, P = bP + sg * sP + pg * pP, fib = bF + sg * sF + pg * pF;
         // lexicographic: protein floor, then kcal distance, knob defaults, meat, repeats, fiber below FIBER_MIN (R10-F1)
-        const score = (P < protein ? (protein - P) * 1e6 : 0) + Math.abs(k - kcal) + knob + pg * MEAT_W + (fib < FIBER_MIN ? (FIBER_MIN - fib) * FIBER_W : 0);
+        const score = (P < protein ? (protein - P) * 1e6 : 0) + Math.abs(k - kcal) + knob + pg * MEAT_W + (fib < FIBER_MIN ? (FIBER_MIN - fib) * FIBER_W : 0) + over(pg);
         if (score < bs) { bs = score; bsg = sg; bpg = pg; bvi = vi; bbi = bi; bki = ki; bai = ai; }
       }
     }

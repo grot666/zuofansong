@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.27';
+export const VERSION = '0.10.28';
 export const CHANGELOG = [
+  ['0.10.28', '高蛋白目标下每餐肉量控制在 250 g 内，优先用蛋、酸奶、豆腐补'],
   ['0.10.27', '购物清单更短：同一食材合并，调料和干货归入“常备”，少量食材单独提示'],
   ['0.10.26', '菜单顶部显示一周平均膳食纤维'],
   ['0.10.25', '菜单每天膳食纤维尽量达到 25 g：蔬菜可加量、必要时主食换成糙米或红薯；未达标的日子会提示怎么补'],

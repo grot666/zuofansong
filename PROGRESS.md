@@ -58,3 +58,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 06:04 v0.8.9 Meal scores steer plan: rankVeg by mealScores; seed 0 = 14 top recipes, seeds rotate by 14.
 
 - 06:09 v0.9.0 A29: persist onboarding step (onboardStep key); resumes at step 2/3 after reload.
+
+- 06:10 v0.9.1 A28: fit 'protein-high' → 'protein-low'; export FITS.

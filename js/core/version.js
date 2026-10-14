@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.9.0';
+export const VERSION = '0.9.1';
 export const CHANGELOG = [
+  ['0.9.1', '内部修正：菜单“蛋白不足”的状态名称更准确（无界面变化）。'],
   ['0.9.0', '新手引导中途刷新或关掉 App 后，会从上次的步骤继续。'],
   ['0.8.9', '一周菜单优先选“健康/好做/便宜/好吃”总分高的蔬菜做法；“换一套”轮换到其他做法。'],
   ['0.8.8', '一周菜单少放肉：肉量只够蛋白目标，热量由主食和加餐（蛋清、豆腐、酸奶、每周最多 2 次金枪鱼罐头）补足，每餐肉平均从约 280 g 降到约 230 g。'],

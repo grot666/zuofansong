@@ -35,6 +35,7 @@ export function selectWeek(food, recipes, opts = {}) {
     vegL: vegs[(d * 2 + seed * 14) % vegs.length], vegD: vegs[(d * 2 + 1 + seed * 14) % vegs.length],
   }));
 }
+export const FITS = ['ok', 'kcal-high', 'kcal-low', 'protein-low'];
 export const BF_MULTS = [1, 0.75, 1.25, 0.5];
 export const KIWI_G = [100, 0, 200];
 // A25: realistic cooked-protein portion per meal; add-ons are tried before more meat.
@@ -87,7 +88,7 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   })));
   const r = build(best.sg, best.pg, best.bm, best.kiwi, best.addon);
   const off = (r.tot.kcal - kcal) / kcal;
-  const fit = r.tot.protein < protein - 0.5 ? 'protein-high' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
+  const fit = r.tot.protein < protein - 0.5 ? 'protein-low' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
   return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, addon: best.addon, fit };
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);

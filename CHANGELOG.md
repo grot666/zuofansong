@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.1
+- A28: fit 'protein-high' → 'protein-low'; export FITS.
+
 ## v0.9.0
 - A29: persist onboarding step (onboardStep key); resumes at step 2/3 after reload.
 

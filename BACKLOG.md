@@ -10,7 +10,7 @@ Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R
   - Why: `obStep` in `views/today.js` is a module variable. Step 1 writes `profile`, so after a reload (or the iOS PWA being killed between steps) `onboardStep({storedProfile: non-null, step: 1})` returns 0. Steps 2 (goal + pace) and 3 (first meal) are silently skipped, and `onboardSeen` stays false.
   - AC: persist the step in a new key `onboardStep` (1–3; add to KNOWN_KEYS + ARCHITECTURE §3). `onboardStep({storedProfile, onboardSeen, savedStep})` → savedStep when 2–3 and !onboardSeen; 1 when no profile; 0 otherwise. Skip/完成 sets `onboardSeen = true` and removes `onboardStep`. Existing users (profile set, no `onboardStep`) still see nothing.
   - Tests: pure: (no profile) → 1; (profile, savedStep 2) → 2; (profile, no savedStep) → 0; (onboardSeen) → 0 for any savedStep. keys.test passes with the new key.
-- **A28 `fit: 'protein-high'` means protein short (P2, naming)**
+- **A28 `fit: 'protein-high'` means protein short (P2, naming)** ✅
   - Why: since v0.7.5 `portionDay` returns `'protein-high'` when `tot.protein < protein − 0.5`. Same string as `feasibility().reason`, which means "target too high for the kcal". Today the UI only checks `fit !== 'ok'`, but any future copy keyed on `fit` will say the wrong thing.
   - AC: `fit ∈ {'ok','kcal-high','kcal-low','protein-low'}`; export `FITS`. Tests: `generateWeek({kcal:1400, protein:220}, food, RECIPES, {seed:0, proteins:['tofuFirm']})` (probe @be96ed1: all 7 days protein-short, currently labelled `'protein-high'`) gives `fit === 'protein-low'` on every day; every `fit` in the A19 grid is in `FITS`.
 - **A30 Views never build a food index (P3, A24 guard)**

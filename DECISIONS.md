@@ -40,3 +40,5 @@
 - 06:18 A33: tunaLight removed from main-protein rotation (a dinner+lunch pair alone nears the 339 g/week reference); tuna is a 100 g add-on gated by one weekly gram budget (TUNA from review.js, ≤3 add-ons). G2 rescue test relaxed to b ≤ a/2 and ≤3 (baseline improved 18→8).
 
 - 06:25 R9-4/5: milk→FDC 171265, seabass→FDC 175142 (re-fetched via FDC API, verified). pasta/sweetPotato had verified:true with bare 'USDA' → now unverified (FDC API rate-limited, ids not confirmed). Unverified generator foods show ≈ on plan + shopping list. fdcCompare notes on porkLoin/corn/tofuFirm (values kept; product differs). Budget loop keeps a round only if the real cost drops, and falls back to the budget-0 week when still over; greedy is near-monotonic (≤¥0.5 rise seen at 1800/140 s0 0.8→0.7), test tolerance ¥0.5.
+
+- 06:28 R9-10: maxPrepMin filter (0/5/10, falls back to all if none fit); reuse is measured and shown (distinct veg/week), not yet optimised; budget blank/0 keeps previous with toast. 龙利鱼 not added to PROTEINS (would re-pin every grid/budget fixture; low value) — left open.

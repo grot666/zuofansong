@@ -1,5 +1,5 @@
 import { computeTargets } from './core/targets.js';
-import { meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
+import { parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces } from './core/sauces.js';
@@ -34,8 +34,8 @@ function render() {
   const p = getProfile();
   const t = computeTargets(p);
   const seed = S.get('planSeed', 0);
-  const budget = S.get('weeklyBudget', 300);
-  const plan = planWeek(t, food, RECIPES, { seed, budget, powderScoops: p.usesPowder ? Math.max(0, Math.floor(p.maxScoops || 0)) : 0 }); const week = plan.week;
+  const budget = S.get('weeklyBudget', 300); const maxPrep = S.get('maxPrepMin', 0);
+  const plan = planWeek(t, food, RECIPES, { seed, budget, maxPrepMin: maxPrep, powderScoops: p.usesPowder ? Math.max(0, Math.floor(p.maxScoops || 0)) : 0 }); const week = plan.week;
   const checks = checkWeek(week, t);
   const list = shoppingList(week, food);
   const cost = list.reduce((s, x) => s + x.cost, 0);
@@ -44,7 +44,7 @@ function render() {
   $('#view').innerHTML = `<nav class="seg" aria-label="菜单分区"><a href="#menu">菜单</a><a href="#list">购物清单</a><a href="#prep">备餐</a></nav><section class="card" id="menu"><h2>本周菜单</h2>
   <p class="mut">每天目标 ${t.kcal} kcal（±5%）、蛋白 ≥ ${t.protein} g。晚餐多做一份 = 第二天午餐（晚上一次做两顿）。主食按熟重。带 ≈ 的食材营养值为估算、未逐条核对。</p>
   ${plan.infeasible ? `<p class="warn">这个热量下蛋白目标偏高（蛋白占 ${plan.infeasible.pct}% 热量），已优先保证蛋白，部分天热量会超出。可在“我的”降低蛋白目标或热量缺口。</p>` : ''}${week.some(d => d.fit !== 'ok') && !plan.infeasible ? '<p class="mut">个别天无法同时满足热量和蛋白，已优先保证蛋白（标 ⚠）。</p>' : ''}
-  ${planTips(plan).map(x => `<p class="mut tip">${x}</p>`).join('')}<div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" value="${budget}"></label></div></section>
+  <p class="mut tip">本周用到 ${distinctVeg(week, food)} 种蔬菜（种类少 = 好买、少浪费）。</p>${planTips(plan).map(x => `<p class="mut tip">${x}</p>`).join('')}<div class="row"><button id="regen">换一套</button><label>每周预算 ¥<input type="number" id="budget" min="1" value="${budget}"></label><label>蔬菜做法时间<select id="prepMax">${[[0, '不限'], [5, '≤5 分钟'], [10, '≤10 分钟']].map(([v, l]) => `<option value="${v}"${v === maxPrep ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div></section>
   ${week.map((d, i) => `<details class="card day"${i === ti ? ' open' : ''}><summary><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3></summary>
     <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.verified ? '' : '≈'}${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span>${/午餐|晚餐/.test(m.name) ? stars(mealScores(m.items, food)) : ''}${meatNote(m) ? `<br><span class="warn">${meatNote(m)}</span>` : ''}</li>`).join('')}</ul>
     <button class="sec" data-day="${i}">把这天记入今日</button></details>`).join('')}
@@ -60,7 +60,8 @@ function render() {
   ${trayCard()}`;
   document.querySelectorAll('[data-sauce]').forEach(c => c.onchange = () => { const off = new Set(S.get('sauceOff', [])); c.checked ? off.delete(c.dataset.sauce) : off.add(c.dataset.sauce); S.set('sauceOff', [...off]); render(); });
   $('#regen').onclick = () => { const r = regenWeek({ seed }); S.set('planSeed', r.seed); render(); toast('已换一套菜单', { ms: 6000, action: { label: '撤销', run: () => { S.set('planSeed', r.prevSeed); render(); } } }); };
-  $('#budget').onchange = e => { S.set('weeklyBudget', +e.target.value || 300); render(); };
+  $('#budget').onchange = e => { const r = parseBudget(e.target.value); if (!r.ok) { e.target.value = budget; toast(r.msg); return; } S.set('weeklyBudget', r.value); render(); };
+  $('#prepMax').onchange = e => { S.set('maxPrepMin', +e.target.value || 0); render(); };
   document.querySelectorAll('[data-day]').forEach(b => b.onclick = () => {
     const d = week[+b.dataset.day]; const key = 'log.' + localDate(); const l = S.get(key, { items: [], water: 0 });
     l.items.push(...d.meals.flatMap(m => m.items).map(([id, g]) => ({ id, g, t: Date.now() }))); S.set(key, l); b.textContent = '✓ 已记入今日';

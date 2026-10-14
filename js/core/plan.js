@@ -32,7 +32,10 @@ export function selectWeek(food, recipes, opts = {}) {
   const seed = opts.seed ?? 0;
   const proteins = (opts.proteins || PROTEINS).filter(id => food(id));
   // G1 follow-up: meal scores steer selection. Seed 0 uses the 14 best-scoring veg recipes; later seeds rotate on.
-  const vegs = rankVeg(recipes.filter(r => r.items.every(([id]) => food(id))), food);
+  // R9-10: optional prep-time limit (minutes); falls back to all recipes if none qualify.
+  const ok = recipes.filter(r => r.items.every(([id]) => food(id)));
+  const quick = opts.maxPrepMin ? ok.filter(r => r.min <= opts.maxPrepMin) : ok;
+  const vegs = rankVeg(quick.length ? quick : ok, food);
   const dinnerProteins = opts.dinnerProteins || Array.from({ length: 7 }, (_, d) => proteins[(d + seed) % proteins.length]);
   return dinnerProteins.map((pDinner, d) => ({
     day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
@@ -192,3 +195,11 @@ export function meatNote(meal) {
   const main = meal.items[1]; if (!main || main[0] === 'tofuFirm' || main[1] <= MEAT_NOTE_G) return '';
   return `这餐肉/鱼约 ${Math.round(main[1])} g，偏多：可分一半到第二天，或在“我的”降低蛋白目标/打开蛋白粉。`;
 }
+// R9-10: budget input → number or error (blank/0/negative keep the previous value).
+export function parseBudget(raw) {
+  const s = String(raw ?? '').trim(); const n = Number(s);
+  if (!s || !Number.isFinite(n) || n <= 0) return { ok: false, msg: '请输入大于 0 的每周预算（元），已保留原值' };
+  return { ok: true, value: Math.round(n) };
+}
+// R9-10 reuse metric: distinct vegetable ids in a week (fewer = more reuse, less waste).
+export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;

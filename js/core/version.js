@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.4';
+export const VERSION = '0.10.5';
 export const CHANGELOG = [
+  ['0.10.5', '菜单可限定蔬菜做法时间（≤5 / ≤10 分钟）；显示本周用到几种蔬菜；预算留空或填 0 会提示并保留原值。'],
   ['0.10.4', '茭白切片、丝瓜削皮也加上护腕提示（买切好的或用刨子）。'],
   ['0.10.3', '一餐肉/鱼超过 250 g 时，菜单会提示“偏多”并给出调整办法。'],
   ['0.10.2', '加餐说明与实际一致：轮换的是蛋清、豆腐、酸奶、鸡蛋、虾、金枪鱼（去掉了从未被选中的牛奶/千张/豆干加餐）。'],

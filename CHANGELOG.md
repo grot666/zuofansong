@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.5
+- R9-10: maxPrepMin, distinct-veg metric, budget validation.
+
 ## v0.10.4
 - R9-9: wristSafe:false + notes on 茭白切片 and 丝瓜削皮切块.
 

@@ -1,9 +1,27 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION v0.6.x; foods 131; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next: A18 → A17 → A20 → A21 → A22 → A6 split app.js views · A19 · A8 · A11 · R-15 · N-items still open below · ✅ price override per food (v0.6.7).
+Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R-15 · N-items still open below · ✅ price override per food (v0.6.7).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Arch review @be96ed1 (v0.8.7), 2026-10-15 ~06:05 SGT — 123/123 tests on a clean clone; A23–A27, G1–G4, UX-4…14 verified
+- **A29 Onboarding progress lost on reload (P1, UX-10 follow-up)**
+  - Why: `obStep` in `views/today.js` is a module variable. Step 1 writes `profile`, so after a reload (or the iOS PWA being killed between steps) `onboardStep({storedProfile: non-null, step: 1})` returns 0. Steps 2 (goal + pace) and 3 (first meal) are silently skipped, and `onboardSeen` stays false.
+  - AC: persist the step in a new key `onboardStep` (1–3; add to KNOWN_KEYS + ARCHITECTURE §3). `onboardStep({storedProfile, onboardSeen, savedStep})` → savedStep when 2–3 and !onboardSeen; 1 when no profile; 0 otherwise. Skip/完成 sets `onboardSeen = true` and removes `onboardStep`. Existing users (profile set, no `onboardStep`) still see nothing.
+  - Tests: pure: (no profile) → 1; (profile, savedStep 2) → 2; (profile, no savedStep) → 0; (onboardSeen) → 0 for any savedStep. keys.test passes with the new key.
+- **A28 `fit: 'protein-high'` means protein short (P2, naming)**
+  - Why: since v0.7.5 `portionDay` returns `'protein-high'` when `tot.protein < protein − 0.5`. Same string as `feasibility().reason`, which means "target too high for the kcal". Today the UI only checks `fit !== 'ok'`, but any future copy keyed on `fit` will say the wrong thing.
+  - AC: `fit ∈ {'ok','kcal-high','kcal-low','protein-low'}`; export `FITS`. Tests: `generateWeek({kcal:1400, protein:220}, food, RECIPES, {seed:0, proteins:['tofuFirm']})` (probe @be96ed1: all 7 days protein-short, currently labelled `'protein-high'`) gives `fit === 'protein-low'` on every day; every `fit` in the A19 grid is in `FITS`.
+- **A30 Views never build a food index (P3, A24 guard)**
+  - Why: `views/today.js`, `views/veg.js`, `views/rice.js` still import `makeIndex` and `FOODS/FOODS2/FOODS3` but don't use them (dead since A24). `review.js` mixes `new Date(str)` and `dayNum` for the same dates.
+  - AC: remove the dead imports. `review.js` uses `dayNum` only. Text test: no file under `js/views/`, `js/plan-page.js` or `js/review-page.js` imports `data/foods*.js` or `data/prices.js` or calls `makeIndex(`; only `core/foods.js` imports those data files.
+- **A32 Plan search perf guard (P3)**
+  - Why: the A25/G2 add-on loop made `portionDay` 4 × 3 × (12 + 2·scoops) × 33 knob combos per day. Measured ≈ 40 ms per `planWeek` (1800/140, budget 150, 2 scoops) in Node on the box; phones are ~3–5× slower and budget swaps call it again. Fine now, but the next add-on list growth is invisible.
+  - AC: test runs `planWeek` for the default profile with `powderScoops: 3` and a tight budget and asserts < 150 ms median of 5 runs in Node (generous, catches 5× regressions). If it ever fails: prune add-ons whose protein can't close the remaining gap before the staple loop.
+- **A31 Taste heuristic in data, golden scores (P3, G1 follow-up)**
+  - Why: `scores.js` hardcodes a 12-id list for 好吃 (seabass, shrimp, thighRoasted, …). New foods (G4 canteen meals, custom foods) can never score as tasty without a code edit. Tests only check range and the 便宜 order.
+  - AC: food field `tasty: true` (default false) in data for those ids; `mealScores` reads it. Golden test: 3 fixed meals (rice + thigh + 青菜 + 6 g oil; tofu + cabbage; salmon 400 g) pinned to exact `{health, easy, cheap, tasty}` so later weight changes are deliberate.
 _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/51 pass on a clean clone._
 
 ### Verified (closed)

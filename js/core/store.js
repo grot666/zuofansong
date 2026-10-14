@@ -36,16 +36,18 @@ const isKnown = k => KNOWN_KEYS.includes(k) || /^log\.\d{4}-\d{2}-\d{2}$/.test(k
 // key = target version. Each migration idempotent.
 export const MIGRATIONS = {
   1: () => { /* initial schema */ },
-  2: () => { // breakFrom -> breakState (A12); open-ended old breaks end today
+  2: ({ today }) => { // breakFrom -> breakState (A12); open-ended old breaks end today
     const from = get('breakFrom', null);
-    if (from != null && get('breakState', null) == null) { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); set('breakState', { from, until: d.toISOString().slice(0, 10) }); }
+    if (from != null && get('breakState', null) == null) set('breakState', { from, until: today });
     remove('breakFrom');
   },
 };
-export function migrate() {
+const localToday = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+// A13: one backup copy (overwritten); if the backup cannot be written, abort without bumping version.
+export function migrate({ today = localToday() } = {}) {
   let v = Number(get('version', 0)) || 0;
-  if (v >= 1 && v < SCHEMA_VERSION) set('backup.preMigration', exportAll());
-  while (v < SCHEMA_VERSION) { v++; if (MIGRATIONS[v]) MIGRATIONS[v](); set('version', v); }
+  if (v >= 1 && v < SCHEMA_VERSION && !set('backup.preMigration', exportAll())) return v;
+  while (v < SCHEMA_VERSION) { v++; if (MIGRATIONS[v]) MIGRATIONS[v]({ today }); set('version', v); }
   return v;
 }
 export function exportAll() {
@@ -54,13 +56,15 @@ export function exportAll() {
   return { app: 'zuofansong', schema: Number(get('version', SCHEMA_VERSION)) || SCHEMA_VERSION, exportedAt: new Date().toISOString(), data };
 }
 // Accepts envelope or legacy flat object. Returns number of keys imported. Throws on newer schema.
-export function importAll(obj) {
+export function importAll(obj, opts = {}) {
   if (!obj || typeof obj !== 'object') throw new Error('备份格式不正确');
   let data = obj;
   if (obj.app && obj.data) { if (Number(obj.schema) > SCHEMA_VERSION) throw new Error('备份来自更新的版本，请先更新应用'); data = obj.data; }
   let n = 0;
-  for (const [k, v] of Object.entries(data)) if (isKnown(k) && set(k, v)) n++;
-  migrate();
+  for (const [k, v] of Object.entries(data)) if (k !== 'version' && isKnown(k) && set(k, v)) n++;
+  // A13: payload without a version is schema 1 so later migrations run on it.
+  set('version', Number(data.version) || Number(obj.app && obj.schema) || 1);
+  migrate(opts);
   return n;
 }
 export function resetAll() { const b = be(); for (const k of keys()) b.removeItem(PREFIX + k); }

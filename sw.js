@@ -1,5 +1,5 @@
 // Must equal 'zfs-' + VERSION in js/core/version.js (test/version.test.js).
-const CACHE = 'zfs-0.6.1';
+const CACHE = 'zfs-0.6.2';
 const ASSETS = ['./', 'index.html', 'plan.html', 'review.html', 'css/app.css', 'js/app.js', 'js/boot.js', 'js/plan-page.js', 'js/review-page.js', 'js/core/version.js', 'js/core/profile.js', 'js/core/portion.js', 'js/core/foods.js', 'js/core/sleep.js', 'js/core/breaks.js', 'js/core/targets.js', 'js/core/grains.js', 'js/core/fat.js', 'js/core/protein.js', 'js/core/store.js', 'js/core/plan.js', 'js/core/fiber.js', 'js/core/weight.js', 'js/core/review.js', 'data/foods.js', 'data/foods2.js', 'data/foods3.js', 'data/recipes.js', 'manifest.webmanifest', 'icon.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -14,5 +14,7 @@ self.addEventListener('fetch', e => {
     return;
   }
   // Assets: stale-while-revalidate; never fall back to HTML.
-  e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => { const net = fetch(req).then(r => put(req, r)).catch(() => hit || Response.error()); return hit || net; }));
+  const net = fetch(req).then(r => put(req, r));
+  e.waitUntil(net.catch(() => {}));
+  e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => hit || net.catch(() => Response.error())));
 });

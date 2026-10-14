@@ -22,3 +22,18 @@ test('set returns false on quota error', () => {
   assert.equal(S.set('x', 1), false);
   S.useBackend(S.memoryBackend);
 });
+test('A13 legacy import without version runs migration 2', () => {
+  S.resetAll(); S.migrate();
+  S.importAll({ profile: { deficitPct: 0 }, breakFrom: 20 }, { today: '2026-10-15' });
+  assert.deepEqual(S.get('breakState'), { from: 20, until: '2026-10-15' });
+  assert.equal(S.get('breakFrom', null), null); assert.equal(S.get('version'), 2);
+});
+test('A13 migrate aborts without bump if backup write fails', () => {
+  S.resetAll(); S.set('version', 1); S.set('breakFrom', 20);
+  const real = S.memoryBackend.setItem;
+  S.useBackend({ getItem: k => S.memoryBackend.getItem(k), removeItem: k => S.memoryBackend.removeItem(k), key: i => S.memoryBackend.key(i), get length() { return S.memoryBackend.length; }, setItem(k, v) { if (k.endsWith('backup.preMigration')) throw new Error('quota'); real(k, v); } });
+  assert.equal(S.migrate(), 1); assert.equal(S.get('breakFrom'), 20);
+  S.useBackend(S.memoryBackend);
+  assert.equal(S.migrate({ today: '2026-01-02' }), 2); assert.equal(S.get('breakState').until, '2026-01-02');
+  assert.equal(S.keys().filter(k => k.startsWith('backup.')).length, 1);
+});

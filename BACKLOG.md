@@ -18,7 +18,7 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
 - ✅ **A12 maintenance-week auto-revert**: `core/breaks.js` startBreak/resolveBreak, migration v2 (`breakFrom` → `breakState`), `resolveBreak` called in boot.
 
 ### Open, in priority order
-- **A13 migration test hardening (P0)**
+- ✅ v0.6.2 **A13 migration test hardening (P0)**
   - Why: `store.test.js` covers v1→v2 with `breakFrom` and a second `migrate()`, but not these paths:
     - (1) Importing a legacy bare export with no `version` key but a `breakFrom`, while the current version is already 2. `importAll` → `migrate()` is a no-op, so `breakFrom` lingers forever and `breakState` is never created.
     - (2) The `backup.preMigration` write fails (quota) and the migration proceeds silently. That backup also roughly doubles storage, which is exactly when the quota bites.
@@ -30,14 +30,14 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
     - (c) `migrate({today})` / `MIGRATIONS[2](api, today)` accepts an injected date. Test: `until === today`.
     - (d) Running `MIGRATIONS[2]` twice on the same state is a no-op (direct call, not via the version gate).
     - (e) After a successful migration, `backup.preMigration` is cleared on the next app version, or capped to one copy. Test that only one backup key exists.
-- **A15 sw.test.js: reverse ASSETS check (P0)**
+- ✅ v0.6.2 **A15 sw.test.js: reverse ASSETS check (P0)**
   - Why: `version.test.js` checks that every ASSETS entry exists, but not that every shipped file is in ASSETS. Today the list is complete (checked by script @6ab7969), but nothing enforces it. A6 will add ~7 `js/views/*.js` files. Missing one means that offline, the page fails to import it: the miss returns `Response.error()` (correct), but the page then breaks.
   - AC: move the SW checks to `test/sw.test.js`.
     - Every `*.html` file, everything under `js/**/*.js`, `data/*.js` and `css/*.css`, plus `manifest.webmanifest` and `icon.svg`, must be in ASSETS.
     - No duplicates.
     - Keep the existing direction (every ASSETS entry exists on disk).
     - Must land **before A6**.
-- **A16 planWeek pairing and budget invariants beyond the R6 fixture (P1)**
+- ✅ v0.6.2 **A16 planWeek pairing and budget invariants beyond the R6 fixture (P1)**
   - Why: the test checks pairing for d<6 only, at one seed and one budget. It doesn't check:
     - the wraparound case lunch(0)=dinner(6) after swaps
     - kcal ±5% after swaps

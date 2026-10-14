@@ -15,7 +15,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
 - **Portion base (fd34684) is per-call local:** no module-level cache or `let` state in plan.js, so changes to food data or profile targets can't leave stale state across `planWeek` calls.
 - **Perf:** median 4.9 ms, p95 9.2 ms, max 17.7 ms per planWeek.
 
-- **A40 `pickReuse`/`selectWeek` hang forever when no veg recipe is usable (P0)**
+- ✅ **A40 `pickReuse`/`selectWeek` hang forever when no veg recipe is usable (P0)**
   - Why: `pickReuse` loops `while (out.length < 14)`, and when `cand` is empty it does `used.clear(); continue`. With `vegs.length === 0` this never ends, so the main thread freezes and the plan page is dead. Reachable whenever the recipe filter (`r.items.every(id => food(id))`) leaves nothing: a data-file error, a renamed food id, or a future recipe filter (prep-time `maxPrepMin`, 护腕 or 不开火 filters).
   - Probe: `pickReuse([], 0, food)` and `selectWeek(food, [], {seed:0})` were both killed by `timeout 5` (exit 124).
   - AC:
@@ -28,7 +28,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - `pickReuse([], …)` returns `[]` within 50 ms.
     - `planWeek(t, food, [], {seed:0})` returns with `infeasible.reason === 'no-veg'`.
     - 1 recipe → 14 picks, all the same id (holds today).
-- **A41 Import-as-backup misses its own common case (P1)**
+- ✅ **A41 Import-as-backup misses its own common case (P1)**
   - Why: me.js sets `lastExport` after import only `if (!S.get('lastExport'))`. But every backup made by 导出 contains `lastExport` (the export button sets it *before* `exportAll`). Restoring a 20-day-old backup therefore brings back a 20-day-old `lastExport`, and the backup nag fires right after import, which the v0.10.10 fix was meant to stop. The logic also lives in a view, so it's untested.
   - AC:
     - Pure `afterImport(S, today)` in core/store.js (or dates.js) sets `lastExport = max(imported lastExport, today)` unconditionally.

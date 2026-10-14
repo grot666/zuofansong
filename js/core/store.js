@@ -94,3 +94,8 @@ export function isPersistent() {
   try { b.setItem(PREFIX + '__probe', '1'); b.removeItem(PREFIX + '__probe'); return true; } catch { return false; }
 }
 export function resetAll() { const b = be(); for (const k of keys()) b.removeItem(PREFIX + k); }
+// A41: restoring a backup means the user has one: lastExport = max(imported lastExport, today). Called right after importAll.
+export function afterImport(today) {
+  const v = get('lastExport', null);
+  set('lastExport', v && v > today ? v : today);
+}

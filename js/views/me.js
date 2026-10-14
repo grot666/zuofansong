@@ -97,7 +97,7 @@ view.bind = () => {
   };
   $('#exp').onclick = () => { S.set('lastExport', localDate()); const blob = new Blob([JSON.stringify(S.exportAll(), null, 1)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zuofansong-backup-${today()}.json`; a.click(); };
   const ui = $('#undoImp'); if (ui) ui.onclick = () => { if (confirm('恢复到导入前的数据？')) { S.undoImport(); rerender(); } };
-  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); if (!confirm('导入会替换当前全部数据（可撤销一次）。继续？')) return; const n = S.importAll(o); if (!S.get('lastExport', null)) S.set('lastExport', localDate()); // the user just restored from a file: no backup nag right after import
+  $('#imp').onchange = async e => { try { const o = JSON.parse(await e.target.files[0].text()); if (!confirm('导入会替换当前全部数据（可撤销一次）。继续？')) return; const n = S.importAll(o); S.afterImport(localDate()); // A41
     alert('导入成功：' + n + ' 项'); rerender(); } catch (err) { alert(err.message || '文件格式不正确'); } };
   $('#rst').onclick = () => { if (confirm('确定清空所有本地数据？建议先导出备份。')) { S.resetAll(); rerender(); } };
 };

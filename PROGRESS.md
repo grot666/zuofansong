@@ -113,3 +113,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:46 v0.10.14 Verify batch: top-10 generator foods FDC-verified or ≈ with FDC comparison
 
 - 06:49 v0.10.15 A40: no-veg guard (pickReuse/selectWeek hang), infeasible no-veg
+
+- 06:49 v0.10.16 A41: afterImport sets lastExport = max(imported, today)

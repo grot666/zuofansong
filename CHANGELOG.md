@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.16
+- A41: afterImport sets lastExport = max(imported, today)
+
 ## v0.10.15
 - A40: no-veg guard (pickReuse/selectWeek hang), infeasible no-veg
 

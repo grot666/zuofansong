@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.21';
+export const VERSION = '0.10.22';
 export const CHANGELOG = [
+  ['0.10.22', '内部：CI 稳定性'],
   ['0.10.21', '内部：核心循环加上上限'],
   ['0.10.20', '内部：菜单代码拆分，行为不变'],
   ['0.10.19', '内部：菜单生成加入快照与网格回归测试'],

@@ -125,3 +125,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:51 v0.10.20 A45: split plan.js into plan/{select,portion,budget,shopping}.js behind facade
 
 - 06:51 v0.10.21 A46: bounded loops in core + grep test
+
+- 06:53 v0.10.22 plangrid time guard for slower CI runners

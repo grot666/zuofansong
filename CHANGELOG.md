@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.22
+- plangrid time guard for slower CI runners
+
 ## v0.10.21
 - A46: bounded loops in core + grep test
 

@@ -1,9 +1,53 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0–2) → verify batch of the next 10–15 most-used unverified foods (VER-15) → new R11/A54+ items → oats breakfast option (opts.breakfast) toward 80% fiber days. Shipped since 07:10: A47 v0.10.29 · A48 v0.10.30 · A50 v0.10.31 · A51 v0.10.32 · A52 v0.10.33 · A53 v0.10.34 · 烤红薯 cap v0.10.35 · VER-20 v0.10.36. **Arch order for the "A54+" slot (07:25):** A54 (P1) single fiber constants/computed swaps → A55 (P1) keep 2-day staple batch through sweet-potato cap and fiber swaps → A56 perf guard robust to parallel `node --test` → A57 release script into repo (doubled `(vX)`, PROGRESS order) → A58 sweet-potato cap in plangrid/snapshots → A59 cap-aware select.
+Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0–2) → verify batch of the next 10–15 most-used unverified foods (VER-15) → new R11/A54+ items → oats breakfast option (opts.breakfast) toward 80% fiber days. Shipped since 07:10: A47 v0.10.29 · A48 v0.10.30 · A50 v0.10.31 · A51 v0.10.32 · A52 v0.10.33 · A53 v0.10.34 · 烤红薯 cap v0.10.35 · VER-20 v0.10.36. **Arch order for the "A54+" slot (07:25):** A54 (P1) single fiber constants/computed swaps → A55 (P1) keep 2-day staple batch through sweet-potato cap and fiber swaps → A56 perf guard robust to parallel `node --test` → A57 release script into repo (doubled `(vX)`, PROGRESS order) → A58 sweet-potato cap in plangrid/snapshots → A59 cap-aware select. **Arch @07:45:** A54/A55/R11-2 verified ✅. Next pick: **A60** (commented-out assertion in spcap.test, 5 min) → **A58+A62** → A57 → A61 → A56 → A59 → A63.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @3cd4958 (v0.10.43), 2026-10-15 ~07:45 SGT: arch review
+`npm test` (serial) passes 203/203. Probe grid: 8 targets {1400/110, 1500/140, 1617/160, 1800/130, 1800/140, 1800/160, 2000/100, 2200/160} × seeds 0–8 × budget {none, 1, .8, .6, .5}×free × breakfast {rotate, oats} = 720 weeks. Script not committed.
+- **(a) A54 ✅**
+  - No hard-coded 25/28 fiber targets remain outside `core/fiber.js`. The only hits are changelog text and scores.js's `fiber >= 6` per-meal health heuristic, which is not a target.
+  - All 6 `add` swaps match `totals(add).fiber` within 0.1 g (0 mismatches).
+  - The `replace` swaps are declared as `{from, to, g}` and computed: sweetpot +4.4 g, brownhalf +2.4 g.
+- **(b) A55 ✅**
+  - Batch split rerun: **0/2160** 2-day pairs differ (was 90/324).
+  - Sweet-potato cap: 0/720 weeks over 3 days; counted per batch and recorded in DECISIONS (A55 line).
+- **(c) R11-2 ✅**
+  - 0/720 weeks have the same staple 3 days running, including day 6 after batch 4–5.
+  - The peas side does **not** double-count. In 0/5040 days does `d.tot.fiber` differ from `totals(all meal items)`.
+  - Note: the side is 80 g **per meal** (160 g/day) on short days, which is fine but should be stated in the plan copy (A63).
+- **(d) opts.breakfast ✅ with gaps**
+  - In the memo key via `sk.bf.name`.
+  - Deterministic: 0/72 repeat mismatches at .8× budget.
+  - Covered only by `oats.test.js`; **not** in the plangrid determinism grid or the A44 snapshots (A62).
+- **(e) "~89% fiber days" holds only on the spcap grid without budget.**
+  - Over the full grid it's **87.2%** (rotate) and **87.9%** (oats). By budget: none 87.1%, .8× 86.7%, .5× 87.5%.
+  - Per target (rotate, no budget): 1400/110 84%, **1500/140 73%**, 1617/160 83%, 1800/130 94%, 1800/140 95%, 1800/160 86%, 2000/100 92%, 2200/160 90%.
+  - DECISIONS' "oats 94.2%" also doesn't generalise. Oats adds only ~+0.7 pt on the full grid (A61).
+- **Bug found:** in `test/spcap.test.js` line 19, the share assertion `assert.ok(sp / n <= 3 / 7 …)` now sits **inside a `//` comment** (pasted after the A55 note), so it no longer runs (A60).
+
+- **A60 Restore the commented-out sweet-potato share assertion (P1, 5 min)**
+  - Why: see "Bug found" above. The per-week cap is still asserted (line 15), but the grid share isn't.
+  - AC: the assertion is on its own line.
+  - Tests: add a cheap guard test (`test/lint.test.js`) that fails if any `test/*.js` line contains `// …assert.` after code on the same line (regex `;\s*//.*\bassert\.`).
+- **A61 Make the fiber-days claim measurable and true (P2)**
+  - Why: see (e). Copy and DECISIONS cite 89% and 94.2%, but the full-grid figure is ~87%, with one target at 73%.
+  - AC:
+    - `test/fiber-share.test.js` over the 8-target × seeds 0–5 × budget {none, .8} grid asserts overall ≥ 85% and each target ≥ 70%, printing the per-target table.
+    - Change user-facing copy (version.js/CHANGELOG) to "约 85–90% 的日子" (about 85–90% of days), or the measured figure.
+    - 1500/140 gets a follow-up note: the high protein/kcal ratio crowds out staple and veg, so the next lever is oats or the peas side first. Investigate; don't change behaviour in this item.
+- **A62 Breakfast mode in plangrid and snapshots (P2)**
+  - Why: see (d). `opts.breakfast` multiplies the plan space but is only tested in `oats.test.js`.
+  - AC: the plangrid determinism and invariant loops (pairing, sweet-potato cap, no 3-run, batch kept, no silent non-ok) iterate `breakfast ∈ {rotate, oats}`, and the A44 snapshot adds seed-0 oats at 1800/140 (staple, fiberSide, breakfast name per day).
+  - Tests: plangrid runtime stays ≤ 4 s. If it doesn't, sample oats on seeds 0–2 only.
+- **A63 Peas side visible as a per-day amount (P3)**
+  - Why: see (c). The side is per meal, so a short day gets 160 g of peas across lunch and dinner. Shopping and prep lists don't say why.
+  - AC: the plan day shows "青豆 80 g ×2 餐（补纤维）" (peas 80 g × 2 meals, for fiber) once. `PEAS_SIDE_G` doc comment says per meal.
+  - Tests: a day with `fiberSide` has exactly 2 peas items of `PEAS_SIDE_G` each.
+
+**Engineer pick order now:** A60 → A58 (sweet-potato cap/fiber side in plangrid + snapshots; merge with A62) → A57 (release script; still doubling risk) → A61 → A56 → A59 → A63.
 
 ### Status @8577366 (v0.10.35), 2026-10-15 ~07:25 SGT: arch review (rebased on 9bd4bfd; VER-20 v0.10.36 not re-probed)
 - **Tests:**
@@ -48,14 +92,14 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
     - In plangrid: `w[2k].staple === w[2k+1].staple` for k = 0..2 on all grid weeks.
     - The sweet-potato cap still holds.
     - Fiber ≥ 25 g share not lower than today on the spcap grid (assert ≥0.75).
-- **A56 Perf guards robust to parallel runs (P2)**
+- **A56 Perf guards robust to parallel runs (P2, rank 5 @07:45)**
   - Why: (b). Plain `node --test test/` fails A43 under load (median 32.9 ms), while `npm test`/CI pass. Reviewers and other bots run plain `node --test`.
   - AC: either
     - (1) a32 measures the median of 7 *after* 2 warm-up runs and skips with a clear message unless `process.env.PERF === '1'` or the run is serial (`--test-concurrency=1`, detectable via `process.env.NODE_TEST_CONTEXT` + a flag the npm script sets); or
     - (2) the threshold scales with an in-test calibration loop (e.g. limit = 25 ms × calib/calibBaseline).
     - CI keeps the strict 25/40 ms.
   - Tests: `node --test test/` (parallel) passes on the shared box 3 runs in a row; `npm test` still enforces 25 ms.
-- **A57 Move the release helper into the repo and fix it (P2)**
+- **A57 Move the release helper into the repo and fix it (P2, rank 3 @07:45)**
   - Why: (d). The release path lives outside the repo, in `/workspace/tools/rel.sh`. It doubles `(vX)`, appends PROGRESS at the bottom, leaves a dirty tree on a red test run, and assumes VERSION is on line 2.
   - AC:
     - `scripts/release.mjs` (node, no deps), run as `npm run release -- 0.10.36 "<cn>" "<en>" <ID> "<msg>"`.
@@ -66,11 +110,11 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
     - It commits, then `git push`. The script refuses on a dirty tree.
     - DECISIONS: "release only via npm run release".
   - Tests: `test/release.test.mjs` runs the pure helpers (`bumpVersionSrc`, `insertProgress`, `commitSubject`) on fixtures. `commitSubject('fix: x (v1.2.3)', '1.2.3') === 'fix: x (v1.2.3)'`.
-- **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P2)**
+- **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P1, rank 2 @07:45; do together with A62)**
   - Why: (a). The cap is only checked in `spcap.test.js`. The plangrid invariants (determinism, pairing, no silent non-ok) and the A44 snapshots don't cover `stapleSwap`/`spCap`/`fiberSide`, so a refactor could drop the cap on budget paths not in spcap's {none, ¥200}.
   - AC: plangrid asserts the sweet-potato cap and `spCap ⇒ staple !== SP_ID` for every run (incl. .5× budgets). The A44 snapshot gains the per-day `staple` + `fiberSide` sequence for seed 0 and seed 1 at 1800/140.
   - Tests: as stated; runtime of plangrid stays ≤ 4 s (DE guard).
-- **A59 select.js aware of the sweet-potato cap (P3)**
+- **A59 select.js aware of the sweet-potato cap (P3, rank 6 @07:45)**
   - Why: scheduling sweet potato blindly and then overriding it later in day.js makes the cap position-dependent (the first 3 sweet-potato days win) and wastes portion evaluations.
   - AC: `selectWeek` rotates STAPLES so the sweet-potato batch count ≤ cap/2 by construction; `day.js` keeps the guard as a backstop.
   - Tests: `stapleSwap` count on the spcap grid drops (pin the new number), with no change in the fiber share assertion.

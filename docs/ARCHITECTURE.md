@@ -158,3 +158,11 @@ planWeek(t, food, recipes, {seed, budget, proteins}) → {week, cost, overBudget
 - SW precache bypasses the HTTP cache; every page has a non-module escape hatch that clears SW caches but never localStorage (A20).
 - Plan generator never silently misses its band: `portionDay` reports `fit`, `planWeek` reports `infeasible` + reason; protein floor still wins over kcal (A19).
 - Sequence: A18 → A17 → A20 → A21 → A22 → A6 (one view per commit, veg first, today last).
+
+## 9. Pricing model and review @836ac40 (v0.7.1)
+- **Precedence:** food estimate (`priceCNYPer500g` in data/foods*.js) < official ref (`data/prices.js` PRICE_REFS, carries `priceSource`/`priceDate`) < user override (`prices` key → `priceOverrides`). Partials never create foods.
+- **Cooked vs raw (A23):** plan/shopping costs use the raw ingredient via `COOKED_TO_RAW [rawId, k]`. A user override on a cooked id must flow through `priceOf()` as a raw-equivalent of `cookedPrice × k`. Today it is ignored by planWeek and budget swaps.
+- **Single builder (A24):** pages must call `foodIndexFromStore(S)`, not hand-assemble the `makeIndex` argument list.
+- **Protein portion cap (A25):** per-meal cooked protein is capped by an exported constant pinned by tests. Extra protein comes from an add-on slot (yogurt/egg/tofu/powder) before the meat portion grows.
+- **Retention (A11, A26):** `compactStore` on index load. Measured on 400 days / ~170 KB: 7 ms first run, ~3 ms steady. It should skip while `backup.preImport` exists.
+- New storage keys since §8: `prices` ({id: CNY/500g}), `logArchive.YYYY-MM`, `backup.preImport`. `keys.test.js` (A14) keeps §3 in sync.

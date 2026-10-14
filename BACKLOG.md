@@ -97,6 +97,58 @@ _Arch verification @6ab7969 (v0.6.1), 2026-10-15 ~05:20 SGT. `node --test`: 51/5
 
 ---
 
+## Arch review @836ac40 (v0.7.1), 2026-10-15 ~05:50 SGT
+Clean clone: `node --test` 80/80 pass. Probes were run against core with `node` (scripts not committed); the numbers below come from them.
+
+Verified, no action needed:
+- **Price precedence in the index.** User override > official ref (`data/prices.js`) > food estimate. All 3 pages pass the same argument order to `makeIndex`: `ui.js` (index), `plan-page.js`, `review-page.js`.
+- **Nameless entries can't drop base foods.** A nameless override or ref for an unknown id is dropped (895a58a). The 73a2787 red-CI cause is now pinned by `data.test.js`, which asserts `f.all().length === ALL.length` with the `ghost` and `bogus` overrides.
+- **SW assets.** `data/sauces.js`, `data/prices.js` and `js/core/sauces.js` are in ASSETS, and the A15 test in `sw.test.js` enforces disk ⊆ ASSETS.
+- **Retention cost.** On a 400-day store (12 items/day, ~170 KB), the first `compactStore` takes 7 ms and archives 219 days; the steady state is ~3 ms per index load.
+- **Retention vs import/undo.** `undoImport` wipes every non-backup key, including archives created after the import, then restores the pre-import snapshot, so no orphan archives remain.
+
+- **A23 Price overrides on cooked ids are ignored by planWeek/shoppingList/budget (P0)**
+  - Why: the foods view lets the user override the price of any id, including cooked ids (`thighRoasted`, `breastRoasted`, `shrimpCooked`, `riceCooked`…). But `shoppingList` and `proteinCost` in plan.js price via `COOKED_TO_RAW` using the **raw** id, so the override is silently ignored on the plan page. Meanwhile, today/plate costs and protein/¥ do use it, so the two sides of the app disagree.
+  - Probe (1800/140, seed 0):
+    - The week costs ¥245.0 either way: `thighRoasted:999` leaves it unchanged, while `chickenThigh:999` raises it to ¥1835.8.
+    - Budget ¥300 with `thighRoasted:999`: 0 swaps, and thigh is still used.
+  - AC:
+    - One `priceOf(food, id)` in `core/foods.js`. If id has a COOKED_TO_RAW entry `[rawId, k]`: a user override on the cooked id gives a raw-equivalent of `cookedPrice × k`; otherwise use the raw food's merged price. `shoppingList` and `proteinCost` use it.
+    - The foods view labels cooked items' price as "按熟重" (cooked weight).
+    - Tests:
+      - `thighRoasted:999` raises the 1800/140 seed-0 cost, and budget 300 swaps thigh out.
+      - `chickenThigh:999` keeps today's behaviour.
+      - A raw override still beats a ref (`egg:7` over 5.91).
+- **A24 One food-index builder; explicit base vs partial lists (P1)**
+  - Why:
+    - The 6-argument `makeIndex(FOODS, FOODS2, FOODS3, PRICE_REFS, customFoods, priceOverrides(prices))` call is copied 3× (ui.js, plan-page.js, review-page.js). The next data file or a precedence change can drift between pages.
+    - `makeIndex` decides "partial vs base" by the presence of `priceUser`/`priceSource`, so a future base food that carries a `priceSource` field (natural for R7 data) would be silently dropped.
+  - AC:
+    - `foodIndexFromStore(S)` in core, used by all 3 pages. Signature: `makeIndex({ base: [...], partials: [...] })`, where partials never create entries.
+    - Tests:
+      - Precedence table: estimate < ref < user, with a custom food plus a user override on that custom id.
+      - A base food with `priceSource` stays in the index.
+      - Pages are text-checked to contain `foodIndexFromStore(` and no raw `makeIndex(` call.
+- **A25 Pin a realistic per-meal protein portion cap (P1)**
+  - Why: `portionDay` caps cooked protein at `Math.min(450, …)` grams **per meal**, and lunch and dinner each get it, so up to 900 g of cooked meat a day. Nothing pins this; `grep 450 test/` finds nothing.
+  - Probe: across the A19 grid (6 kcal × 3 protein × 9 seeds × 7 days = 1134 days), the max is 450 g and **875 of 1134 days are ≥ 250 g per meal**. Many plans "fit" only by prescribing ~1–1.5 chicken breasts per meal, twice a day. That isn't "change what he eats tomorrow" realistic.
+  - AC:
+    - Exported `MAX_PROTEIN_G_PER_MEAL` (proposed 300; 250 if the add-on below keeps the grid green).
+    - New knob before raising meat: a protein add-on slot. Order: yogurt 150–300 g, then extra egg, then tofu side, then a powder scoop only if `usesPowder` and within `maxScoops`.
+    - Feasibility test asserts `proteinG ≤ MAX` on every grid day, keeps the existing green condition (protein×4 ≤ 0.40×kcal → ok), and reports `fit:'protein-high'` beyond it.
+    - Test: 1800/140 seed 0 has every `proteinG ≤ 300`.
+    - DECISIONS line records the chosen cap.
+- **A26 Retention × import round-trip test (P2)**
+  - Why: the safety above holds by construction but isn't tested. Compaction is irreversible for >180-day detail and runs on every index load, including the first load after an import.
+  - AC: test with an in-memory store:
+    - Import a 400-day legacy backup → `compactStore` → `undoImport` → keys deep-equal the pre-import snapshot, with no `logArchive.*` left.
+    - `compactStore` is a no-op while `backup.preImport` exists, so the user can undo an import before old detail is collapsed. It runs on the next load after undo, or after 1 day.
+    - Archive totals for a day equal `totals()` at the moment of compaction (document that later price changes don't re-price archives).
+- **A27 Cost basis note (P3, docs + test)**
+  - Why: today/plate cost uses the cooked-id price per cooked gram, while plan uses the raw price via the yield factor. After A23 both must agree for the same meal.
+  - AC: test that `totals([[riceCooked, 230]]).cost` ≈ `shoppingList` cost of the same 230 g cooked (±¥0.05), using merged prices.
+
+
 ## Research status & items (needs-research worker, 2026-10-15 04:35 SGT; sources: docs/RESEARCH.md, docs/RESEARCH-R5.md)
 Status from CHANGELOG/PROGRESS @13c48c4 (not runtime-verified — tests not yet run per PROGRESS).
 

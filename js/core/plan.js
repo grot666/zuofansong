@@ -162,3 +162,11 @@ export function checkWeek(days, { kcal, protein }) {
 
 // UX-9: 换一套 = next seed; the week is a pure function of (targets, seed, opts), so undo = restore prevSeed.
 export const regenWeek = ({ seed = 0 } = {}) => ({ seed: seed + 1, prevSeed: seed });
+// PM 06:14: plan-page tips explaining why the week looks the way it does.
+export function planTips(plan) {
+  const tips = [];
+  if (plan.swaps) tips.push(`已按预算换更合适的蛋白（看评分）：${plan.swaps} 次，晚餐和第二天午餐一起换。`);
+  const ids = new Set(plan.week.flatMap(d => (d.addon || []).map(([id]) => id)));
+  if (ids.size >= 2) tips.push('加餐已轮换，同一种最多约 4 天。');
+  return tips;
+}

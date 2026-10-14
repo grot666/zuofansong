@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.9.5';
+export const VERSION = '0.9.6';
 export const CHANGELOG = [
+  ['0.9.6', '菜单页说明本周为何这样安排：按预算换了评分更合适的蛋白、加餐已轮换（同一种最多约 4 天）。'],
   ['0.9.5', '超预算换蛋白时，在预算内优先选“健康/好做/便宜/好吃”评分高的，而不只是最便宜的。'],
   ['0.9.4', '加餐不再天天蛋清：同一种加餐一周最多约 4 天，在酸奶、豆腐、牛奶、千张、虾、豆干之间轮换。'],
   ['0.9.3', '“好吃”评分改由食材数据决定（新增的食堂荤菜套餐也算好吃）。'],

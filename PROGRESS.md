@@ -23,7 +23,7 @@
 - 2026-10-15 ~04:00 SGT — v0.1.0 scaffold: features 1–8 basic, PWA, export/import/reset, 更新日志.
 
 Current state: Pages live https://grot666.github.io/zuofansong/ (200 on index/plan/review); CI green; headless-Chrome smoke OK on local and live.
-Current gaps: app.js still monolithic (A6 view split); prices are estimates with no per-food override; no per-day sleep-note dedupe; weekly plan budget swap estimates slot cost from raw price (final cost from shopping list).
+Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimates (per-food override exists); avg meat at 1617/160 ≈238 g/meal (cap 300); base protein rotation is seed-only (scores weigh only budget swaps); onboarding has no edit-later summary; R-15 unscoped.
 
 - 05:45 v0.7.5 A25 protein cap + add-ons, 97 tests green.
 
@@ -70,3 +70,5 @@ Current gaps: app.js still monolithic (A6 view split); prices are estimates with
 - 06:12 v0.9.4 Snack variety: per-week repeat penalty on add-on items (≤4 days each), new add-ons milk/千张/虾/豆干.
 
 - 06:13 v0.9.5 Budget swaps weigh meal scores (best-scoring protein that fits budget; else cheapest).
+
+- 06:15 v0.9.6 Plan tips (planTips): budget swaps by score, add-on rotation; BACKLOG Next / PROGRESS gaps refreshed.

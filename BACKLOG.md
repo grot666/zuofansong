@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
-Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION v0.6.x; foods 131; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next: A29 → A28 → A30 → A32 → A31 (arch @be96ed1; A6–A27 all ✅) · R-15 · N-items still open below · ✅ price override per food (v0.6.7).
+Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
+Next (06:15): no open P0/P1. Done since v0.7.5: A23–A32 ✅, G1–G4 ✅, UX-4–UX-14 ✅, meat-lean + snack variety + score-weighted budget swaps ✅. Open: R-15 (unscoped), more verified food data (113/137 unverified), base protein rotation by score (tried, broke grids — see DECISIONS).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 

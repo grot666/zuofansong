@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.9.6
+- Plan tips (planTips): budget swaps by score, add-on rotation; BACKLOG Next / PROGRESS gaps refreshed.
+
 ## v0.9.5
 - Budget swaps weigh meal scores (best-scoring protein that fits budget; else cheapest).
 

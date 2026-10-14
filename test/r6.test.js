@@ -93,3 +93,12 @@ test('A22 dates', () => {
   assert.equal(addDays('2028-02-28', 1), '2028-02-29'); assert.equal(addDays('2026-10-15', -15), '2026-09-30');
   assert.equal(localDate(new Date(2026, 9, 15, 23, 59)), '2026-10-15'); assert.equal(localDate(new Date(2026, 9, 16, 0, 1)), '2026-10-16');
 });
+import { parseProfileForm } from '../js/core/profile.js';
+test('UX-2 parseProfileForm', () => {
+  assert.deepEqual(parseProfileForm({ bodyFatPct: '' }, { bodyFatPct: 20 }), { edits: {}, errors: [] });
+  assert.deepEqual(parseProfileForm({ goalWeight: '' }, { goalWeight: 60 }).edits, {});
+  assert.ok(parseProfileForm({ weight: '0' }, {}).errors.length);
+  assert.equal(parseProfileForm({ height: '175.5' }, {}).edits.height, 175.5);
+  assert.equal(parseProfileForm({ sex: 'female', evil: 1 }, {}).edits.sex, 'female');
+  assert.equal(parseProfileForm({ evil: 1 }, {}).edits.evil, undefined);
+});

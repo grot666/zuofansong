@@ -40,3 +40,19 @@ export function mergeProfileEdit(stored = {}, edits = {}) {
   }
   return out;
 }
+// UX-2: form strings → edits. Blank keeps previous; required fields must be present and > 0.
+const REQUIRED = { height: '身高', weight: '体重', birth: '出生日期' };
+export function parseProfileForm(form, prev = {}) {
+  const edits = {}; const errors = [];
+  for (const [k, raw] of Object.entries(form)) {
+    if (!(k in DEFAULT_PROFILE)) continue;
+    const v = typeof raw === 'string' ? raw.trim() : raw;
+    if (v === '' || v == null) { if (REQUIRED[k] && !(prev[k] ?? DEFAULT_PROFILE[k])) errors.push(`请填写${REQUIRED[k]}`); continue; }
+    if (NUM.includes(k)) {
+      const n = Number(v);
+      if (!Number.isFinite(n) || (REQUIRED[k] && n <= 0)) { errors.push(`请填写有效的${REQUIRED[k] || k}`); continue; }
+      edits[k] = n;
+    } else edits[k] = v;
+  }
+  return { edits, errors };
+}

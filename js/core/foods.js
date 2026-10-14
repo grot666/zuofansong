@@ -28,3 +28,17 @@ export function totals(items, food) {
 export const priceOverrides = (prices = {}) => Object.entries(prices).filter(([, v]) => Number(v) > 0).map(([id, v]) => ({ id, priceCNYPer500g: Number(v), priceUser: true }));
 // P2: grams protein per CNY on as-purchased basis (RESEARCH-R6 §R6.3).
 export const proteinPerYuan = f => (f && f.priceCNYPer500g > 0 ? f.protein * 5 / f.priceCNYPer500g : null);
+// UX-3: rank name startsWith > includes > pinyin > tag; top n.
+export function matchFoods(q, foods, n = 5) {
+  q = String(q || '').trim().toLowerCase(); if (!q) return [];
+  const rank = f => (f.name.startsWith(q) ? 0 : f.name.includes(q) ? 1 : (f.py || '').toLowerCase().startsWith(q) ? 2 : (f.py || '').toLowerCase().includes(q) ? 3 : (f.tags || []).some(t => t.includes(q)) ? 4 : 9);
+  return foods.map(f => [rank(f), f]).filter(([r]) => r < 9).sort((a, b) => a[0] - b[0] || a[1].name.length - b[1].name.length).slice(0, n).map(([, f]) => f);
+}
+// unit: 'g' | 'unit' | 'bowl'. Returns grams or null when the food has no such unit.
+export function gramsFor(f, n, unit) {
+  if (!(n > 0)) return null;
+  if (unit === 'g') return n;
+  if (unit === 'unit') return f.unit && f.unit.g ? n * f.unit.g : null;
+  if (unit === 'bowl') return n * 150 / (f.yield || 1);
+  return null;
+}

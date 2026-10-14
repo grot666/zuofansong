@@ -12,7 +12,7 @@ import { FOODS2 } from '../../data/foods2.js';
 import { FOODS3 } from '../../data/foods3.js';
 import { RECIPES } from '../../data/recipes.js';
 import { VERSION, CHANGELOG } from '../core/version.js';
-import { mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
+import { parseProfileForm, mergeProfileEdit, DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
 import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
@@ -58,7 +58,7 @@ export const view = () => {
   <div class="row"><label>自定蛋白 g<input type="number" name="proteinTarget"></label><label>体重 g/kg<input type="number" step="0.1" min="1.2" max="2" name="proteinPerKg"></label><label>去脂 g/kg<input type="number" step="0.1" min="1.6" max="3.1" name="proteinPerFfm"></label></div>
   <div class="row"><label>每勺蛋白粉含蛋白 g<input type="number" name="scoopG"></label><label>每天最多几勺<input type="number" name="maxScoops"></label><label>每周力量训练天数<input type="number" name="trainingDays"></label></div>
   <label><input type="checkbox" name="usesPowder" style="width:auto;min-height:auto"> 我在喝蛋白粉（饮水目标提高）</label>
-  <button>保存</button></form></section>
+  <p id="pfmsg" class="warn" role="status" aria-live="polite"></p><button>保存</button></form></section>
   <section class="card"><h2>每日目标</h2><table>
   <tr><td>基础代谢 BMR</td><td>${t.bmr} kcal</td><td class="mut">Mifflin–St Jeor 公式，${t.age} 岁</td></tr>
   <tr><td>每日消耗 TDEE</td><td>${t.tdee} kcal</td><td class="mut">BMR × 活动系数</td></tr>
@@ -88,7 +88,17 @@ view.bind = () => {
   document.querySelectorAll('[data-wr]').forEach(b => b.onclick = () => { S.set('wRange', +b.dataset.wr); rerender(); });
   const p = profile(); const f = $('#pf');
   for (const [k, v] of Object.entries(p)) { const el = f.elements[k]; if (!el) continue; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; }
-  f.onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(f)); for (const k in d) if (!['sex', 'activity', 'birth', 'goalDate', 'proteinMode', 'bedtime'].includes(k)) d[k] = +d[k]; d.usesPowder = f.elements.usesPowder.checked; d.sleepNudges = f.elements.sleepNudges.checked; S.set('profile', mergeProfileEdit(S.get('profile', {}), d)); rerender(); };
+  f.onsubmit = e => {
+    e.preventDefault();
+    const stored = S.get('profile', {});
+    const { edits, errors } = parseProfileForm(Object.fromEntries(new FormData(f)), stored);
+    const msg = $('#pfmsg'); if (errors.length) { if (msg) msg.textContent = errors.join('；'); return; }
+    edits.usesPowder = f.elements.usesPowder.checked; edits.sleepNudges = f.elements.sleepNudges.checked;
+    const merged = mergeProfileEdit(stored, edits); const norm = normalizeProfile(merged);
+    const clamped = ['deficitPct', 'fatPct', 'proteinPerKg', 'bodyFatPct'].filter(k => k in edits && norm[k] !== edits[k]);
+    S.set('profile', merged); rerender();
+    if (clamped.length) { const m2 = $('#pfmsg'); if (m2) m2.textContent = '部分数值超出范围，已按 ' + clamped.map(k => `${k}=${norm[k]}`).join('、') + ' 计算。'; }
+  };
   $('#wf').onsubmit = e => {
     e.preventDefault(); const w = +e.target.w.value; const date = e.target.d.value || today(); if (!w) return;
     const old = S.get('weights', []); if (old.some(x => x.date === date) && !confirm(`${date} 已有记录，覆盖？`)) return;

@@ -14,7 +14,7 @@ import { VERSION, CHANGELOG } from '../core/version.js';
 import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan } from '../core/foods.js';
+import { makeIndex, totals as sumTotals, proteinPerYuan, matchFoods, gramsFor } from '../core/foods.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
 
 function sleepHtml(l, p) {
@@ -35,7 +35,9 @@ export const view = () => {
   const hasTakeaway = l.items.some(i => food(i.id)?.cat === '外食');
   const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, gutHigh: gr.level === 'high' }) : [];
   const undo = S.get('undo', null);
-  return `<section class="card"><h2>今日 ${today()}</h2>
+  const demo = S.get('profile', null) == null;
+  const onboard = demo && !S.get('onboardSeen', false) ? `<section class="card" id="onboard"><p>目前使用<b>示例目标</b>（1 分钟填写身高/体重/年龄可自动计算）。</p><div class="row"><a class="btn" href="#me">去设置</a><button class="sec" id="obSkip">先用示例</button></div></section>` : '';
+  return `${onboard}<section class="card"><h2>今日 ${today()}${demo ? ' <span class="chip">示例目标</span>' : ''}</h2>
   热量 ${Math.round(x.kcal)} / ${t.kcal} kcal（还剩 ${Math.round(t.kcal - x.kcal)}）${bar(x.kcal, t.kcal)}
   蛋白 ${r1(x.protein)} / ${t.protein} g${bar(x.protein, t.protein)}
   碳水 ${r1(x.carbs)} / ${t.carbs} g${bar(x.carbs, t.carbs)}
@@ -47,7 +49,7 @@ export const view = () => {
   <section class="card"><h2>常用餐</h2><p class="mut">点一下就记入。在“搭配”页可存自己的模板。</p><div class="row" role="group" aria-label="份量">份量 ${MULTS.map(m => `<button class="${m === tplMult() ? '' : 'sec'}" data-mult="${m}" aria-pressed="${m === tplMult()}">×${m}</button>`).join('')}</div><div>${templates().map(tp => { const k = totals(scaleItems(tp.items, tplMult()).map(([id, g]) => ({ id, g }))).kcal; return `<button class="sec" data-tpl="${tp.id}" style="margin:4px 4px 0 0">${esc(tp.name)} · ${Math.round(k)}</button>`; }).join('')}</div>
   ${undo && undo.date === today() ? `<p class="mut">已记入“${esc(undo.name)}” <button class="sec" id="undo">撤销</button></p>` : ''}</section>
   <section class="card"><h2>快速记录</h2><form id="af"><input list="fdl" name="f" placeholder="食材或外卖名称（如 生煎、黄焖鸡）" aria-label="食材"><datalist id="fdl">${allFoods().map(f => `<option value="${esc(f.name)}">`).join('')}</datalist>
-  <div class="row"><input type="number" name="n" value="1" step="any" aria-label="数量"><select name="u" aria-label="单位"><option value="unit">个/碗/份（按食材单位）</option><option value="g">克</option><option value="bowl">碗（熟饭 150 g）</option></select><button>添加</button></div></form>
+  <div class="row"><input type="number" name="n" value="1" step="any" aria-label="数量"><select name="u" aria-label="单位"><option value="unit">个/碗/份（按食材单位）</option><option value="g">克</option><option value="bowl">碗（熟饭 150 g）</option></select><button>添加</button></div><p id="afmsg" class="mut" role="status" aria-live="polite"></p></form>
   <div>${recents.map(id => food(id) ? `<button class="sec" data-r="${id}" style="margin:4px 4px 0 0">+ ${esc(food(id).name)}</button>` : '').join('')}</div>
   <ul class="list">${l.items.map((i, n) => { const f = food(i.id); return f ? `<li>${esc(f.name)} ${Math.round(i.g)} g · ${approx(f)}${Math.round(f.kcal * i.g / 100)} kcal <button class="sec" data-del="${n}" aria-label="删除">✕</button></li>` : ''; }).join('') || '<li class="mut">还没有记录。可以点上面的常用餐，或一键记入你的计划日。</li>'}</ul>
   <div class="row" style="margin-top:8px"><button id="planDay" class="sec">记入我的计划日</button><button id="copyY" class="sec">复制昨天</button></div>
@@ -61,9 +63,25 @@ export const view = () => {
   <p>如厕舒适度风险：<b class="${gr.level === 'high' ? 'bad' : gr.level === 'mid' ? 'warn' : ''}">${{ high: '高', mid: '中', low: '低' }[gr.level]}</b>（${gr.score}/10）</p>${gr.fixes.length ? `<ul>${gr.fixes.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}<p class="mut">若长期便秘或不适，请就医。</p></section>`;
 };
 view.bind = () => {
+  const ob = $('#obSkip'); if (ob) ob.onclick = () => { S.set('onboardSeen', true); rerender(); };
   const pushItems = (items, name) => { const l = getLog(); const n0 = l.items.length; l.items.push(...items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('undo', { date: today(), from: n0, name }); rerender(); };
   const addItem = (id, g) => { S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
-  $('#af').onsubmit = e => { e.preventDefault(); const d = e.target; const q = d.f.value.trim(); if (!q) return; const f = allFoods().find(x => x.name === q) || allFoods().find(x => x.name.includes(q) || (x.py || '') === q.toLowerCase()); if (!f) { alert('没找到这个食材，可在“食材”页添加'); return; } const n = +d.n.value || 1; let g = n; if (d.u.value === 'unit') g = n * (f.unit?.g || 100); if (d.u.value === 'bowl') g = n * 150 / (f.yield || 1); addItem(f.id, g); };
+  const afMsg = t => { $('#afmsg').innerHTML = t; };
+  const logFood = (f, d) => {
+    const n = +d.n.value || 1; const g = gramsFor(f, n, d.u.value);
+    if (g == null) { afMsg(`“${esc(f.name)}”没有单位，按克记录：请把单位选“克”。`); d.u.value = 'g'; return; }
+    afMsg(''); addItem(f.id, g);
+  };
+  $('#af').onsubmit = e => {
+    e.preventDefault(); const d = e.target; const q = d.f.value.trim(); if (!q) return;
+    const exact = allFoods().find(x => x.name === q); if (exact) return logFood(exact, d);
+    const m = matchFoods(q, allFoods());
+    if (m.length === 1) return logFood(m[0], d);
+    if (!m.length) { afMsg(`没找到“${esc(q)}”。<a href="#foods">添加为自定义食材</a>`); return; }
+    afMsg('选一个：' + m.map(f => `<button type="button" class="sec" data-pick="${f.id}" style="margin:4px 4px 0 0">${esc(f.name)}</button>`).join(''));
+    document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => logFood(food(b.dataset.pick), d));
+  };
+  $('#af').f.onchange = e => { const f = allFoods().find(x => x.name === e.target.value); if (f && !f.unit && $('#af').u.value === 'unit') { $('#af').u.value = 'g'; afMsg('该食材无单位，按克记录'); } };
   document.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { const f = food(b.dataset.r); addItem(f.id, f.unit?.g || 100); });
   document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { const tp = templates().find(x => x.id === b.dataset.tpl); const use = S.get('templateUse', {}); use[tp.id] = (use[tp.id] || 0) + 1; S.set('templateUse', use); pushItems(scaleItems(tp.items, tplMult()), tplMult() === 1 ? tp.name : `${tp.name} ×${tplMult()}`); });
   document.querySelectorAll('[data-mult]').forEach(b => b.onclick = () => { S.set('tplMult', +b.dataset.mult); rerender(); });

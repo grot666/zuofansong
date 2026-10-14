@@ -45,3 +45,12 @@ test('price override merges over base food', () => {
   assert.equal(f('eggUSDA').priceCNYPer500g, 9); assert.equal(f('eggUSDA').protein, food('eggUSDA').protein); assert.ok(f('eggUSDA').priceUser);
   assert.equal(f.all().length, ALL.length);
 });
+import { matchFoods, gramsFor } from '../js/core/foods.js';
+test('UX-3 matchFoods / gramsFor', () => {
+  const m = matchFoods('鸡腿', ALL); assert.ok(m.length > 0 && m[0].name.includes('鸡腿'), m[0] && m[0].name);
+  assert.ok(matchFoods('jidan', ALL).some(f => f.name.includes('蛋')));
+  assert.deepEqual(matchFoods('zzzz不存在', ALL), []);
+  assert.equal(gramsFor({ name: 'x' }, 1, 'unit'), null);
+  assert.equal(gramsFor({ unit: { g: 50 } }, 2, 'unit'), 100);
+  assert.equal(gramsFor({}, 120, 'g'), 120);
+});

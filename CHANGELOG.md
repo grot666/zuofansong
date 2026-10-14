@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.2
+- R9-7: removed never-chosen milk/千张/豆干 add-ons; 0.9.4 copy corrected; usage test.
+
 ## v0.10.1
 - R9-6: price refs 2026-10-14 (porkLoin 17.50, egg 5.89, rice 2.81); estimate labels for unofficial protein prices.
 
@@ -22,7 +25,7 @@
 - Budget swaps weigh meal scores (best-scoring protein that fits budget; else cheapest).
 
 ## v0.9.4
-- Snack variety: per-week repeat penalty on add-on items (≤4 days each), new add-ons milk/千张/虾/豆干.
+- Snack variety: per-week repeat penalty on add-on items (≤4 days each), new add-ons 虾 (milk/千张/豆干 removed in v0.10.2: never chosen).
 
 ## v0.9.3
 - A31: tasty flag in data (incl. canteen meat sets), scores.js reads it; golden score test.

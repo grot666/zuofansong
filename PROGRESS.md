@@ -84,3 +84,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:25 v0.10.0 R9-4 verify-or-≈ for generator foods (milk, seabass FDC); R9-5 fdcCompare gap test + notes; budget rounds monotonic.
 
 - 06:26 v0.10.1 R9-6: price refs 2026-10-14 (porkLoin 17.50, egg 5.89, rice 2.81); estimate labels for unofficial protein prices.
+
+- 06:27 v0.10.2 R9-7: removed never-chosen milk/千张/豆干 add-ons; 0.9.4 copy corrected; usage test.

@@ -66,3 +66,14 @@ export function priceOf(food, id) {
   const raw = food(rawId) || f;
   return { rawId, rawPrice: (raw && raw.priceCNYPer500g) || 0 };
 }
+// UX-12: quick-add chips under the search box. Recents (≤8) first, then most-used (≤8); empty or thin history is padded with curated up to 8.
+export const CURATED_CHIPS = ['egg', 'riceCooked', 'thighRoasted', 'broccoli', 'oats', 'tofuFirm', 'milk', 'tunaLight'];
+export function quickChips(recents = [], useCount = {}, has = () => true) {
+  const out = [];
+  const add = id => { if (has(id) && !out.includes(id)) out.push(id); };
+  [...recents].filter(has).slice(0, 8).forEach(add);
+  const n0 = out.length;
+  Object.entries(useCount).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).forEach(([id]) => { if (out.length < n0 + 8) add(id); });
+  for (const id of CURATED_CHIPS) if (out.length < 8) add(id); // thin history → pad with curated
+  return out.slice(0, 16);
+}

@@ -14,7 +14,7 @@ import { VERSION, CHANGELOG } from '../core/version.js';
 import { DEFAULT_PROFILE, normalizeProfile, paceCheck } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
 import { sleepNotes } from '../core/sleep.js';
-import { makeIndex, totals as sumTotals, proteinPerYuan, matchFoods, gramsFor } from '../core/foods.js';
+import { makeIndex, totals as sumTotals, proteinPerYuan, quickChips, matchFoods, gramsFor } from '../core/foods.js';
 import { addDays, backupDue } from '../core/dates.js';
 import { reviewDue } from '../core/review.js';
 import { setRender, rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, refreshFoods, allFoods, food, logKey, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
@@ -38,7 +38,7 @@ export const view = () => {
   const wholeProtein = x.protein - x.powderProtein;
   const pg = proteinGap(t.protein, wholeProtein, p.scoopG, p.maxScoops);
   const gr = gutRisk({ fiber: x.fiber, water: l.water, weight: p.weight, powderShare: x.protein ? x.powderProtein / x.protein : 0, vegServings: x.veg, trainingDays: p.trainingDays });
-  const recents = [...new Set(S.get('recents', []))].slice(0, 8);
+  const chips = quickChips(S.get('recents', []), S.get('foodUse', {}), id => !!food(id));
   const lowItems = l.items.filter(i => food(i.id)?.fatClass === 'low');
   const hasTakeaway = l.items.some(i => food(i.id)?.cat === '外食');
   const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
@@ -60,7 +60,7 @@ export const view = () => {
   ${undo && undo.date === today() ? `<p class="mut">已记入“${esc(undo.name)}” <button class="sec" id="undo">撤销</button></p>` : ''}</section>
   <section class="card"><h2>快速记录</h2><form id="af"><input list="fdl" name="f" placeholder="食材或外卖名称（如 生煎、黄焖鸡）" aria-label="食材"><datalist id="fdl">${allFoods().map(f => `<option value="${esc(f.name)}">`).join('')}</datalist>
   <div class="row"><input type="number" name="n" value="1" step="any" aria-label="数量"><select name="u" aria-label="单位"><option value="unit">个/碗/份（按食材单位）</option><option value="g">克</option><option value="bowl">碗（熟饭 150 g）</option></select><button>添加</button></div><p id="afmsg" class="mut" role="status" aria-live="polite"></p></form>
-  <div>${recents.map(id => food(id) ? `<button class="sec" data-r="${id}" style="margin:4px 4px 0 0">+ ${esc(food(id).name)}</button>` : '').join('')}</div>
+  <div role="group" aria-label="常用食材">${chips.map(id => `<button class="sec mini" data-r="${id}" style="margin:4px 4px 0 0">+ ${esc(food(id).name)}</button>`).join('')} <a href="#foods">全部食材 ›</a></div>
   <ul class="list">${l.items.map((i, n) => { const f = food(i.id); return f ? `<li>${esc(f.name)} ${Math.round(i.g)} g · ${approx(f)}${Math.round(f.kcal * i.g / 100)} kcal <button class="sec" data-del="${n}" aria-label="删除">✕</button></li>` : ''; }).join('') || '<li class="mut">还没有记录。可以点上面的常用餐，或一键记入你的计划日。</li>'}</ul>
   <div class="row" style="margin-top:8px"><button id="planDay" class="sec">记入我的计划日</button><button id="copyY" class="sec">复制昨天</button></div>
   <p class="mut">计划日 = 3 蛋 + 400 g 米饭 + 360 g 去皮鸡腿 + 1 罐水浸金枪鱼 + 300 g 西兰花 + 200 g 胡萝卜 + 15 g 油 ≈ 1780 kcal / 149 g 蛋白 / 62 g 脂肪 / 纤维仅 ≈15 g。</p>
@@ -76,7 +76,7 @@ view.bind = () => {
   const bs = $('#bkSnooze'); if (bs) bs.onclick = () => { S.set('backupSnooze', addDays(today(), 7)); rerender(); };
   const ob = $('#obSkip'); if (ob) ob.onclick = () => { S.set('onboardSeen', true); rerender(); };
   const pushItems = (items, name) => { const l = getLog(); const n0 = l.items.length; l.items.push(...items.map(([id, g]) => ({ id, g, t: Date.now() }))); setLog(l); S.set('undo', { date: today(), from: n0, name }); rerender(); };
-  const addItem = (id, g) => { S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
+  const addItem = (id, g) => { const u = S.get('foodUse', {}); u[id] = (u[id] || 0) + 1; S.set('foodUse', u); S.set('recents', [id, ...S.get('recents', []).filter(x => x !== id)].slice(0, 12)); pushItems([[id, g]], food(id).name); };
   const afMsg = t => { $('#afmsg').innerHTML = t; };
   const logFood = (f, d) => {
     const n = +d.n.value || 1; const g = gramsFor(f, n, d.u.value);

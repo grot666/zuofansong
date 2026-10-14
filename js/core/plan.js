@@ -32,10 +32,13 @@ export const BF_MULTS = [1, 0.75, 1.25, 0.5];
 export const KIWI_G = [100, 0, 200];
 // A25: realistic cooked-protein portion per meal; add-ons are tried before more meat.
 export const MAX_PROTEIN_G_PER_MEAL = 300;
+// Meat-lean (P1 follow-up): meat only meets the protein floor; staple/add-ons fill kcal; 0.5 kcal-equivalent penalty per g meat, add-on order penalty 2 per index.
+export const MEAT_W = 0.5;
+export const TUNA_MAX_PER_WEEK = 2;
 // Plant mains are less protein-dense; a 450 g block of firm tofu is still a normal portion.
 export const PORTION_MULT = { tofuFirm: 1.5 };
 const pm = id => PORTION_MULT[id] || 1;
-export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 198]]];
+export const ADDONS = [[], [['eggWhite', 99]], [['yogurt', 150]], [['yogurt', 300]], [['eggBoiled', 100]], [['tofuFirm', 150]], [['yogurt', 150], ['eggBoiled', 100]], [['yogurt', 300], ['eggBoiled', 100]], [['yogurt', 300], ['tofuFirm', 150]], [['yogurt', 300], ['eggBoiled', 100], ['tofuFirm', 150]], [['eggWhite', 99], ['yogurt', 150]], [['eggWhite', 99], ['tofuFirm', 150]], [['tunaLight', 100]], [['tunaLight', 100], ['eggWhite', 99]], [['tunaLight', 100], ['yogurt', 150]]];
 // A19: closed-form search. Totals are linear in staple g (sg, per meal) and protein g (pg, per meal),
 // so for each breakfast×snack knob and sg we solve the best pg ≥ protein floor directly (no iteration loops).
 // G2: opts.powderScoops > 0 (profile.usesPowder) appends whey add-ons after every whole-food add-on.
@@ -62,16 +65,16 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   const sK = 2 * st.kcal / 100, sP = 2 * st.protein / 100;
   const pK = (pl.kcal * pm(pLunch) + pd.kcal * pm(pDinner)) / 100, pP = (pl.protein * pm(pLunch) + pd.protein * pm(pDinner)) / 100;
   let best = null;
-  const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)));
+  const addons = [...ADDONS, ...powderAddons(opts.powderScoops || 0)].filter(a => a.every(([id]) => food(id)) && !(opts.noTuna && a.some(([id]) => id === 'tunaLight')));
   BF_MULTS.forEach((bm, bi) => KIWI_G.forEach((kiwi, ki) => addons.forEach((addon, ai) => {
     const base = build(0, 0, bm, kiwi, addon).tot;
     for (let sg = 30; sg <= 350; sg += 10) {
       const pgMin = Math.max(60, Math.ceil((protein - base.protein - sg * sP) / pP / 5) * 5);
-      const pg = Math.min(MAX_PROTEIN_G_PER_MEAL, Math.max(pgMin, r5((kcal - base.kcal - sg * sK) / pK)));
+      const pg = Math.min(MAX_PROTEIN_G_PER_MEAL, pgMin);
       const k = base.kcal + sg * sK + pg * pK, P = base.protein + sg * sP + pg * pP;
       const short = Math.max(0, protein - P);
       // lexicographic: protein floor, then kcal distance, then prefer default knobs
-      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 8;
+      const score = short * 1e6 + Math.abs(k - kcal) + (bi + ki) * 5 + ai * 2 + pg * MEAT_W;
       if (!best || score < best.score) best = { score, sg, pg, bm, kiwi, addon };
     }
   })));
@@ -82,7 +85,13 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);
 export function generateWeek(targets, food, recipes, opts = {}) {
-  return selectWeek(food, recipes, opts).map(sk => portionDay(sk, targets, food, opts));
+  // Canned tuna add-on ≤ TUNA_MAX_PER_WEEK days (mercury; matches review tunaNotes).
+  let tuna = 0;
+  return selectWeek(food, recipes, opts).map(sk => {
+    const d = portionDay(sk, targets, food, { ...opts, noTuna: tuna >= TUNA_MAX_PER_WEEK });
+    if (d.addon.some(([id]) => id === 'tunaLight')) tuna++;
+    return d;
+  });
 }
 
 // RESEARCH-R6 §R6.3 greedy. slots: protein id per slot; slotCost(id, i): CNY for slot i with id (protein held constant).

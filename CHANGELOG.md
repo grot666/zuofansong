@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.8.8
+- Meat-lean planner: meat = protein floor, 0.5/g meat penalty, more add-ons, tuna ≤2/week; 1617/160 avg meat 283→233 g.
+
 ## v0.8.7
 - UX-10: 3-step onboarding (onboardStep/saveOnboardStep saving only step keys, pace text, first-meal templates, skip).
 

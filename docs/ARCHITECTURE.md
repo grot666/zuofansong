@@ -1,7 +1,7 @@
 # 做饭松 — Architecture
 
-Status: reflects `main` at c339c0f (v0.10.27). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
-Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · **c339c0f (v0.10.27, 2026-10-15 ~07:10 SGT: A40–A46 + R-01/R-11/VER-10/R10-D1/F1/F2/S1 verified; new → A47–A48, A50–A53, §11)**.
+Status: reflects `main` at 261eab3 (v0.10.28). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
+Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · **261eab3 (v0.10.28, 2026-10-15 ~07:10 SGT: A40–A46 + R-01/R-11/VER-10/R10-D1/F1/F2/S1/S2 verified; new → A47–A48, A50–A53, §11)**.
 
 ## 1. Principles
 - Static GitHub Pages, plain HTML/CSS/ES modules, **no build step**, no runtime deps, no network calls except same-origin assets.
@@ -12,7 +12,7 @@ Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23
 - Data modules (`data/*.js`) are JS (not JSON) so they work offline and in Node without fetch (DECISIONS 04:00).
 - **Every page entry does the same boot:** `bootStore()` → render → `registerSW()` (✅ v0.6.0, enforced by `test/version.test.js`).
 
-## 2. Module layout @v0.10.27 (A6 ✅, A22 ✅, A24 ✅, A45 ✅)
+## 2. Module layout @v0.10.28 (A6 ✅, A22 ✅, A24 ✅, A45 ✅)
 ```
 index.html            SPA shell, hash routes #today #plate #veg #rice #foods #me (+ A20 non-module escape hatch)
 plan.html             weekly plan; in-page sections #menu #list #prep (UX-7); R-11 trayCard per weekday
@@ -39,7 +39,7 @@ js/core/
   protein.js   proteinGap, gutRisk, proteinFill     fiber.js  suggestFiber (N-04)
   retention.js compact/compactStore (A11, A26)   breaks.js, sleep.js, portion.js, targets.js (canDeepen A42), grains.js, fat.js, weight.js, sauces.js (trayPlan R-11)
 data/foods.js, foods2.js, foods3.js (~137 foods), recipes.js (34), sauces.js, prices.js
-test/  ~61 files @v0.10.27 (serial in CI; +r10f1/r10s1)
+test/  ~61 files @v0.10.28 (serial in CI; +r10f1/r10s1)
 .github/workflows/ci.yml  node --check + node --test --test-concurrency=1 on push/PR
 ```
 Dependency rule: `UI (pages, views, ui.js, nav.js) → boot → core → data`. Core never imports boot/UI; data imports nothing.
@@ -107,14 +107,14 @@ Export envelope `{app:'zuofansong', schema, exportedAt, data}` (skips `backup.*`
 ### Errors / persistence ✅ (A18)
 `set()` returns false + emits `storage-error`; boot shows the banner, including migrate-abort and memory-backend fallback.
 
-## 4. Service worker @v0.10.27 (A7, A15, A20 ✅)
+## 4. Service worker @v0.10.28 (A7, A15, A20 ✅)
 - `CACHE === 'zfs-' + VERSION` (tested); install precaches ASSETS with `new Request(u, {cache:'reload'})` + `skipWaiting`; activate deletes other caches + `clients.claim`.
 - Navigations: network-first 3 s → cached page (ignoreSearch) → `index.html`. Assets: stale-while-revalidate kept alive with `waitUntil`; miss + offline → `Response.error()`, never HTML. Only `ok && basic` cached.
 - `sw.test.js` enforces disk ⊆ ASSETS ⊆ disk, no dups (A15) — caught `js/nav.js` / `js/core/scores.js` in v0.8.x and the four `js/core/plan/*.js` files at A45.
 - A20 escape hatch: a non-module inline script in each page offers 清除离线缓存并重新加载 (unregisters SW, deletes caches, never touches localStorage).
 - Update toast (UX-8): shown once per new version; `updateSeen` stores the version already shown.
 
-## 5. Weekly plan @v0.10.27 (A9, A16, A19, A23, A25, A33–A46, G1, G2, UX-9, R9-10, PERF-1 ✅)
+## 5. Weekly plan @v0.10.28 (A9, A16, A19, A23, A25, A33–A46, G1, G2, UX-9, R9-10, PERF-1 ✅)
 ```
 selectWeek(food, recipes, {seed, proteins, dinnerProteins, maxPrepMin, reuse}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL|null, vegD|null}
 portionDay(skel, {kcal, protein}, food, {powderScoops, noTuna, addonUse}) → {day, meals, tot, proteinG, stapleG, bfMult, kiwiG, addon, fit}
@@ -184,8 +184,8 @@ Design decisions recorded this round:
 - **Taste/ease heuristics live in data, not in `scores.js`** (A31), so adding a food never needs a code edit.
 New items: A28–A32 in BACKLOG.md.
 
-## 11. Review @c339c0f (v0.10.27, 2026-10-15 ~07:10 SGT)
-Commits reviewed: `9390563` (docs(arch) @v0.10.10) → `c339c0f` (v0.10.27). Mid-round engineer landings R10-F1/F2/S1 (v0.10.25–0.10.27) included. Tests green on a clean clone (serial).
+## 11. Review @261eab3 (v0.10.28, 2026-10-15 ~07:10 SGT)
+Commits reviewed: `9390563` (docs(arch) @v0.10.10) → `261eab3` (v0.10.28). Mid-round engineer landings R10-F1/F2/S1/S2 (v0.10.25–0.10.28) included. Tests green on a clean clone (serial).
 
 Verified shipped:
 - **A40** no-veg guard + bounded `pickReuse` (v0.10.15)
@@ -195,7 +195,7 @@ Verified shipped:
 - **A44** veg-reuse snapshots, revert fixture, `plangrid.test.js` (v0.10.19; wall 4 s @v0.10.22)
 - **A45** `js/core/plan/{select,portion,budget,shopping}.js` behind `plan.js` facade (v0.10.20)
 - **A46** bounded-loop grep test (v0.10.21)
-- Also: R-01 (v0.10.12), R-11 (v0.10.13), VER-10 (v0.10.14), R10-D1 (v0.10.24), **R10-F1 fiber-aware portions (v0.10.25)**, **R10-F2 weekFiber line (v0.10.26)**, **R10-S1 twin/pantry shopping (v0.10.27)** — closes the behavioural half of A49.
+- Also: R-01 (v0.10.12), R-11 (v0.10.13), VER-10 (v0.10.14), R10-D1 (v0.10.24), **R10-F1 fiber-aware portions (v0.10.25)**, **R10-F2 weekFiber line (v0.10.26)**, **R10-S1 twin/pantry shopping (v0.10.27)** — closes A49 behaviour, **R10-S2 meat-over-250 g score penalty (v0.10.28)**.
 
 Design decisions this round:
 - **Empty protein list must fail closed like empty veg (A47).** Still crashes on tip @c339c0f. Mirror A40: `infeasible.reason === 'no-protein'`, plan-page notice, no throw.

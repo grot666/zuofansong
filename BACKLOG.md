@@ -1,7 +1,7 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:10): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A50** extract TUNA → A51/A52 → **A53** export twin map + re-split portion.js. Shipped since last arch review: A40–A46 ✅, R-01/R-11/VER-10/R10-D1 ✅, R10-F1/F2/S1 ✅ (v0.10.25–0.10.27; S1 closes A49 behaviour). Research still open: R10-S2 (300 g protein note).
+Next (07:10): **A47 (P0)** empty-protein crash → **A48** npm↔CI serial → **A50** extract TUNA → A51/A52 → **A53** export twin map + re-split portion.js. Shipped since last arch review: A40–A46 ✅, R-01/R-11/VER-10/R10-D1 ✅, R10-F1/F2/S1/S2 ✅ (v0.10.25–0.10.28; S1 closes A49 behaviour).
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 

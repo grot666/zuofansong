@@ -572,7 +572,8 @@ cbe10f9 (A36–A39) was authored/committed by `grot666 <grot666@users.noreply.gi
 
 - **VER-20 Verify batch of 20 foods with clear FDC equivalents (P2)** ✅
 
-<<<<<<< Updated upstream
+- **VER-15 Verify next 15 most-used unverified planner foods (P2)** ✅ (v0.10.37; overlaps R11-6 — see DECISIONS)
+
 ## R11 update (2026-10-15 ~07:40 SGT, needs-research vs v0.10.35 @ 8577366 — see docs/RESEARCH-R11.md)
 TFCC rule for every recipe-related AC below: no step may require forceful chopping, smashing or twisting; firm items must be bought pre-cut or handled with scissors/a peeler, and `wristSafe:false` steps keep a `wristNote`.
 - **R11-1 (P1) Sweet-potato volume per day.** Why: an SP day uses 烤红薯 at lunch and dinner — 290 g + 290 g (1800/140/¥300 seed 0 day 1), up to 660 g/day over seeds 0–7. AC: on an SP day at most one meal uses SP as staple (other meal = rice/杂粮 from the batch), or SP ≤ 350 g/day total; microwave/oven only, bought whole and baked whole (no cutting raw SP). Tests: grid 1800/140 seeds 0–7 → max SP g/day ≤ 350; SP days ≤ 3/week still hold; checkWeek all ok.
@@ -581,6 +582,3 @@ TFCC rule for every recipe-related AC below: no step may require forceful choppi
 - **R11-4 (P2) Opened-pack leftovers.** Why: 千张 0–100 g/week, 毛豆 150 g, 青椒 50 g — partial packs, no reuse hint. AC: optional user `packG` per food (prices page); when weekly need < packG, plan shows "剩余约 X g：可用于 …" picking a recipe that uses it; no default pack sizes in data (no official source). Tests: packG 千张=250, need 50 → leftover 200 and a suggested recipe id containing qianzhang; no packG → no hint. Also: fiberNote threshold uses the rounded value (24.9 g shows no "below 25" note).
 - **R11-5 (P1) 聚餐/hotpot mode.** Why: weekend social meals are not modelled; R-13 only reacts after the fact. AC: today/plan lets the user mark a meal 聚餐 (types 火锅/中餐/烧烤); fat wallet pre-allocates: breakfast/lunch keep protein, drop cooking oil to ≥ 5 g and fat foods; dinner gets the freed fat shown as "聚餐预留 X g 脂肪"; a protein-first order list from RESEARCH-R11 §R11.3 (鱿鱼/牛肚/虾/牛肉/鸭血/豆腐 → 蔬菜 → 主食), sourced kcal shown with ≈; dip shown in g fat (10 g 香油 ≈ 10 g fat; 20 g 芝麻酱 ≈ 10.5 g fat); broth/absorbed oil labelled "无法精确估算". Next day: normal targets (never below the plan's kcal), copy neutral ("昨天聚餐，按计划吃就好"), weekly average shown. Tests: pure `preAllocate(day, {meal:'dinner'})` keeps protein ≥ target and moves ≥ 10 g fat to dinner on a 1800/140 fixture; `nextDayTargets` equals normal targets; copy test: no 补偿/惩罚/作弊/超标 words; hotpot item data cite 平台 ids.
 - **R11-6 (P1) VER batch: next 15 foods** (RESEARCH-R11 §R11.4). AC: cite FDC 171411 oil, 169230 garlic, 169988 celery, 168409 cucumber, 168411 edamame (or CFCT); 平台 #575 enoki, #429 loofah, #450 napa, #493 kongxincai, #419 winterMelon, #525 yam, #519 jiaobai (values match app within 1 kcal → just set source+verified); recipes use twins (egg→eggUSDA, broccoli→broccoliUSDA); soy/yogurt/basa/leanBeef/porkLoin stay ≈ with reason; shanghaiQing may cite #457 油菜 only as "proxy". Tests: data test pins the cited values ±0.5; every `verified:true` source matches /USDA FDC \d+|平台 #\d+/.
-=======
-- **VER-15 Verify next 15 most-used unverified planner foods (P2)** ✅
->>>>>>> Stashed changes

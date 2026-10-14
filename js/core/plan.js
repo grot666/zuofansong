@@ -32,11 +32,13 @@ export const rankProteins = (ids, food) => { const sc = new Map(ids.map(id => [i
 // Ingredient reuse: walk the seed-rotated ranking and, from the next REUSE_WINDOW unused recipes,
 // take the one adding the fewest new vegetables (ties keep rank order). Deterministic in seed.
 export const REUSE_WINDOW = 5;
+export const PICK_MAX_ITER = 1000; // A46: bounded loop
 export function pickReuse(vegs, start, food) {
+  if (!vegs.length) return []; // A40: nothing usable → no picks (was an infinite loop)
   const order = Array.from({ length: vegs.length }, (_, i) => vegs[(i + start) % vegs.length]);
   const vegIds = r => r.items.map(([id]) => id).filter(id => food(id)?.cat === '蔬菜');
   const have = new Set(), out = [], used = new Set();
-  while (out.length < 14) {
+  for (let it = 0; out.length < 14 && it < PICK_MAX_ITER; it++) {
     const cand = order.filter(r => !used.has(r.id)).slice(0, REUSE_WINDOW);
     if (!cand.length) { used.clear(); continue; }
     let best = cand[0], bn = Infinity;
@@ -58,7 +60,7 @@ export function selectWeek(food, recipes, opts = {}) {
   return dinnerProteins.map((pDinner, d) => ({
     day: d, bf: BREAKFASTS[(d + seed) % BREAKFASTS.length], pDinner, pLunch: dinnerProteins[(d + 6) % 7],
     staple: STAPLES[(Math.floor(d / 2) + seed) % STAPLES.length],
-    vegL: picks[d * 2], vegD: picks[d * 2 + 1],
+    vegL: picks[d * 2] || null, vegD: picks[d * 2 + 1] || null,
   }));
 }
 export const FITS = ['ok', 'kcal-high', 'kcal-low', 'protein-low'];
@@ -90,8 +92,8 @@ export function portionDay(sk, { kcal, protein }, food, opts = {}) {
   const build = (sg, pg, bm, kiwi, addon = []) => {
     const meals = [
       { name: '早餐', title: bm === 1 ? bf.name : `${bf.name} ×${bm}`, items: bf.items.map(([id, g]) => [id, Math.round(g * bm)]) },
-      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name} + ${vegL.name}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] },
-      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name} + ${vegD.name}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] },
+      { name: '午餐', title: `${food(staple).name} + ${food(pLunch).name}${vegL ? ' + ' + vegL.name : ''}`, items: [[staple, sg], [pLunch, Math.round(pg * pm(pLunch))], ...(vegL ? [...vegL.items.map(([id, g]) => [id, g / 2]), ['oil', vegL.oil / 2]] : [])] },
+      { name: '晚餐', title: `${food(staple).name} + ${food(pDinner).name}${vegD ? ' + ' + vegD.name : ''}`, items: [[staple, sg], [pDinner, Math.round(pg * pm(pDinner))], ...(vegD ? [...vegD.items.map(([id, g]) => [id, g / 2]), ['oil', vegD.oil / 2]] : [])] },
     ];
     const snack = [...(kiwi ? [[food('kiwiUSDA') ? 'kiwiUSDA' : 'kiwi', kiwi]] : []), ...addon]; // R9-2: verified FDC twin when available
     if (snack.length) meals.push({ name: '加餐', title: snack.map(([id, g]) => `${food(id).name} ${g} g`).join(' + '), items: snack });
@@ -165,7 +167,8 @@ export function planWeek(targets, food, recipes, opts = {}) {
   let week = generateWeek(targets, food, recipes, opts);
   const cost = w => shoppingList(w, food).reduce((s, x) => s + x.cost, 0);
   let total = cost(week);
-  const infeasible = feasibility(targets);
+  const noVeg = !recipes.some(r => r.items.every(([id]) => food(id)));
+  const infeasible = noVeg ? { reason: 'no-veg' } : feasibility(targets); // A40
   if (opts.budget == null || total <= opts.budget) return { week, cost: total, overBudget: false, swaps: 0, infeasible, unfit: [] };
   // R9-1: loop on the *real* regenerated cost (portions change after a swap), max 7 rounds.
   // A34: report days that were ok before swapping but are not ok after (`unfit`), so the page can warn.

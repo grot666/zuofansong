@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.15
+- A40: no-veg guard (pickReuse/selectWeek hang), infeasible no-veg
+
 ## v0.10.14
 - Verify batch: top-10 generator foods FDC-verified or ≈ with FDC comparison
 

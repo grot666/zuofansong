@@ -71,3 +71,8 @@ export function projectedBodyFat(weight, bodyFatPct, goalWeight) {
   const lean = weight * (1 - bodyFatPct / 100);
   return Math.max(0, (1 - lean / goalWeight) * 100);
 }
+// Walkthrough 2: the review must not offer "deficit +5%" when that target would fall below BMR (or past the 30% cap).
+export function canDeepen(p) {
+  const d = p.deficitPct ?? 20; if (d + 5 > 30) return false;
+  const t = computeTargets({ ...p, deficitPct: d + 5 }); return t.kcal >= t.bmr;
+}

@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.10
+- Review: no deeper deficit below BMR; no backup nag right after import
+
 ## v0.10.9
 - planWeek ~10x faster (precomputed base); sole (龙利鱼) added to PROTEINS
 

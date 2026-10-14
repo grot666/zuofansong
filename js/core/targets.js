@@ -23,6 +23,20 @@ export function bmi(weight, heightCm) {
   return weight / (m * m);
 }
 
+// proteinMode: 'bw' (g/kg body weight, default), 'ffm' (g/kg fat-free mass, needs bodyFatPct), 'fixed' (proteinTarget g)
+export function proteinTargetFor(p, BMI) {
+  const mode = p.proteinMode || 'bw';
+  if (mode === 'fixed' && p.proteinTarget > 0) return { protein: Math.round(p.proteinTarget), basis: `自定 ${Math.round(p.proteinTarget)} g` };
+  if (mode === 'ffm' && p.bodyFatPct > 0) {
+    const ffm = p.weight * (1 - p.bodyFatPct / 100);
+    const perKg = Math.min(3.1, Math.max(1.6, p.proteinPerFfm ?? 2.5));
+    return { protein: Math.round(ffm * perKg), basis: `去脂体重 ${ffm.toFixed(1)} kg × ${perKg} g/kg` };
+  }
+  const base = BMI >= 30 && p.goalWeight ? p.goalWeight : p.weight;
+  const perKg = Math.min(2.0, Math.max(1.2, p.proteinPerKg ?? 1.6));
+  return { protein: Math.round(base * perKg), basis: `${base} kg × ${perKg} g/kg${BMI >= 30 ? '（BMI≥30 按目标体重）' : ''}` };
+}
+
 export function computeTargets(p) {
   const age = p.age ?? ageFrom(p.birth);
   const B = bmr({ ...p, age });
@@ -31,16 +45,15 @@ export function computeTargets(p) {
   const deficit = p.deficitPct ?? 20;
   const kcal = Math.round(tdee * (1 - deficit / 100));
   const BMI = bmi(p.weight, p.height);
-  const proteinBase = BMI >= 30 && p.goalWeight ? p.goalWeight : p.weight;
-  const proteinPerKg = Math.min(2.0, Math.max(1.2, p.proteinPerKg ?? 1.6));
-  const protein = Math.round(proteinBase * proteinPerKg);
+  const { protein, basis: proteinBasis } = proteinTargetFor(p, BMI);
   const fatPct = Math.max(20, p.fatPct ?? 25);
   const fat = Math.round((kcal * fatPct) / 100 / 9);
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
   const water = Math.round(p.weight * (p.usesPowder ? 35 : 30));
   const warnings = [];
   if (kcal < B) warnings.push('目标热量低于基础代谢（BMR），建议减小缺口。');
-  return { age, bmr: Math.round(B), tdee: Math.round(tdee), kcal, protein, fat, carbs, fiber: 28, water, bmi: +BMI.toFixed(1), proteinBase, fatPct, warnings };
+  if (protein * 4 > kcal * 0.4) warnings.push('蛋白质占热量超过 40%，注意纤维和饮水。');
+  return { age, bmr: Math.round(B), tdee: Math.round(tdee), kcal, protein, proteinBasis, fat, carbs, fiber: 28, water, bmi: +BMI.toFixed(1), fatPct, warnings };
 }
 
 // Weekly loss rate check: entries [{date, weight}] sorted by date.
@@ -51,4 +64,10 @@ export function fastLossWarning(entries) {
   if (days < 7) return null;
   const perWeekPct = ((a.weight - b.weight) / a.weight) * 100 / (days / 7);
   return perWeekPct > 1 ? `近期每周减重约 ${perWeekPct.toFixed(1)}%，超过 1%/周，建议适当增加热量。` : null;
+}
+
+// Projected body fat % at goal weight assuming lean mass kept (best case).
+export function projectedBodyFat(weight, bodyFatPct, goalWeight) {
+  const lean = weight * (1 - bodyFatPct / 100);
+  return Math.max(0, (1 - lean / goalWeight) * 100);
 }

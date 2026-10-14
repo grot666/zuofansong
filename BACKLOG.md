@@ -5,6 +5,71 @@ Next (06:15): no open P0/P1. Done since v0.7.5: A23–A32 ✅, G1–G4 ✅, UX-4
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
 
+### Arch review @3e61689 (v0.9.5), 2026-10-15 ~06:25 SGT — 133/133 tests on a clean clone
+Verified:
+- The base protein rotation is still seed-only. `selectWeek` doesn't call `rankProteins`, which is exported but has **no caller** (see A38).
+- `applyBudget`'s score path is pinned by the synthetic `budgetscore.test.js` (A/B/C).
+- The add-on cap of ≤4 days per item holds across the grid (max seen: 3), including after budget swaps.
+- Determinism is asserted in `variety.test.js`.
+- A32 perf: a tight-budget `planWeek` (1800/140, budget 150) averages ~40 ms.
+
+Probes (node against core with PRICE_REFS; scripts not committed): the numbers below.
+
+- **A33 Planner exceeds its own tuna limit (P0)**
+  - Why: `TUNA_MAX_PER_WEEK = 2` counts only **add-on** days, but `tunaLight` is also in `PROTEINS`, so it appears as a dinner(d)+lunch(d+1) pair. The weekly review then flags the plan the app itself generated (`tunaNotes` > 339 g light).
+  - Probe: grid {1400/110, 1617/160, 1800/140, 2200/160, 1500/140} × seeds 0–8, no budget: **32/45 weeks have > 339 g light tuna, max 670 g**, and up to 4 tuna days a week.
+  - AC:
+    - One weekly tuna budget in grams (`TUNA.tunaLight.max`, shared with review.js), counted across meals and add-ons.
+    - `selectWeek`/`applyBudget` skip `tunaLight` as the main protein once the pair grams would exceed it.
+    - Add-ons see the remaining grams.
+  - Tests:
+    - Across that grid, ×{no budget, 0.8×free}: `weekReview(...).tunaNotes.length === 0` for every generated week.
+    - Albacore is never chosen.
+- **A34 Budget swaps can break day feasibility without flagging it (P1)**
+  - Why: `applyBudget` judges candidates on price (and now score) only, then `planWeek` regenerates. Nothing re-checks `checkWeek`, and `overBudget`/`infeasible` stay false/null.
+  - Probe: 1617/160 seed 0, budget = 0.85×free (¥172): tofuFirm ×3 (at the cap) → day 4 is 1725 kcal (+6.7%, `fit:'kcal-high'`), with `overBudget:false` and `infeasible:null`. It fails at 0.85, 0.8, 0.7 and 0.6× free; the unbudgeted week passes.
+  - AC:
+    - `planWeek` evaluates each candidate swap with `portionDay` and rejects ones that turn an `ok` day non-ok. If no such candidate exists, stop and set `overBudget`.
+    - Alternatively, return `{…, unfit: [dayIdx]}` so the plan page shows ⚠ with the reason.
+  - Tests:
+    - That fixture yields either all-`ok` days or `unfit` non-empty plus a visible notice.
+    - Grid {1617/160, 1800/140} × seeds 0–2 × budgets {0.95, 0.85, 0.7}×free: `checkWeek` all ok, OR `unfit`/`overBudget` is set. Never a silent fail.
+- **A35 applyBudget score-selection fixtures in real data (P1)**
+  - Why: the score path is only tested with synthetic A/B/C. Real protein scores are clustered (16–19: thigh, tofu and pork 19; breast, seabass and basa 18; shrimp and beef 17; tuna 16), so a data or price change can silently flip choices.
+  - Tests (`budgetscore.test.js`):
+    - (a) Real-data fixture at 1800/140 seed 0, budget 0.85×free: pin `r.slots`, `swaps` and cost (±¥0.05).
+    - (b) Tie-break: equal scores → cheaper first, then `options` order (documented in the code comment).
+    - (c) Score is only consulted on the **final** swap (one that alone brings the week within budget). Pin this with a 3-step case, or change it deliberately and record it in DECISIONS.
+    - (d) Monotonic: across budgets {1, .95, .9, .85, .8, .7, .6}×free, cost never rises as the budget falls (holds today: no increases seen).
+    - (e) A user price override that changes a protein's `cheap` score changes `proteinScore` (documents the price → score coupling).
+- **A36 Golden scores: drift guard over the protein ranking and the add-on foods (P2)**
+  - Why: A31 golden covers 3 meals. The planner now consumes `proteinScore` (budget) and `rankVeg` (veg), so a `tasty` flag edit can silently reorder plans.
+  - AC: `a31.test.js` snapshots:
+    - `rankProteins(PROTEINS)` with scores: `thigh 19, tofu 19, pork 19, breast 18, seabass 18, basa 18, shrimp 17, beef 17, tuna 16`.
+    - The top 14 `rankVeg` ids.
+    - One meal per new add-on food (milk 250, 千张 50, 豆干 80, shrimpCooked 100).
+  - Failing message: "scores changed: update golden + DECISIONS".
+- **A37 tasty coverage is implicit (P2)**
+  - Why: only 14/137 foods have a `tasty` key; everything else is `undefined`. That includes 23 protein foods, and all new add-ons except shrimp: milk, qianzhang, doufugan, yogurt, eggWhite, eggBoiled, tofuFirm, tunaLight. So "reviewed and not tasty" can't be told apart from "never reviewed".
+  - AC:
+    - Every food with cat 蛋白, 主食 or 外食 has an explicit boolean `tasty`.
+    - `data.test.js` asserts `typeof f.tasty === 'boolean'` for those categories.
+    - Changing values follows A36.
+- **A38 Remove or use `rankProteins` (P3)**
+  - Why: dead export, kept after the reverted experiment (DECISIONS 06:13).
+  - AC: either delete it, or keep it only as the A36 snapshot helper, with a comment that base rotation must stay seed-only, plus a test asserting `selectWeek` output is independent of `tasty` flags (flip all to false → same `dinnerProteins`).
+- **A39 Repeat-penalty determinism and order sensitivity (P2)**
+  - Why: `used{}` is filled day by day, so day d's add-on depends on days 0..d-1. `planWeek` regenerates after swaps, so a swap on day 2 can change add-ons on days 3–6. That's correct but untested. A future single-day "换这天" call to `portionDay` would also produce a different add-on than in-week.
+  - Tests:
+    - (a) `generateWeek` deep-equal across 2 calls *and* after an unrelated `generateWeek` with other targets (no shared module state).
+    - (b) `portionDay` standalone with `addonUse` omitted == in-week day 0.
+    - (c) After budget swaps, the ≤4-day cap still holds and `tuna` is still counted (with A33).
+    - (d) `ADDON_REPEAT_W` pinned: 1800/140 seed 0 add-on sequence snapshot.
+
+Housekeeping (stale docs):
+- The BACKLOG header "Next: A29 → A28 → A30 → A32 → A31" is stale; all five shipped in v0.9.0–v0.9.3. Should read "Next: A33 → A34 → A35 …".
+- PROGRESS.md mixes orders: newest-first down to v0.7.4 (05:44) at the top, then oldest-first v0.8.0 → v0.9.5 appended at the bottom. Readers of the first lines think v0.7.4 is current. AC: one order (newest first), with v0.9.5 at the top.
+
 ### Arch review @be96ed1 (v0.8.7), 2026-10-15 ~06:05 SGT — 123/123 tests on a clean clone; A23–A27, G1–G4, UX-4…14 verified
 - **A29 Onboarding progress lost on reload (P1, UX-10 follow-up)** ✅
   - Why: `obStep` in `views/today.js` is a module variable. Step 1 writes `profile`, so after a reload (or the iOS PWA being killed between steps) `onboardStep({storedProfile: non-null, step: 1})` returns 0. Steps 2 (goal + pace) and 3 (first meal) are silently skipped, and `onboardSeen` stays false.

@@ -1,4 +1,5 @@
 // Protein gap + gut comfort.
+import { FIBER_TARGET } from './fiber.js';
 export function proteinGap(target, wholeFood, scoopG = 24, maxScoops = 2) {
   const gap = Math.max(0, target - wholeFood);
   const scoops = Math.min(maxScoops, Math.ceil((gap / scoopG) * 2) / 2);
@@ -9,7 +10,7 @@ export function proteinGap(target, wholeFood, scoopG = 24, maxScoops = 2) {
 // Returns { score 0-10, level, fixes[] }
 export function gutRisk({ fiber = 0, water = 0, weight = 70, powderShare = 0, vegServings = 0, trainingDays = 0 }) {
   let s = 0; const fixes = [];
-  if (fiber < 15) { s += 3; fixes.push('主食换成杂粮饭（如 大米+燕麦米+糙米）'); } else if (fiber < 25) { s += 1.5; fixes.push('再加一份蔬菜或一个水果'); }
+  if (fiber < 15) { s += 3; fixes.push('主食换成杂粮饭（如 大米+燕麦米+糙米）'); } else if (fiber < FIBER_TARGET.min) { s += 1.5; fixes.push('再加一份蔬菜或一个水果'); }
   const wTarget = weight * 30;
   if (water < wTarget * 0.6) { s += 3; fixes.push('多喝水：今天还差约 ' + Math.round(wTarget - water) + ' ml'); } else if (water < wTarget) { s += 1; fixes.push('再喝 1–2 杯水'); }
   if (powderShare > 0.4) { s += 2; fixes.push('蛋白粉占比过高，换部分为鸡蛋/豆腐/鱼'); } else if (powderShare > 0.25) s += 1;

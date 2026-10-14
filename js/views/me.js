@@ -7,6 +7,7 @@ import { addDays, localDate } from '../core/dates.js';
 import { CHANGELOG } from '../core/version.js';
 import { saveProfile, mergeProfileEdit, paceCheck } from '../core/profile.js';
 import { rerender, $, r1, today, profile } from '../ui.js';
+import { FIBER_RANGE } from '../core/fiber.js';
 
 const RANGES = [[4, '4周'], [8, '8周'], [12, '12周'], [0, '全部']];
 function weightChart(ws, goal) {
@@ -56,7 +57,7 @@ export const view = () => {
   <tr><td>蛋白质</td><td>${t.protein} g</td><td class="mut">${t.proteinBasis}</td></tr>
   <tr><td>脂肪</td><td>${t.fat} g</td><td class="mut">热量的 ${t.fatPct}%（不低于 20%）</td></tr>
   <tr><td>碳水</td><td>${t.carbs} g</td><td class="mut">剩余热量，主要来自杂粮饭</td></tr>
-  <tr><td>膳食纤维</td><td>25–30 g</td><td class="mut">帮助饱腹和排便</td></tr>
+  <tr><td>膳食纤维</td><td>${FIBER_RANGE}</td><td class="mut">帮助饱腹和排便</td></tr>
   <tr><td>饮水</td><td>${t.water} ml</td><td class="mut">约 ${p.usesPowder ? 35 : 30} ml/kg</td></tr>
   <tr><td>BMI</td><td>${t.bmi}</td><td></td></tr></table>
   ${t.warnings.map(w => `<p class="warn">⚠ ${w}</p>`).join('')}${fl ? `<p class="warn">⚠ ${fl}</p>` : ''}

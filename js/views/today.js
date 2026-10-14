@@ -2,7 +2,7 @@
 import { computeTargets } from '../core/targets.js';
 import { fatWallet } from '../core/fat.js';
 import { proteinFill, proteinGap, gutRisk } from '../core/protein.js';
-import { suggestFiber } from '../core/fiber.js';
+import { suggestFiber, FIBER_TARGET } from '../core/fiber.js';
 import * as S from '../core/store.js';
 import { paceCheck, onboardStep, saveOnboardStep, PACE_TEXT, suggestGoal, paceLine } from '../core/profile.js';
 import { MULTS, scaleItems } from '../core/portion.js';
@@ -34,7 +34,7 @@ export const view = () => {
   const chips = quickChips(S.get('recents', []), S.get('foodUse', {}), id => !!food(id));
   const lowItems = l.items.filter(i => food(i.id)?.fatClass === 'low');
   const hasTakeaway = l.items.some(i => food(i.id)?.cat === '外食');
-  const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: 28, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
+  const swaps = l.items.length ? suggestFiber({ fiber: x.fiber, fiberTarget: FIBER_TARGET.goal, kcal: x.kcal, kcalTarget: t.kcal, riceG: l.items.filter(i => i.id === 'riceCooked').reduce((g, i) => g + i.g, 0), gutHigh: gr.level === 'high' }) : [];
   const undo = S.get('undo', null);
   const demo = S.get('profile', null) == null;
   const ob = onboardStep({ storedProfile: S.get('profile', null), onboardSeen: S.get('onboardSeen', false), savedStep: S.get('onboardStep', null) });
@@ -50,8 +50,8 @@ export const view = () => {
   热量 ${Math.round(x.kcal)} / ${t.kcal} kcal（还剩 ${Math.round(t.kcal - x.kcal)}）${bar(x.kcal, t.kcal)}
   蛋白 ${r1(x.protein)} / ${t.protein} g${bar(x.protein, t.protein)}
   碳水 ${r1(x.carbs)} / ${t.carbs} g${bar(x.carbs, t.carbs)}
-  纤维 ${r1(x.fiber)} / 28 g${bar(x.fiber, 28)}
-  ${swaps.length ? `<p><b>纤维还差 ${Math.round(28 - x.fiber)} g，最划算的补法：</b></p><ul>${swaps.map(s => `<li>${s.text}${s.fiberGain ? `（纤维 +${s.fiberGain} g，热量 ${s.kcalDelta >= 0 ? '+' : ''}${s.kcalDelta} kcal）` : ''}${s.add ? ` <button class="sec" data-swap="${s.id}">+ 记入</button>` : ''}</li>`).join('')}</ul><p class="mut">数据来自 USDA FDC。</p>` : ''}
+  纤维 ${r1(x.fiber)} / ${FIBER_TARGET.goal} g${bar(x.fiber, FIBER_TARGET.goal)}
+  ${swaps.length ? `<p><b>纤维还差 ${Math.round(FIBER_TARGET.goal - x.fiber)} g，最划算的补法：</b></p><ul>${swaps.map(s => `<li>${s.text}${s.fiberGain ? `（纤维 +${s.fiberGain} g，热量 ${s.kcalDelta >= 0 ? '+' : ''}${s.kcalDelta} kcal）` : ''}${s.add ? ` <button class="sec" data-swap="${s.id}">+ 记入</button>` : ''}</li>`).join('')}</ul><p class="mut">数据来自 USDA FDC。</p>` : ''}
   ${l.items.length && x.kcal > t.kcal * 1.1 ? slipNote(t) : ''}
   ${sleepHtml(l, p)}
   <p class="mut">估算食材成本 ≈ ¥${r1(x.cost)}</p></section>

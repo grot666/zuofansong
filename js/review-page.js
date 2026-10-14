@@ -7,6 +7,7 @@ import { localDate } from './core/dates.js';
 import { foodIndexFromStore } from './core/foods.js';
 import { startBreak } from './core/breaks.js';
 import { toast, bootStore, registerSW, getProfile, localDate as todayStr } from './boot.js';
+import { FIBER_RANGE } from './core/fiber.js';
 
 bootStore();
 const food = foodIndexFromStore(S);
@@ -41,7 +42,7 @@ function render() {
   <tr><td>1 体重</td><td>${st ? `每周 ${st.deltaKg > 0 ? '+' : ''}${r1(st.deltaKg)} kg（${r1(-st.pct)}%）` : '<span class="mut">数据不足</span>'}</td><td class="mut">${st ? { fast: '偏快', ok: '正常', flat: '持平', up: '上升', slow: '偏慢' }[st.status] : '每周称 ≥3 次'}</td></tr>
   <tr><td>2 热量</td><td>记录 ${r.logged}/7 天</td><td class="mut">±10% 内 ${r.kcalOkDays} 天；均 ${fmt(r.avgKcal, 'kcal')}</td></tr>
   <tr><td>3 蛋白</td><td>${fmt(r.avgProtein, 'g')}</td><td class="mut">目标 ${t.protein} g；达标 ${r.proteinOkDays} 天</td></tr>
-  <tr><td>4 纤维</td><td>${fmt(r.avgFiber, 'g', 1)}</td><td class="mut">目标 25–30 g</td></tr>
+  <tr><td>4 纤维</td><td>${fmt(r.avgFiber, 'g', 1)}</td><td class="mut">目标 ${FIBER_RANGE}</td></tr>
   <tr><td>5 脂肪</td><td>${fmt(r.avgFat, 'g')}</td><td class="mut">低价值来源 ${Math.round(r.lowFatPct)}%</td></tr>
   <tr><td>用油</td><td>${fmt(r.avgOil, 'g', 1)}/天</td><td class="mut ${oilWarn ? 'warn' : ''}">膳食指南 ≤ 25–30 g</td></tr>
   <tr><td>6 饮水</td><td>${fmt(r.avgWater, 'ml')}</td><td class="mut">目标 ${t.water} ml</td></tr>

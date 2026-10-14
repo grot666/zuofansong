@@ -1,4 +1,5 @@
 // Pure nutrition target math. No DOM.
+import { FIBER_TARGET } from './fiber.js';
 export const ACTIVITY = [
   { id: 'sedentary', label: '久坐（办公室，几乎不运动）', factor: 1.2 },
   { id: 'light', label: '轻度（每周运动 1–3 次）', factor: 1.375 },
@@ -53,7 +54,7 @@ export function computeTargets(p) {
   const warnings = [];
   if (kcal < B) warnings.push('目标热量低于基础代谢（BMR），建议减小缺口。');
   if (protein * 4 > kcal * 0.4) warnings.push('蛋白质占热量超过 40%，注意纤维和饮水。');
-  return { age, bmr: Math.round(B), tdee: Math.round(tdee), kcal, protein, proteinBasis, fat, carbs, fiber: 28, water, bmi: +BMI.toFixed(1), fatPct, warnings };
+  return { age, bmr: Math.round(B), tdee: Math.round(tdee), kcal, protein, proteinBasis, fat, carbs, fiber: FIBER_TARGET.goal, water, bmi: +BMI.toFixed(1), fatPct, warnings };
 }
 
 // Weekly loss rate check: entries [{date, weight}] sorted by date.

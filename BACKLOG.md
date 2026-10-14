@@ -29,7 +29,7 @@ Next (07:20): PM 07:16 order → live 375 px plan-page smoke (1800/140 seeds 0�
   - `sed "2s/$O/$V/"` assumes VERSION is on line 2.
   - → A57.
 
-- **A54 Single source for fiber constants and swap numbers (P1)**
+- **A54 Single source for fiber constants and swap numbers (P1)** ✅
   - Why: (c) above. The today view shows "/ 28 g" while the plan aims at 25 g and its note says "25–30". The swap gains are literals that drift from the food data.
   - AC:
     - `core/fiber.js` exports `FIBER_TARGET = {min: 25, goal: 28}`. `plan/fiber.js` imports it (`FIBER_MIN = FIBER_TARGET.min`), and today.js and `fiberNote` use it.

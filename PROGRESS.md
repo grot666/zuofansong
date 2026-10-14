@@ -159,3 +159,5 @@ Current gaps (07:20, v0.10.36): 77/137 foods unverified (7 of them ≈ with an F
 - 07:25 live 375 px plan-page smoke (puppeteer, tools/pp/plan375.mjs) on v0.10.36 (includes v0.10.35), profile → 1800 kcal / 140 g, seeds 0–2: weekly fiber line 29/27/26 g/天 ✓; fiber per day ≥25 g on 21/21 except seed 2 Mon 24 g (carries fiberNote); 常备 line present, 0 duplicate shopping lines (oats/oatsDry, egg twins merged, 1 egg line); 烤红薯 days 2/2/3 (≤3 ✓); 青豆 appears on 1/0/1 days; no horizontal overflow at 375 px; 0 console/page errors.
 
 - 07:21 v0.10.37 VER-15 verify batch: 8 FDC, 7 ≈ with source diff, Atwater coverage
+
+- 07:23 v0.10.38 A54 single source for fiber targets; swap numbers computed from food data

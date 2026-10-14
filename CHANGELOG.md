@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.38
+- A54 single source for fiber targets; swap numbers computed from food data
+
 ## v0.10.37
 - VER-15 verify batch: 8 FDC, 7 ≈ with source diff, Atwater coverage
 

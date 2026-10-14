@@ -61,7 +61,7 @@ Verified by probe: grid {1400/110, 1617/160, 1800/140, 2000/100, 2200/160} × se
     - (b) Distinct new vegetables per week with reuse ≤ the count with `reuse:false` for seeds 0–5 (the point of the feature).
     - (c) Revert: a fixture where the last greedy round overshoots, and revert lowers cost while keeping `swaps` ≥ 0.
     - (d) The grid invariants above (determinism, pairing, no silent non-ok) as one `plangrid.test.js`, ≤ 2 s.
-- **A45 Split js/core/plan.js (P2 refactor)**
+- ✅ **A45 Split js/core/plan.js (P2 refactor)**
   - Why: plan.js is 243 lines with 35 exports, covering selection (veg/protein ranking, reuse), portioning (ADDONS, caps, portionDay), budget (applyBudget, revert, planWeek), shopping and tips. Four features in v0.9–v0.10 all edited it, which raises the conflict risk.
   - AC:
     - `js/core/plan/{select,portion,budget,shopping}.js`.

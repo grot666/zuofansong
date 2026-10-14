@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.20
+- A45: split plan.js into plan/{select,portion,budget,shopping}.js behind facade
+
 ## v0.10.19
 - A44: veg-reuse snapshots, revert fixture, plangrid invariants
 

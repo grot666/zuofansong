@@ -121,3 +121,5 @@ Current gaps (06:15, v0.9.6): 113/137 foods unverified (≈); prices are estimat
 - 06:50 v0.10.18 A43: perf guard median<25 ms, grid p95<40 ms
 
 - 06:50 v0.10.19 A44: veg-reuse snapshots, revert fixture, plangrid invariants
+
+- 06:51 v0.10.20 A45: split plan.js into plan/{select,portion,budget,shopping}.js behind facade

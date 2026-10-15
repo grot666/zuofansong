@@ -245,3 +245,11 @@ Design decisions this round:
 - **Shopping-id normalisation is one function.** Every user key that refers to something you buy (`packs`, later per-item checkmarks) goes through `COOKED_TO_RAW` → `twinOf` (A68, §3 rule 8).
 
 New items: A64–A73 in BACKLOG.md.
+
+## 13. Review @8a0fb00 (v0.10.52, 2026-10-15 ~08:25 SGT): data provenance and twins
+- **Citations:** `verified:true` requires a source starting with `USDA FDC <id>` or `营养所查询平台 #<id>`. 70/137 foods verified (63 FDC, 7 平台). Test coverage must include foods3 (A75).
+- **Twins → aliases (A74):** the `*USDA` duplicates predate VER-20. Where the values are now identical (egg, broccoli), or one side is verified (spinach, kiwi), the canonical food is the verified one; the other carries `aliasOf`.
+  - Ids are never renamed. `makeIndex` resolves aliases for nutrients, price and storage class.
+  - Search hides aliases; `twinOf` derives from `aliasOf`.
+  - Migration v3 moves `prices[alias]`.
+- **Invariant:** any per-food user state (prices, packs, storage class) is keyed by the canonical id after resolution, so today, plan, shopping and leftovers agree on one physical food.

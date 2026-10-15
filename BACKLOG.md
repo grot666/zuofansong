@@ -1,10 +1,62 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + fiberSide in plangrid/A44 snapshot → A56 parallel-robust perf guard → A59 cap-aware select → R11-5 聚餐 mode → R11-3 two-trip list → R11-4 leftovers → rest of R11-6. Feature freeze ~09:30. Shipped 07:20–07:37: VER-15 v0.10.37 · A54 v0.10.38 · A55 v0.10.39 · R11-1 v0.10.40 · R11-2 v0.10.41 · oats breakfast v0.10.42 · UX-375 v0.10.43. **Arch @07:45:** A54/A55/R11-2 verified ✅. Next pick: **A60** (commented-out assertion in spcap.test, 5 min) → **A58+A62** → A57 → A61 → A56 → A59 → A63.
+Next (08:25, real queue; arch-aligned): **A64 + A69** (engineer, in progress) → **A74** (P1 user-visible: duplicate egg/broccoli twins, per-id price split) → A65 → A66 → A68 (alias agreement tests via A74) → A75 → A67 → A61 → A70 → A71–A73 → A76/A77. Feature freeze ~09:30. Older queues: see the Status sections below.
 **Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @8a0fb00 (v0.10.52), 2026-10-15 ~08:25 SGT: arch review (R11-6)
+`npm test` (serial) passes on a fresh clone; count in the commit report. Reviewed a3b24c3 and 8a0fb00 (R11-6 sources) against the R11-6 AC; the arch run 0f08c9f (A64–A73) is already on HEAD.
+- **R11-6 AC "every verified food cites an FDC or 平台 id": ✅ in the data.**
+  - 70/137 foods are verified, including 6 in foods3. All match `/USDA FDC \d+|平台 #\d+/`, and no food cites two ids.
+  - Formats in use: `USDA FDC N` (63) and `营养所查询平台 #N (版次未核对)` (7).
+  - The 12 R11-6 foods are all present and verified. Enoki, loofah, napa, kongxincai and winterMelon cite FDC instead of 平台, per the VER-15 vs R11-6 DECISIONS line.
+- **Test gaps:**
+  - `test/r11-6.test.js` imports only FOODS + FOODS2, so **foods3 is unguarded**.
+  - The regex is unanchored (an id anywhere in the string passes).
+  - Value pins exist only for yam/jiaobai (the FDC ones are pinned in verify15/VER-20).
+  - Two **unverified** foods cite an exact id: `greenTea` (FDC 171917, verified:false) and `tofuUSDA` ("近似", approximate). These are inconsistent states the test doesn't catch.
+- **R11-6 AC "recipes use twins" not met:** `r5`, `r10`, `r16` and `r19` use `egg`, and `r23` uses `broccoli`, while the twins exist.
+- **New user-visible issue (twins):**
+  - After VER-20, `egg`/`eggUSDA` and `broccoli`/`broccoliUSDA` are **byte-identical in values and cite the same FDC id** (171287, 170379), yet both show in search: 鸡蛋 → `egg, guanbing, eggUSDA`; 西兰花 → `broccoli, broccoliUSDA`.
+  - `spinach` (CFCT, unverified, 28 kcal) vs `spinachUSDA` (FDC, 23 kcal) and `kiwi` vs `kiwiUSDA` differ, so the user picks between two "菠菜" entries with different numbers.
+  - Price overrides split by id. Probe 1800/140 seed 0: the base week is ¥215.8, `eggUSDA:50` gives ¥266.5, and `egg:50` gives ¥312.8. Today view, 100 g with `eggUSDA:50`: logged as eggUSDA it costs ¥10.00, logged as egg ¥1.18.
+  - → A74.
+- **Boundary with A66/A68:**
+  - A68 keys leftovers by shopping id via `twinOf`, and A66 adds a storage class per food.
+  - Neither requires that twins/aliases agree on storage class, price or `packs`. With A74 aliasing this becomes structural; without it, add the agreement tests in A66/A68 (noted in A74 AC).
+
+- **A74 Collapse identical twins; one search entry per food (P1, user-visible)**
+  - Why: see "twins" above. Duplicate 鸡蛋/西兰花 entries, two different 菠菜/猕猴桃 numbers, and per-id price overrides that give the same egg two prices across today and plan.
+  - AC:
+    - Data gets an `aliasOf` field. `eggUSDA → egg` and `broccoliUSDA → broccoli` (identical); for `spinach`/`kiwi`, the **verified** entry becomes canonical and the other becomes an alias.
+    - `makeIndex` resolves an alias to the canonical food for nutrients, price (a user override on either id applies to the canonical one) and storage class.
+    - `matchFoods`/`allFoods` hide aliases.
+    - **No id renames:** logs, templates, recents, `prices` and `packs` keep working through the alias.
+    - Migration v3 moves a `prices[aliasId]` to the canonical id when the canonical one has none.
+    - `twinOf` derives from `aliasOf` (drop the `/USDA$/` regex).
+  - Tests:
+    - Search 鸡蛋/西兰花/菠菜/猕猴桃 returns one entry per food.
+    - `totals([[eggUSDA,100]])` equals `totals([[egg,100]])`, incl. cost under an override on either id.
+    - planWeek cost is identical for `{egg:50}` and `{eggUSDA:50}`.
+    - The migration moves `prices.eggUSDA`.
+    - Every alias shares storage class/`packs` with its canonical food (closes the A66/A68 boundary).
+- **A75 Harden the source-citation test (P2)**
+  - Why: see "Test gaps" above.
+  - AC: `test/r11-6.test.js` (or `data.test.js`) runs over FOODS + FOODS2 + FOODS3. Rules:
+    - `verified:true` ⇒ source **starts with** `USDA FDC \d+` or `营养所查询平台 #\d+`.
+    - `verified:false` ⇒ the source contains `近似|≈|CFCT|估算` or no id. (Decide greenTea: verify it, or add "近似".)
+    - Each FDC id is cited by at most one non-alias food (after A74).
+    - Every `平台 #N` food has a value pin in one table (`PLATFORM_PINS`), so the yam/jiaobai pattern covers all 7.
+- **A76 Platform citations still say "版次未核对" (P3)**
+  - Why: 7 foods are `verified:true` while their source says the platform edition is unchecked. The ✓ badge overstates this.
+  - AC: either record the edition (e.g. "中国食物成分表 标准版 第6版") and drop the note, or show a lighter badge for `sourceLevel:'platform-unversioned'`. Document the choice in DECISIONS.
+  - Tests: no `verified:true` source contains "未核对".
+- **A77 Recipes reference canonical ids (P3, after A74)**
+  - Why: the R11-6 AC "recipes use twins" is unmet (r5/r10/r16/r19 `egg`, r23 `broccoli`). After A74 the direction flips: recipes must reference canonical (non-alias) ids.
+  - AC: data test asserts no recipe item id has `aliasOf`. Fix spinach/kiwi references if the canonical side changes.
+  - Tests: as stated.
 
 ### Status @1073021 (v0.10.51), 2026-10-15 ~08:15 SGT: arch review
 Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes **220/220** (~32 s); CI `ci` green on e93f28c and 1073021. Probe: 8 targets {1400/110, 1500/140, 1617/160, 1800/130, 1800/140, 1800/160, 2000/100, 2200/160} × seeds 0–8 × breakfast {rotate, oats} × budget {none, .8, .5} = 432 weeks / 3024 days. Script not committed.

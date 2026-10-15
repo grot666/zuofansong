@@ -1,5 +1,43 @@
 # PROGRESS
 
+## FINAL SUMMARY (2026-10-15 ~09:50 SGT)
+
+**Mission.** 做饭松 (粗粮减脂厨房) is an offline-first PWA for fat loss on Chinese whole-grain home cooking. It turns a profile into kcal/protein targets and a weekly plan `f(targets, seed, opts)` covering 3 meals + snack. It also gives a two-trip shopping list, Sunday batch prep, a log with a fat wallet and protein gap, and 聚餐 mode. Every recipe step is 护腕 (TFCC)-safe. UI is Chinese; code is English.
+
+**Live:** https://grot666.github.io/zuofansong/ — v0.10.63. Smoke at 375 px (1800/140, seeds 0–2): 0 page errors, no overflow, no literal `${`; fiber averages 29–31 g/day; the 聚餐 card shows the reserve from concrete swaps.
+**Tests:** 242 serial `npm test` (~35 s), run in CI on every push. Every release since v0.10.44 went through `scripts/release.mjs`, which is fail-closed and waits for CI; all of those releases ended with CI green.
+
+**Shipped by range**
+- v0.1–v0.6: scaffold (targets, foods, rice mixer, log, fat wallet, protein gap, water); single VERSION; tests in CI; tuna counter; bedtime/caffeine nudges; plateau check; templates ×0.5/×1/×1.5; weekly review.
+- v0.7–v0.9: takeaway/canteen estimates (≈), 137 foods, shared nav + review card, onboarding persistence, fit flags.
+- v0.10.0–v0.10.35: FDC/平台 verify-or-≈ data pass, price refs, weekly planner (budget with revert, veg reuse, sauces, tray bake), plan grid invariants, perf guard, store migrations, backup/import.
+- v0.10.36–v0.10.52: VER-15/VER-20 verification batches; A54/A55 fiber targets in one module and 2-day staple batches; R11-1/R11-2 sweet-potato cap and no staple 3 days running; oats breakfast option; 375 px UX; A57 release script; A58–A62 snapshots and perf; R11-5 聚餐 mode; R11-3 two-trip list; R11-4 leftovers; R11-6 citations.
+- v0.10.53–v0.10.63: A64 P0 literal `${PEAS_SIDE_G}` fix + lint; A69 fiber-note copy; A74 egg/broccoli aliases (schema v3); A65 聚餐 reserve from planned-day swaps; A66 storage class; A68/A79 leftovers; A75 citation tests; A67 trip costs in core; R14-1 peas side 120 g (fiber days 86.7→92.9%); A61/A84 fiber floors pinned; A70 release hardening.
+
+**Key decisions** (full list in DECISIONS.md)
+- The week is a pure function, so 换一套 = next seed and undo = previous seed.
+- Unverified values show ≈. Verified values cite `USDA FDC n` or `营养所查询平台 #n`, and every 平台 value is pinned in a test.
+- The fiber threshold drives the peas side. The copy floors the shown value, and the side is never taken if it would cost the day its fit.
+- 聚餐 numbers come only from concrete food changes, with neutral wording (banned-word test). No plan means no number is shown.
+- No shelf-life or default pack numbers, because there is no source for them.
+
+**Known gaps / open queue**
+- Open queue: A77 (r3/r15 use broccoliUSDA; switching changes plans, so it needs a re-pin release) → A81 → A71 → A82/A83 → A87 → A86 → A76 → R15-2.
+- Frozen until unfreeze: A85 (peas side ladder 120/80 + daily cap), A78, R15-1, R15-3.
+- Other open items:
+  - R14-1 edamame alternation is not done.
+  - Spinach/kiwi twins are not merged yet (A74 part 2 / R14-3).
+  - The 平台 edition is unchecked (A76).
+  - 1617/160 has the weakest fiber share (84.5%).
+  - The 聚餐 reserve mean is 21.4 g vs 23.1 g in research; the gap was not investigated.
+
+**Team**
+- yucheng: owner and direction.
+- Engineer agent: code, tests, releases.
+- Architect agent: reviews and the A-items in BACKLOG/ARCHITECTURE.
+- Researcher agent: R-items with sources in docs/RESEARCH-R*.md.
+- PM agent: queue and steering.
+
 - 2026-10-15 09:23 SGT — v0.10.62: A79 deterministic leftover pack size on key collisions
 - 2026-10-15 09:16 SGT — v0.10.61: A70 release script re-tests after a code-bearing retry rebase; single conflict-marker helper
 - 2026-10-15 09:11 SGT — v0.10.60: R14-1 peas side 120 g (never trades fit); A61 measured fiber-days test (92.9%)

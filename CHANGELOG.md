@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.57
+- A68 leftover hints: shopId keys, multi-pack, pantry skipped, week recipe ids
+
 ## v0.10.56
 - A66 closed store field (fresh/frozen/keeps/pantry); trip 2 reads it
 

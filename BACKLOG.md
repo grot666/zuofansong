@@ -102,7 +102,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Where: `data/foods*.js` (new `store: 'fresh' | 'frozen' | 'keeps' | 'pantry'` on 蛋白/蔬菜/水果/主食), `js/core/plan/shopping.js` (`isPerishable`/`isFrozen`/`PANTRY_IDS` read `store`; tags stay for search).
   - AC: lettuce, kelp, shiitake/enoki/mushroom → `fresh`; basa/sole/frozenVeg/peas/edamame → `frozen`; tunaLight/tunaAlbacore/rice/oats → `pantry`; cabbage/napa/carrot/sweetPotato/winterMelon → `keeps`. Custom foods default `keeps` (trip 1). No shelf-life numbers.
   - Tests: `data.test.js` — every non-外食 food has a `store` from the set; `r11-3` fixture adds lettuce on day 5 → `g2 > 0`; the grid totals test still holds.
-- **A68 Leftover hints: shopping-id keys, multi-pack, pantry (P2)**
+- ✅ **A68 Leftover hints: shopping-id keys, multi-pack, pantry (P2)**
   - Why: see "Leftovers" above.
   - Where: `js/core/foods.js` new `shopId(id, food)` = `COOKED_TO_RAW` raw id → `twinOf` base; `js/views/foods.js` 包装 writes `packs[shopId(id)]`; `js/core/plan/shopping.js` `leftovers`; `js/plan-page.js` passes week recipe ids.
   - AC: `leftovers` skips `pantry` items; leftover = `ceil(g / pack) * pack − g`, hidden when < `SMALL_G`; packs stored under a cooked/twin id are read through `shopId` (back-compat, no migration needed); plan-page passes `week.flatMap(d => [d.vegL?.id, d.vegD?.id])`.

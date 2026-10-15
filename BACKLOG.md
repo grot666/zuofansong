@@ -2,8 +2,85 @@
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
 Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + fiberSide in plangrid/A44 snapshot → A56 parallel-robust perf guard → A59 cap-aware select → R11-5 聚餐 mode → R11-3 two-trip list → R11-4 leftovers → rest of R11-6. Feature freeze ~09:30. Shipped 07:20–07:37: VER-15 v0.10.37 · A54 v0.10.38 · A55 v0.10.39 · R11-1 v0.10.40 · R11-2 v0.10.41 · oats breakfast v0.10.42 · UX-375 v0.10.43. **Arch @07:45:** A54/A55/R11-2 verified ✅. Next pick: **A60** (commented-out assertion in spcap.test, 5 min) → **A58+A62** → A57 → A61 → A56 → A59 → A63.
+**Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @1073021 (v0.10.51), 2026-10-15 ~08:15 SGT: arch review
+Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes **220/220** (~32 s); CI `ci` green on e93f28c and 1073021. Probe: 8 targets {1400/110, 1500/140, 1617/160, 1800/130, 1800/140, 1800/160, 2000/100, 2200/160} × seeds 0–8 × breakfast {rotate, oats} × budget {none, .8, .5} = 432 weeks / 3024 days. Script not committed.
+- **Verified ✅**
+  - A57 (v0.10.44): `scripts/release.mjs` fail-closed (dirty tree, pull conflict, markers, red tests before/after → revert), `commitSubject` strips `(vX)`, PROGRESS newest-first, waits for the `ci` run of the full SHA (`gh run list --workflow ci --commit <sha>` resolves; a short SHA returns `[]`, the script uses the full one). `rel.sh` retired (DECISIONS).
+  - A60 (v0.10.45): share assertion on its own line; `test/lint.test.js` guard.
+  - A58+A62 (v0.10.46): plangrid invariants incl. SP cap on every budget, `spCap ⇒ ≠SP`, `fiberSide ⇒` peas in lunch+dinner, oats seeds 0–2; A44 snapshot pins staple:fiberSide:breakfast.
+  - A56 (v0.10.47): CPU-calibrated local perf samples; strict on `CI=true`/`PERF=1`.
+  - A59 (v0.10.48): no code; `STAPLES` (4) over 4 batches → ≤ 1 SP batch; swap count pinned 0 on the spcap grid. Full grid incl. budgets still has **5/3024** staple-swap days, so `FIBER_ALT` is near-dormant, not dead (A71).
+  - R11-5 (v0.10.49): pure `core/social.js`, `social` key in KNOWN_KEYS + §3, neutral copy test. Behaviour gap → A65.
+  - R11-3 (v0.10.50): `g1 + g2 = g` holds; 257/288 weeks (budget {none, .8}) have a trip 2, avg 1.7 lines, 145 items split across both trips. Classification gap → A66.
+  - R11-4 (v0.10.51): `leftovers()` pure + `packs` key documented. Key/multi-pack gaps → A68; vacuous test → A69.
+- **Bug (P0):** `js/plan-page.js:53` renders `' · 午晚餐各加青豆 ${PEAS_SIDE_G} g'` in single quotes inside the day template, so users read the literal text `${PEAS_SIDE_G}`. Since 3ac8763 (A54, v0.10.38). On the grid **867/3024 days (28.7%)** have `fiberSide`; **358/432 weeks** show it at least once.
+- **聚餐 reserve is not achievable as shown:** `preAllocate` uses fixed shares (0.25/0.35/0.40) and halves breakfast/lunch fat. Post-cut budgets are 5–7 g (breakfast) and 7–10 g (lunch), but the planned breakfast alone carries 14–26 g of non-oil fat (oats + milk + eggs); 504/504 probed plan days exceed the post-cut budgets even with oil at 5 g. Planned lunch oil is ≤ 6 g, so "少放油" frees ≤ 1 g. The 4th meal 加餐 is outside the shares.
+- **Perishables missed:** classification reads tags `鱼/海鲜/绿叶菜`. 生菜 `lettuce` (tag 生吃; R11-3's own seed-7 example), 海带(鲜) `kelp`, fresh mushrooms (`shiitake`, `enoki`, `mushroom`) are trip 1. Canned tuna is tagged `鱼` and only escapes because `PANTRY_IDS` wins.
+- **Leftovers:** `packs` set on a cooked/twin id never matches the list id (`thighRoasted` → list `chickenThigh`; `eggUSDA` → `egg`); pantry items give noise (rice pack 5000 g → "剩余约 4835 g"); need > 1 pack (chickenBreast 367 g vs 300 g) gives no hint; plan-page omits `weekRecipeIds`; protein items never get a recipe (veg recipes only).
+- **fiberNote rounding:** 250/3024 days show "膳食纤维约 25 g（目标 25–30 g）：可把…" (value 24.5–24.9 g). The R11-4 rider was dropped because the threshold drives the peas side; the copy can change without touching the threshold.
+- Fiber share (A61 numbers): full grid **86.7%**; rotate/oats per target 1400/110 89/90%, **1500/140 65/74%**, 1617/160 75/76%, 1800/130 92/93%, 1800/140 94/89%, 1800/160 86/90%, 2000/100 95/94%, 2200/160 93/93%.
+
+- **A64 Literal `${PEAS_SIDE_G}` on plan days + per-day fiber line in core (P0, 10 min; absorbs A63)**
+  - Why: see Bug above — user-visible on 29% of days since v0.10.38; nothing renders page strings in tests.
+  - Where: `js/plan-page.js:53`; new pure `fiberDayLine(d, food)` in `js/core/plan/fiber.js` (exported via `plan.js`).
+  - AC:
+    - The line is built by `fiberDayLine`: "膳食纤维 N g" + staple-swap reason + "青豆 80 g ×2 餐（补纤维）" when `fiberSide` + "蔬菜按 ×k 份"; plan-page only inserts it.
+    - `PEAS_SIDE_G` comment in `core/fiber.js` says "per lunch/dinner on any day still short" (not "capped days").
+  - Tests: `test/a64.test.js` — over plangrid seeds 0–2 × {rotate, oats} at 1800/140 and 1500/140, every `fiberDayLine` output contains no `${`, `undefined`, `NaN`; a fiberSide day contains `青豆 80 g ×2 餐`. `lint.test.js` adds: no line in `js/**/*.js` matches ``/[?:] '[^'`\n]*\$\{[^'`\n]*'/`` or the same with `"` (today exactly 1 hit: this bug).
+- **A69 Remove the vacuous R11-4 test; fix the "约 25 g" fiber note copy (P2, 5 min)**
+  - Why: `test/r11-4.test.js` "fiber note threshold uses the displayed (rounded) value" has an empty body (passes vacuously) and its title contradicts DECISIONS (threshold change dropped). 250/3024 days still say "约 25 g" while below target.
+  - Where: `test/r11-4.test.js`, `js/core/plan/fiber.js` `fiberNote`.
+  - AC: delete the empty test or replace it with a real one; `fiberNote(f)` prints `Math.floor(f*10)/10` (e.g. "约 24.8 g") or `Math.floor(f)`, never a value ≥ 25 when called. Threshold (`FIBER_MIN`) and the planner are untouched, so snapshots don't move.
+  - Tests: `fiberNote(24.9)` does not contain "25 g（"; `lint.test.js` fails on a `test(` whose callback body has no `assert` (rough brace scan is fine).
+- **A65 聚餐 reserve derived from the actual day, not fixed shares (P1)**
+  - Why: see "聚餐 reserve" above. Showing "聚餐预留约 16 g 脂肪" that following the plan cannot free undermines trust in every other number.
+  - Where: `js/core/social.js` `preAllocate`; `js/views/today.js` `socialHtml`.
+  - AC:
+    - `preAllocate(targets, {meal, day})` takes the planned day (`planWeek(...).week[todayIndex]`, or today's log when no plan) and computes `reserveFatG` from concrete levers on the *other* meals: oil above `MIN_OIL_G`, plus optional named swaps from a small table (e.g. 2 whole eggs → 1 egg + 1 egg white via `SHOP_ALIAS.eggWhite`; whole milk → skim if the food exists). Each lever is returned as `{meal, from, to, fatG}` and the card lists them.
+    - No plan/log → no number; copy says only "早餐、午餐少放油，蛋白照常".
+    - `加餐` is part of the model (it is a meal in `portionDay`).
+  - Tests: on 1800/140 and 1400/110 seeds 0–5, `reserveFatG === Σ levers.fatG` (±0.5 g) and each non-social meal's remaining fat ≥ its non-oil intrinsic fat; protein of every meal unchanged; BANNED_WORDS test still passes.
+- **A66 Storage class as a closed data field (P1)**
+  - Why: two-trip classification infers from free-text tags; 生菜, 海带(鲜), fresh mushrooms go to trip 1; canned tuna only escapes via PANTRY_IDS. Any new food without the right tag silently lands on trip 1.
+  - Where: `data/foods*.js` (new `store: 'fresh' | 'frozen' | 'keeps' | 'pantry'` on 蛋白/蔬菜/水果/主食), `js/core/plan/shopping.js` (`isPerishable`/`isFrozen`/`PANTRY_IDS` read `store`; tags stay for search).
+  - AC: lettuce, kelp, shiitake/enoki/mushroom → `fresh`; basa/sole/frozenVeg/peas/edamame → `frozen`; tunaLight/tunaAlbacore/rice/oats → `pantry`; cabbage/napa/carrot/sweetPotato/winterMelon → `keeps`. Custom foods default `keeps` (trip 1). No shelf-life numbers.
+  - Tests: `data.test.js` — every non-外食 food has a `store` from the set; `r11-3` fixture adds lettuce on day 5 → `g2 > 0`; the grid totals test still holds.
+- **A68 Leftover hints: shopping-id keys, multi-pack, pantry (P2)**
+  - Why: see "Leftovers" above.
+  - Where: `js/core/foods.js` new `shopId(id, food)` = `COOKED_TO_RAW` raw id → `twinOf` base; `js/views/foods.js` 包装 writes `packs[shopId(id)]`; `js/core/plan/shopping.js` `leftovers`; `js/plan-page.js` passes week recipe ids.
+  - AC: `leftovers` skips `pantry` items; leftover = `ceil(g / pack) * pack − g`, hidden when < `SMALL_G`; packs stored under a cooked/twin id are read through `shopId` (back-compat, no migration needed); plan-page passes `week.flatMap(d => [d.vegL?.id, d.vegD?.id])`.
+  - Tests: `packs {thighRoasted: 500}` → hint for chickenThigh; `{rice: 5000}` → none; chickenBreast need 367 g, pack 300 → left 233; a week that already uses the qianzhang recipe gets a different recipe in the UI call.
+- **A67 Trip lists and per-trip costs in core (P2)**
+  - Why: plan-page computes the trip split (`x.cost * x.g1 / x.g`) and filters rows; nothing tests that trip costs add up. `listLines` (R10-S1, ≤ 32 on the fixture) ignores trip-2 rows: grid max is 33, 34 with split rows. Copy "周五起用" is hard-coded next to `TRIP2_FROM = 4`.
+  - Where: `js/core/plan/shopping.js` new `tripLists(list)` → `{trip1, trip2, small, pantry}` rows `{id, name, g, cost, frozen}`; `listLines(list)` counts rendered rows; plan-page renders only.
+  - AC: Σ trip1.cost + Σ trip2.cost = Σ list.cost (±¥0.01); trip-2 heading uses `DAYS[TRIP2_FROM]`; `listLines` = rendered row count.
+  - Tests: grid 1800/140 seeds 0–5 cost conservation; R10-S1 fixture line count re-pinned deliberately (DECISIONS line).
+- (A61, item text below, stays open at P2: re-measure with the numbers in this status; copy "约 89%" in CHANGELOG 0.10.41 → measured range.)
+- **A70 release.mjs: re-test after the retry rebase; one conflict-marker helper (P2)**
+  - Why: on a rejected push the script rebases and pushes **without** re-running `npm test`; the rebase can bring in non-docs commits. `hasConflictMarkers` is exported and tested but `main` uses `git grep` instead.
+  - Where: `scripts/release.mjs`.
+  - AC: after the retry rebase, if `git diff --name-only ORIG_HEAD HEAD` contains anything outside `*.md`, run `npm test` again and abort (commit stays local, message says so) on red; conflict check uses `hasConflictMarkers` over `git ls-files` content (or git grep only, delete the helper — one implementation).
+  - Tests: pure helper `needsRetest(paths)` in `release.test.mjs` (`['BACKLOG.md'] → false`, `['js/core/x.js'] → true`).
+- **A71 Pin a fixture for the FIBER_ALT staple-swap path (P3)**
+  - Why: the A59 pin says 0 swaps on the spcap grid, but 5/3024 full-grid days (budget runs) still swap; that path has no fixture, so a refactor can break the swap copy (`为补纤维`) or the batch rule unnoticed.
+  - Where: `test/spcap.test.js` or new `test/a71.test.js`; `js/core/plan/day.js`.
+  - AC: find one (target, seed, budget) with `stapleSwap && !spCap`, pin its day index, staple and swap; assert both batch days keep the same staple (A55).
+- **A72 Social data out of core; dip numbers from food data (P3)**
+  - Why: `core/social.js` holds food data (HOTPOT_PROTEIN/LOW/VEG, DIPS) and repeats `sesamePaste` numbers by hand — the drift class A54 fixed for fiber swaps.
+  - Where: new `data/social.js`; `core/social.js` keeps logic + copy; `sw.js` ASSETS.
+  - AC: DIPS kcal/fat computed from `food('sesamePaste')` and an oil/香油 entry; HOTPOT entries pass the data test's kcal ≈ 4P+4C+9F (add `carbs` where needed, e.g. 鸭血).
+  - Tests: data test covers `data/social.js`; `sw.test.js` passes.
+- **A73 core/fiber.js must not build SWAPS from base data at import (P3)**
+  - Why: module-level `SWAPS = computeSwaps(makeIndex(FOODS…))` is a second core module picking data lists (A24 rule); custom foods and price overrides never reach today-view swaps.
+  - Where: `js/core/fiber.js`, `js/views/today.js` (call `computeSwaps(food)` with the store index once per render).
+  - AC: no `data/` import in `core/fiber.js`; `suggestFiber` takes `swaps` (or `food`) as a parameter.
+  - Tests: text test — only `core/foods.js` imports `data/foods*.js` inside `js/core`; existing N-04 order unchanged.
+
+**Engineer pick order now:** A64 (P0) → A69 → A65 → A66 → A68 → A67 → A61 → A70 → A71 → A72 → A73.
 
 ### Status @3cd4958 (v0.10.43), 2026-10-15 ~07:45 SGT: arch review
 `npm test` (serial) passes 203/203. Probe grid: 8 targets {1400/110, 1500/140, 1617/160, 1800/130, 1800/140, 1800/160, 2000/100, 2200/160} × seeds 0–8 × budget {none, 1, .8, .6, .5}×free × breakfast {rotate, oats} = 720 weeks. Script not committed.
@@ -28,21 +105,21 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
   - DECISIONS' "oats 94.2%" also doesn't generalise. Oats adds only ~+0.7 pt on the full grid (A61).
 - **Bug found:** in `test/spcap.test.js` line 19, the share assertion `assert.ok(sp / n <= 3 / 7 …)` now sits **inside a `//` comment** (pasted after the A55 note), so it no longer runs (A60).
 
-- ✅ **A60 Restore the commented-out sweet-potato share assertion (P1, 5 min)**
+- ✅ **A60 Restore the commented-out sweet-potato share assertion (P1, 5 min)** (v0.10.45)
   - Why: see "Bug found" above. The per-week cap is still asserted (line 15), but the grid share isn't.
   - AC: the assertion is on its own line.
   - Tests: add a cheap guard test (`test/lint.test.js`) that fails if any `test/*.js` line contains `// …assert.` after code on the same line (regex `;\s*//.*\bassert\.`).
-- **A61 Make the fiber-days claim measurable and true (P2)**
+- **A61 Make the fiber-days claim measurable and true (P2)** — still open @08:15; full grid now 86.7%, 1500/140 rotate 65%, 1617/160 75% (see Status @1073021)
   - Why: see (e). Copy and DECISIONS cite 89% and 94.2%, but the full-grid figure is ~87%, with one target at 73%.
   - AC:
     - `test/fiber-share.test.js` over the 8-target × seeds 0–5 × budget {none, .8} grid asserts overall ≥ 85% and each target ≥ 70%, printing the per-target table.
     - Change user-facing copy (version.js/CHANGELOG) to "约 85–90% 的日子" (about 85–90% of days), or the measured figure.
     - 1500/140 gets a follow-up note: the high protein/kcal ratio crowds out staple and veg, so the next lever is oats or the peas side first. Investigate; don't change behaviour in this item.
-- ✅ **A62 Breakfast mode in plangrid and snapshots (P2)**
+- ✅ **A62 Breakfast mode in plangrid and snapshots (P2)** (v0.10.46)
   - Why: see (d). `opts.breakfast` multiplies the plan space but is only tested in `oats.test.js`.
   - AC: the plangrid determinism and invariant loops (pairing, sweet-potato cap, no 3-run, batch kept, no silent non-ok) iterate `breakfast ∈ {rotate, oats}`, and the A44 snapshot adds seed-0 oats at 1800/140 (staple, fiberSide, breakfast name per day).
   - Tests: plangrid runtime stays ≤ 4 s. If it doesn't, sample oats on seeds 0–2 only.
-- **A63 Peas side visible as a per-day amount (P3)**
+- **A63 Peas side visible as a per-day amount (P3)** → folded into **A64** (@08:15)
   - Why: see (c). The side is per meal, so a short day gets 160 g of peas across lunch and dinner. Shopping and prep lists don't say why.
   - AC: the plan day shows "青豆 80 g ×2 餐（补纤维）" (peas 80 g × 2 meals, for fiber) once. `PEAS_SIDE_G` doc comment says per meal.
   - Tests: a day with `fiberSide` has exactly 2 peas items of `PEAS_SIDE_G` each.
@@ -92,7 +169,7 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - In plangrid: `w[2k].staple === w[2k+1].staple` for k = 0..2 on all grid weeks.
     - The sweet-potato cap still holds.
     - Fiber ≥ 25 g share not lower than today on the spcap grid (assert ≥0.75).
-- ✅ **A56 Perf guards robust to parallel runs (P2, rank 5 @07:45)**
+- ✅ **A56 Perf guards robust to parallel runs (P2, rank 5 @07:45)** (v0.10.47)
   - Why: (b). Plain `node --test test/` fails A43 under load (median 32.9 ms), while `npm test`/CI pass. Reviewers and other bots run plain `node --test`.
   - AC: either
     - (1) a32 measures the median of 7 *after* 2 warm-up runs and skips with a clear message unless `process.env.PERF === '1'` or the run is serial (`--test-concurrency=1`, detectable via `process.env.NODE_TEST_CONTEXT` + a flag the npm script sets); or
@@ -110,11 +187,11 @@ Next (07:40, PM 07:37): A57 release.mjs (fail-closed, in repo) → A58 SP cap + 
     - It commits, then `git push`. The script refuses on a dirty tree.
     - DECISIONS: "release only via npm run release".
   - Tests: `test/release.test.mjs` runs the pure helpers (`bumpVersionSrc`, `insertProgress`, `commitSubject`) on fixtures. `commitSubject('fix: x (v1.2.3)', '1.2.3') === 'fix: x (v1.2.3)'`.
-- ✅ **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P1, rank 2 @07:45; do together with A62)**
+- ✅ **A58 Put the sweet-potato cap and fiber side in the plangrid invariants and snapshots (P1, rank 2 @07:45; do together with A62)** (v0.10.46)
   - Why: (a). The cap is only checked in `spcap.test.js`. The plangrid invariants (determinism, pairing, no silent non-ok) and the A44 snapshots don't cover `stapleSwap`/`spCap`/`fiberSide`, so a refactor could drop the cap on budget paths not in spcap's {none, ¥200}.
   - AC: plangrid asserts the sweet-potato cap and `spCap ⇒ staple !== SP_ID` for every run (incl. .5× budgets). The A44 snapshot gains the per-day `staple` + `fiberSide` sequence for seed 0 and seed 1 at 1800/140.
   - Tests: as stated; runtime of plangrid stays ≤ 4 s (DE guard).
-- ✅ **A59 select.js aware of the sweet-potato cap (P3, rank 6 @07:45)**
+- ✅ **A59 select.js aware of the sweet-potato cap (P3, rank 6 @07:45)** (v0.10.48, test-only: ≤1 SP batch by construction)
   - Why: scheduling sweet potato blindly and then overriding it later in day.js makes the cap position-dependent (the first 3 sweet-potato days win) and wastes portion evaluations.
   - AC: `selectWeek` rotates STAPLES so the sweet-potato batch count ≤ cap/2 by construction; `day.js` keeps the guard as a backstop.
   - Tests: `stapleSwap` count on the spcap grid drops (pin the new number), with no change in the fiber share assertion.
@@ -622,10 +699,10 @@ cbe10f9 (A36–A39) was authored/committed by `grot666 <grot666@users.noreply.gi
 TFCC rule for every recipe-related AC below: no step may require forceful chopping, smashing or twisting; firm items must be bought pre-cut or handled with scissors/a peeler, and `wristSafe:false` steps keep a `wristNote`.
 - ✅ **R11-1 (P1) Sweet-potato volume per day.** Why: an SP day uses 烤红薯 at lunch and dinner — 290 g + 290 g (1800/140/¥300 seed 0 day 1), up to 660 g/day over seeds 0–7. AC: on an SP day at most one meal uses SP as staple (other meal = rice/杂粮 from the batch), or SP ≤ 350 g/day total; microwave/oven only, bought whole and baked whole (no cutting raw SP). Tests: grid 1800/140 seeds 0–7 → max SP g/day ≤ 350; SP days ≤ 3/week still hold; checkWeek all ok.
 - ✅ **R11-2 (P2) No same staple 3 days running** (complements A55). Why: seeds 2, 4, 6 have SP×3 or brown×3. AC: 2-day batch kept; a 3rd consecutive day is swapped to another staple. Test: seeds 0–7 have no run ≥ 3.
-- ✅ **R11-3** (P1) Shopping list split into 2 trips.** Why: fresh fish and leafy greens land on days 5–6 in every seed (seed 0: basa day 6, 上海青 day 6; seed 7: 鲈鱼 days 5–6, 生菜 day 6). AC: each list item gets `perishable` (cat 鱼/虾/叶菜 = true; pantry/frozen/root veg false); items used only on days 4–6 that are perishable go to "周三/周四补买" (trip 2); frozen 巴沙鱼/龙利鱼 may stay in trip 1 with "冷冻保存". No shelf-life numbers shown (unsourced). Tests: fixture week with seabass on day 5 → item in trip 2; tunaLight/rice always trip 1; total grams across trips = current list.
-- ✅ **R11-4** (P2) Opened-pack leftovers.** Why: 千张 0–100 g/week, 毛豆 150 g, 青椒 50 g — partial packs, no reuse hint. AC: optional user `packG` per food (prices page); when weekly need < packG, plan shows "剩余约 X g：可用于 …" picking a recipe that uses it; no default pack sizes in data (no official source). Tests: packG 千张=250, need 50 → leftover 200 and a suggested recipe id containing qianzhang; no packG → no hint. Also: fiberNote threshold uses the rounded value (24.9 g shows no "below 25" note).
-- ✅ **R11-5** (P1) 聚餐/hotpot mode.** Why: weekend social meals are not modelled; R-13 only reacts after the fact. AC: today/plan lets the user mark a meal 聚餐 (types 火锅/中餐/烧烤); fat wallet pre-allocates: breakfast/lunch keep protein, drop cooking oil to ≥ 5 g and fat foods; dinner gets the freed fat shown as "聚餐预留 X g 脂肪"; a protein-first order list from RESEARCH-R11 §R11.3 (鱿鱼/牛肚/虾/牛肉/鸭血/豆腐 → 蔬菜 → 主食), sourced kcal shown with ≈; dip shown in g fat (10 g 香油 ≈ 10 g fat; 20 g 芝麻酱 ≈ 10.5 g fat); broth/absorbed oil labelled "无法精确估算". Next day: normal targets (never below the plan's kcal), copy neutral ("昨天聚餐，按计划吃就好"), weekly average shown. Tests: pure `preAllocate(day, {meal:'dinner'})` keeps protein ≥ target and moves ≥ 10 g fat to dinner on a 1800/140 fixture; `nextDayTargets` equals normal targets; copy test: no 补偿/惩罚/作弊/超标 words; hotpot item data cite 平台 ids.
-- ✅ **R11-6** (P1) VER batch: next 15 foods** (RESEARCH-R11 §R11.4). AC: cite FDC 171411 oil, 169230 garlic, 169988 celery, 168409 cucumber, 168411 edamame (or CFCT); 平台 #575 enoki, #429 loofah, #450 napa, #493 kongxincai, #419 winterMelon, #525 yam, #519 jiaobai (values match app within 1 kcal → just set source+verified); recipes use twins (egg→eggUSDA, broccoli→broccoliUSDA); soy/yogurt/basa/leanBeef/porkLoin stay ≈ with reason; shanghaiQing may cite #457 油菜 only as "proxy". Tests: data test pins the cited values ±0.5; every `verified:true` source matches /USDA FDC \d+|平台 #\d+/.
+- ✅ **R11-3 (P1) Shopping list split into 2 trips.** (v0.10.50; arch-verified @08:15, follow-ups A66/A67) Why: fresh fish and leafy greens land on days 5–6 in every seed (seed 0: basa day 6, 上海青 day 6; seed 7: 鲈鱼 days 5–6, 生菜 day 6). AC: each list item gets `perishable` (cat 鱼/虾/叶菜 = true; pantry/frozen/root veg false); items used only on days 4–6 that are perishable go to "周三/周四补买" (trip 2); frozen 巴沙鱼/龙利鱼 may stay in trip 1 with "冷冻保存". No shelf-life numbers shown (unsourced). Tests: fixture week with seabass on day 5 → item in trip 2; tunaLight/rice always trip 1; total grams across trips = current list.
+- ✅ **R11-4 (P2) Opened-pack leftovers.** (v0.10.51; arch-verified @08:15, follow-ups A68/A69) Why: 千张 0–100 g/week, 毛豆 150 g, 青椒 50 g — partial packs, no reuse hint. AC: optional user `packG` per food (prices page); when weekly need < packG, plan shows "剩余约 X g：可用于 …" picking a recipe that uses it; no default pack sizes in data (no official source). Tests: packG 千张=250, need 50 → leftover 200 and a suggested recipe id containing qianzhang; no packG → no hint. Also: fiberNote threshold uses the rounded value (24.9 g shows no "below 25" note).
+- ✅ **R11-5 (P1) 聚餐/hotpot mode.** (v0.10.49; arch-verified @08:15, follow-ups A65/A72) Why: weekend social meals are not modelled; R-13 only reacts after the fact. AC: today/plan lets the user mark a meal 聚餐 (types 火锅/中餐/烧烤); fat wallet pre-allocates: breakfast/lunch keep protein, drop cooking oil to ≥ 5 g and fat foods; dinner gets the freed fat shown as "聚餐预留 X g 脂肪"; a protein-first order list from RESEARCH-R11 §R11.3 (鱿鱼/牛肚/虾/牛肉/鸭血/豆腐 → 蔬菜 → 主食), sourced kcal shown with ≈; dip shown in g fat (10 g 香油 ≈ 10 g fat; 20 g 芝麻酱 ≈ 10.5 g fat); broth/absorbed oil labelled "无法精确估算". Next day: normal targets (never below the plan's kcal), copy neutral ("昨天聚餐，按计划吃就好"), weekly average shown. Tests: pure `preAllocate(day, {meal:'dinner'})` keeps protein ≥ target and moves ≥ 10 g fat to dinner on a 1800/140 fixture; `nextDayTargets` equals normal targets; copy test: no 补偿/惩罚/作弊/超标 words; hotpot item data cite 平台 ids.
+- ✅ **R11-6 (P1) VER batch: next 15 foods** (v0.10.52; data-only, not arch-reviewed) (RESEARCH-R11 §R11.4). AC: cite FDC 171411 oil, 169230 garlic, 169988 celery, 168409 cucumber, 168411 edamame (or CFCT); 平台 #575 enoki, #429 loofah, #450 napa, #493 kongxincai, #419 winterMelon, #525 yam, #519 jiaobai (values match app within 1 kcal → just set source+verified); recipes use twins (egg→eggUSDA, broccoli→broccoliUSDA); soy/yogurt/basa/leanBeef/porkLoin stay ≈ with reason; shanghaiQing may cite #457 油菜 only as "proxy". Tests: data test pins the cited values ±0.5; every `verified:true` source matches /USDA FDC \d+|平台 #\d+/.
 
 - **OATS Breakfast preference: every-day 燕麦粥 option (P2)** ✅
 

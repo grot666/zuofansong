@@ -23,7 +23,7 @@ function dayWith(sk, staple, targets, food, opts) {
   let d = portionCore({ ...sk, staple }, targets, food, opts);
   if (d.fiberNote && FIBER_SIDE.every(([id]) => food(id))) {
     const b = portionCore({ ...sk, staple }, targets, food, { ...opts, side: FIBER_SIDE });
-    if (b.score + STAPLE_ALT_W < d.score) d = { ...b, fiberSide: true };
+    if (b.score + STAPLE_ALT_W < d.score && (b.fit === 'ok' || d.fit !== 'ok')) d = { ...b, fiberSide: true }; // R14-1: never trade fit for fiber
   }
   if (staple !== sk.staple) d = { ...d, stapleSwap: sk.staple, ...(opts.spCapped && sk.staple === SP_ID ? { spCap: true } : {}) };
   if (key) opts.memo.set(key, d);

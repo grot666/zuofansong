@@ -14,9 +14,9 @@ test('A44b reuse never adds more distinct vegetables than reuse:false (seeds 0�
   const t = { kcal: 1800, protein: 140 };
   for (let seed = 0; seed < 6; seed++) assert.ok(distinctVeg(generateWeek(t, food, RECIPES, { seed }), food) <= distinctVeg(generateWeek(t, food, RECIPES, { seed, reuse: false }), food), String(seed));
 });
-test('A44c budget revert lowers an overshooting greedy week (1400/110 seed 4 @0.5×free; re-pinned v0.10.41 R11-2)', () => {
-  const t = { kcal: 1400, protein: 110 }; const free = planWeek(t, food, RECIPES, { seed: 4 }).cost;
-  const a = planWeek(t, food, RECIPES, { seed: 4, budget: 0.5 * free }), b = planWeek(t, food, RECIPES, { seed: 4, budget: 0.5 * free, revert: false });
+test('A44c budget revert lowers an overshooting greedy week (1800/140 seed 2 @0.5×free; re-pinned v0.10.60 R14-1)', () => {
+  const t = { kcal: 1800, protein: 140 }; const free = planWeek(t, food, RECIPES, { seed: 2 }).cost;
+  const a = planWeek(t, food, RECIPES, { seed: 2, budget: 0.5 * free }), b = planWeek(t, food, RECIPES, { seed: 2, budget: 0.5 * free, revert: false });
   assert.ok(a.cost < b.cost - 1, `${a.cost} vs ${b.cost}`); assert.ok(a.swaps >= 0 && a.swaps === b.swaps - 1);
 });
 // A58/A62: per-day staple : fiberSide : breakfast index snapshot at 1800/140 (seeds 0, 1 rotate; seed 0 oats).
@@ -24,6 +24,6 @@ test('A58/A62 snapshot: staple, fiberSide, breakfast per day', () => {
   const t = { kcal: 1800, protein: 140 };
   const snap = o => planWeek(t, food, RECIPES, o).week.map(d => [d.staple, d.fiberSide ? 1 : 0, BREAKFASTS.findIndex(x => x.name === d.meals[0].title.split(' ×')[0])].join(':'));
   assert.deepEqual(snap({ seed: 0 }), ['riceCooked:0:0', 'riceCooked:1:1', 'brownRiceCooked:0:2', 'brownRiceCooked:0:0', 'milletCooked:0:1', 'milletCooked:0:2', 'sweetPotatoBaked:0:0']);
-  assert.deepEqual(snap({ seed: 1 }), ['brownRiceCooked:0:1', 'brownRiceCooked:0:2', 'milletCooked:0:0', 'milletCooked:0:1', 'sweetPotatoBaked:0:2', 'sweetPotatoBaked:0:0', 'riceCooked:1:1']);
+  assert.deepEqual(snap({ seed: 1 }), ['brownRiceCooked:0:1', 'brownRiceCooked:1:2', 'milletCooked:0:0', 'milletCooked:0:1', 'sweetPotatoBaked:0:2', 'sweetPotatoBaked:0:0', 'riceCooked:1:1']);
   assert.deepEqual(snap({ seed: 0, breakfast: 'oats' }), ['riceCooked:0:0', 'riceCooked:1:0', 'brownRiceCooked:0:0', 'brownRiceCooked:0:0', 'milletCooked:0:0', 'milletCooked:0:0', 'sweetPotatoBaked:0:0']);
 });

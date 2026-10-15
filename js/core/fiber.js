@@ -4,7 +4,7 @@ import { FOODS } from '../../data/foods.js'; import { FOODS2 } from '../../data/
 // A54: single source for fiber targets (today view, plan, notes). min = plan floor, goal = today-view target, max = upper end of the 25–30 range.
 export const FIBER_TARGET = { min: 25, goal: 28, max: 30 };
 export const FIBER_RANGE = `${FIBER_TARGET.min}–${FIBER_TARGET.max} g`;
-export const PEAS_SIDE_G = 80; // plan/fiber.js FIBER_SIDE: 青豆 per lunch/dinner on capped days
+export const PEAS_SIDE_G = 120; // plan/fiber.js FIBER_SIDE: 青豆 per lunch/dinner on capped days
 // A54: fiberGain/kcalDelta are computed from food data (add: items added; replace: g of `from` swapped for `to`).
 export const SWAP_DEFS = [
   { id: 'oats40', text: '早餐粥里加 40 g 燕麦片', add: [['oatsDry', 40]] },

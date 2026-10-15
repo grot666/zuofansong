@@ -77,7 +77,9 @@ export const weekFiber = days => (days.length ? days.reduce((s, d) => s + (d.tot
 // No default pack sizes (no official source). Pantry items skipped; leftover = ceil(g / pack) × pack − g, hidden below SMALL_G.
 // A recipe that uses the item is suggested, preferring one not already in the week.
 export function leftovers(list, packs = {}, recipes = [], weekRecipeIds = [], food = null) {
-  const P = {}; for (const [id, g] of Object.entries(packs || {})) if (g > 0) P[food ? shopId(id, food) : id] = g;
+  // A79: several keys on one shop id → the shop id's own key wins, else the largest (independent of key order).
+  const P = {}, own = {};
+  for (const [id, g] of Object.entries(packs || {})) if (g > 0) { const k = food ? shopId(id, food) : id; if (own[k]) continue; if (id === k) { P[k] = g; own[k] = true; } else P[k] = Math.max(P[k] || 0, g); }
   return list.filter(x => !x.pantry && P[x.id] > 0).map(x => {
     const pk = P[x.id]; const left = Math.round(Math.ceil(x.g / pk) * pk - x.g);
     const rs = recipes.filter(r => r.items.some(([id]) => id === x.id || (food && shopId(id, food) === x.id)));

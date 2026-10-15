@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.50
+- R11-3 two-trip shopping list (perishables for Fri–Sun on trip 2; frozen fish trip 1)
+
 ## v0.10.49
 - R11-5 聚餐/hotpot mode: fat pre-allocation, protein-first order, dip fat, neutral next-day line
 

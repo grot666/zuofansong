@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.60
+- R14-1 peas side 120 g (never trades fit); A61 measured fiber-days test (92.9%)
+
 ## v0.10.59
 - A67 tripLists + per-trip costs in core; listLines = rendered rows
 

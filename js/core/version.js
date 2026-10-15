@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.59';
+export const VERSION = '0.10.60';
 export const CHANGELOG = [
+  ['0.10.60', '纤维不够的日子青豆加到每餐 120 g，纤维达标天数约 85–90%'],
   ['0.10.59', '购物清单两次采购的金额改由核心计算'],
   ['0.10.58', '绿茶标为已核对（USDA）'],
   ['0.10.57', '剩余提示：按多包计算、跳过常备干货，熟重食材的包装也能对上'],

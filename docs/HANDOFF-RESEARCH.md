@@ -10,10 +10,10 @@ Base: `main` v0.10.59+. Research rounds R1–R15: `docs/RESEARCH.md` (R1–R4), 
 
 ## Open items by priority
 1. **P1 R12-1** — takeaway/canteen lunch → rebalance dinner+snack (top product gap; AC + fixtures in BACKLOG R12 section). Not started.
-2. **P1 R14-1** — PEAS_SIDE_G 80→120 (+ edamame alternation, ≤240 g/day). Fixtures 1500/140 ≥90.0%, 1800/140 ≥96.0%, 1400/110 ≥93.5%. Top post-freeze item unless shipped (see status line in BACKLOG/DECISIONS).
+2. ✅ **R14-1 shipped** (v0.10.60), re-probed 09:35: 1500/140 90.5%, 1800/140 96.4%, 1400/110 94.0%. Open tail: **P2 A85** — 240 g/day peas cap (1500/140 still hits 315 g).
 3. **P2 R15-2** — r17 step "挤干" → press in a sieve with a spoon (TFCC).
 4. **P2 A78** — spinach/kiwi aliasOf → FDC twins; A81 migration map entries.
-5. **P2 A61** — fiber-days claim: re-measure after R14-1 lands.
+5. ✅ A61 verified by arch; numbers above.
 6. **P3 R12-4 / R15-3** — jimaocai → 平台 #460; woodEar #580, kelp #605 cites + pins.
 7. **P3 R15-1** — A75 residuals (greenTea 0.22, 外食/饮品 reason rule, chayedan proxy note).
 

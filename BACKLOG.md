@@ -26,7 +26,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
   - 30 takeaway/canteen/drink foods have no `store` (an implicit exemption). → A80.
 - **A68 ✅:** ✅ (@9b73550) keys go through `shopId` (`thighRoasted:500` → chickenThigh, left 227), multi-pack uses ceil, pantry rice is skipped.
   - **Gap:** two `packs` keys that resolve to the same shopping id (`egg` + `eggUSDA`) collide, and the last key wins. `{eggUSDA:300, egg:600}` → left 535; `{egg:600, eggUSDA:300}` → left 235. → A79.
-- **A67 boundary:** `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
+- ✅ **A67 boundary:** `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
 - ✅ **A75 still open:** `test/r11-6.test.js` still omits foods3 (0 references); greenTea is still unverified with an exact FDC id.
 
 - **A78 Finish A74: alias or rename the spinach/kiwi twins (P2; post-freeze unless trivial)**

@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 09:04 SGT — v0.10.59: A67 tripLists + per-trip costs in core; listLines = rendered rows
 - 2026-10-15 08:59 SGT — v0.10.58: A75 hardened source-citation tests; greenTea verified
 - 2026-10-15 08:43 SGT — v0.10.57: A68 leftover hints: shopId keys, multi-pack, pantry skipped, week recipe ids
 - 2026-10-15 08:38 SGT — v0.10.56: A66 closed store field (fresh/frozen/keeps/pantry); trip 2 reads it

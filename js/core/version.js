@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.58';
+export const VERSION = '0.10.59';
 export const CHANGELOG = [
+  ['0.10.59', '购物清单两次采购的金额改由核心计算'],
   ['0.10.58', '绿茶标为已核对（USDA）'],
   ['0.10.57', '剩余提示：按多包计算、跳过常备干货，熟重食材的包装也能对上'],
   ['0.10.56', '购物清单按储存方式分两次买：生菜、菌菇、鲜海带也放到周三/周四补买'],

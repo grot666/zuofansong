@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.59
+- A67 tripLists + per-trip costs in core; listLines = rendered rows
+
 ## v0.10.58
 - A75 hardened source-citation tests; greenTea verified
 

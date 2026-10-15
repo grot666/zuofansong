@@ -77,7 +77,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
 - **fiberNote rounding:** 250/3024 days show "膳食纤维约 25 g（目标 25–30 g）：可把…" (value 24.5–24.9 g). The R11-4 rider was dropped because the threshold drives the peas side; the copy can change without touching the threshold.
 - Fiber share (A61 numbers): full grid **86.7%**; rotate/oats per target 1400/110 89/90%, **1500/140 65/74%**, 1617/160 75/76%, 1800/130 92/93%, 1800/140 94/89%, 1800/160 86/90%, 2000/100 95/94%, 2200/160 93/93%.
 
-- **A64 Literal `${PEAS_SIDE_G}` on plan days + per-day fiber line in core (P0, 10 min; absorbs A63)**
+- ✅ **A64 Literal `${PEAS_SIDE_G}` on plan days + per-day fiber line in core (P0, 10 min; absorbs A63)**
   - Why: see Bug above — user-visible on 29% of days since v0.10.38; nothing renders page strings in tests.
   - Where: `js/plan-page.js:53`; new pure `fiberDayLine(d, food)` in `js/core/plan/fiber.js` (exported via `plan.js`).
   - AC:

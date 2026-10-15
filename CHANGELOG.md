@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.53
+- A64 plan-day fiber line (peas amount) + quoted-${ lint; A69 fiberNote floors value
+
 ## v0.10.52
 - R11-6 rest: yam/jiaobai cite 平台 #525/#519; every verified food cites an FDC or 平台 id
 

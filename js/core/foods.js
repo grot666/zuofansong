@@ -8,6 +8,8 @@ export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['bro
 // R10-S1/A53: shopping alias map (verified twins merge under the everyday name); shared next to COOKED_TO_RAW.
 export const SHOP_ALIAS = { eggWhite: ['egg', 0.6], oatsDry: ['oats', 1] }; // [base id, g of item per g of base]
 export const twinOf = (id, food) => { if (SHOP_ALIAS[id] && food(SHOP_ALIAS[id][0])) return SHOP_ALIAS[id]; const a = food(id)?.aliasOf; if (a && food(a)) return [a, 1]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
+// A68: the shopping-list id for any food id (cooked → raw → twin/alias base).
+export const shopId = (id, food) => twinOf((COOKED_TO_RAW[id] || [id])[0], food)[0];
 
 const OIL_IDS = new Set(['oil', 'oliveOil']);
 // A24: makeIndex({ base: [lists…], partials: [lists…] }) — base entries create/merge foods; partials only

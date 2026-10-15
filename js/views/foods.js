@@ -1,7 +1,7 @@
 // View: foods (A6). Browser-only.
 import { toast } from '../boot.js';
 import * as S from '../core/store.js';
-import { proteinPerYuan, COOKED_TO_RAW } from '../core/foods.js';
+import { proteinPerYuan, COOKED_TO_RAW, shopId } from '../core/foods.js';
 import { $, esc, refreshFoods, allFoods, food, getLog, setLog, approx } from '../ui.js';
 
 export const view = () => `<section class="card"><h2>食材库（${allFoods().length}）</h2><input id="q" placeholder="搜索：中文 / 拼音 / 标签（如 外卖、高纤）" aria-label="搜索食材"><p class="mut">每 100 g 可食部。名称带“熟”的为熟重，其余为生重。≈ 表示估算/未核实；✓ 表示已按 USDA FDC 核实。价格为上海估价。外卖数据误差可达 10–20% 甚至更多。</p><label style="display:inline-block"><input type="checkbox" id="pysort" style="width:auto;min-height:auto"> 按“每元蛋白”排序（估算，生重）</label><ul class="list" id="fl"></ul></section>
@@ -21,8 +21,8 @@ view.bind = () => {
       toast(`已记入今日：${f.name} ${g} g`); return; }
     const pk = e.target.dataset && e.target.dataset.pack;
     if (pk) { // R11-4: user pack size (g) for leftover hints on the plan page
-      const v = prompt(`${food(pk).name}：一包/一份多少克？（留空 = 不设置）`, (S.get('packs', {}) || {})[pk] || '');
-      if (v === null) return; const packs = { ...S.get('packs', {}) }; if (Number(v) > 0) packs[pk] = Math.round(Number(v)); else delete packs[pk];
+      const sid = shopId(pk, food); const v = prompt(`${food(sid)?.name || food(pk).name}：一包/一份多少克？（留空 = 不设置）`, (S.get('packs', {}) || {})[sid] || (S.get('packs', {}) || {})[pk] || '');
+      if (v === null) return; const packs = { ...S.get('packs', {}) }; delete packs[pk]; if (Number(v) > 0) packs[sid] = Math.round(Number(v)); else delete packs[sid];
       S.set('packs', packs); draw(); return; }
     const id = e.target.dataset && e.target.dataset.price; if (!id) return;
     const v = prompt(`${food(id).name}：每斤（500 g）价格 ¥（留空 = 恢复估价）`, food(id).priceCNYPer500g || '');

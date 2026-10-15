@@ -1,5 +1,5 @@
 // A45: split from js/core/plan.js (shopping). Import via js/core/plan.js (facade).
-import { COOKED_TO_RAW, priceOf, twinOf } from '../foods.js';
+import { COOKED_TO_RAW, priceOf, twinOf, shopId } from '../foods.js';
 import { FIBER_SIDE } from './fiber.js';
 // R10-S1: shelf-stable staples and condiments go to one "常备" line; verified twins merge under the everyday name.
 export const PANTRY_IDS = new Set(['rice', 'brownRice', 'millet', 'oats', 'oatsDry', 'tunaLight', 'tunaAlbacore', 'soy', 'oyster', 'oil', 'oliveOil', 'garlic', 'ginger', 'whey']);
@@ -64,12 +64,17 @@ const isSide = (d, id, g) => d.fiberSide && FIBER_SIDE.some(([s, sg]) => s === i
 export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.filter(([id, g]) => !isSide(d, id, g)).map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;
 // R10-F2: 7-day average fiber (g/day) for the plan header.
 export const weekFiber = days => (days.length ? days.reduce((s, d) => s + (d.tot?.fiber || 0), 0) / days.length : 0);
-// R11-4: opened-pack leftovers. packs: user {id: pack g} (no default pack sizes: no official source).
-// Need < pack → "剩余约 X g", with a recipe that uses the item, preferring one not already in the week.
-export function leftovers(list, packs = {}, recipes = [], weekRecipeIds = []) {
-  return list.filter(x => packs[x.id] > 0 && x.g < packs[x.id]).map(x => {
-    const rs = recipes.filter(r => r.items.some(([id]) => id === x.id));
+// R11-4/A68: opened-pack leftovers. packs: user {id: pack g}, keys read through shopId (cooked/twin ids work, no migration).
+// No default pack sizes (no official source). Pantry items skipped; leftover = ceil(g / pack) × pack − g, hidden below SMALL_G.
+// A recipe that uses the item is suggested, preferring one not already in the week.
+export function leftovers(list, packs = {}, recipes = [], weekRecipeIds = [], food = null) {
+  const P = {}; for (const [id, g] of Object.entries(packs || {})) if (g > 0) P[food ? shopId(id, food) : id] = g;
+  return list.filter(x => !x.pantry && P[x.id] > 0).map(x => {
+    const pk = P[x.id]; const left = Math.round(Math.ceil(x.g / pk) * pk - x.g);
+    const rs = recipes.filter(r => r.items.some(([id]) => id === x.id || (food && shopId(id, food) === x.id)));
     const r = rs.find(r => !weekRecipeIds.includes(r.id)) || rs[0];
-    return { id: x.id, name: x.name, left: Math.round(packs[x.id] - x.g), recipeId: r?.id || null, recipeName: r?.name || null };
-  });
+    return { id: x.id, name: x.name, left, recipeId: r?.id || null, recipeName: r?.name || null };
+  }).filter(x => x.left >= SMALL_G);
 }
+// A68: recipe ids used this week (meal titles carry the recipe name).
+export const weekRecipeIds = (week, recipes) => recipes.filter(r => week.some(d => d.meals.some(m => (m.title || '').includes(r.name)))).map(r => r.id);

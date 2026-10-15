@@ -7,7 +7,7 @@ import { PRICE_REFS } from '../../data/prices.js';
 export const COOKED_TO_RAW = { riceCooked: ['rice', 2.3], brownRiceCooked: ['brownRice', 2.4], milletCooked: ['millet', 2.6], thighRoasted: ['chickenThigh', 0.75], breastRoasted: ['chickenBreast', 0.75], shrimpCooked: ['shrimp', 0.85], sweetPotatoBaked: ['sweetPotato', 0.85], eggUSDA: ['egg', 1], eggBoiled: ['egg', 1] };
 // R10-S1/A53: shopping alias map (verified twins merge under the everyday name); shared next to COOKED_TO_RAW.
 export const SHOP_ALIAS = { eggWhite: ['egg', 0.6], oatsDry: ['oats', 1] }; // [base id, g of item per g of base]
-export const twinOf = (id, food) => { if (SHOP_ALIAS[id] && food(SHOP_ALIAS[id][0])) return SHOP_ALIAS[id]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
+export const twinOf = (id, food) => { if (SHOP_ALIAS[id] && food(SHOP_ALIAS[id][0])) return SHOP_ALIAS[id]; const a = food(id)?.aliasOf; if (a && food(a)) return [a, 1]; const b = id.replace(/USDA$/, ''); return b !== id && food(b) ? [b, 1] : [id, 1]; };
 
 const OIL_IDS = new Set(['oil', 'oliveOil']);
 // A24: makeIndex({ base: [lists…], partials: [lists…] }) — base entries create/merge foods; partials only
@@ -18,8 +18,15 @@ export function makeIndex(...args) {
   const m = new Map();
   for (const l of spec.base || []) for (const f of l || []) m.set(f.id, m.has(f.id) ? { ...m.get(f.id), ...f } : f);
   for (const l of spec.partials || []) for (const f of l || []) if (m.has(f.id)) m.set(f.id, { ...m.get(f.id), ...f });
+  // A74: an alias (aliasOf) reads nutrients/price/storage from its canonical food; keeps its own id so logs keep working.
+  // A user price override on the alias applies to the canonical food when that has none.
+  for (const a of [...m.values()]) {
+    const c = a.aliasOf && m.get(a.aliasOf); if (!c || c.aliasOf) continue;
+    if (a.priceUser && !c.priceUser) m.set(c.id, { ...c, priceCNYPer500g: a.priceCNYPer500g, priceUser: true });
+  }
+  for (const a of [...m.values()]) { const c = a.aliasOf && m.get(a.aliasOf); if (c && !c.aliasOf) m.set(a.id, { ...c, id: a.id, aliasOf: c.id }); }
   const food = id => m.get(id);
-  food.all = () => [...m.values()];
+  food.all = () => [...m.values()].filter(f => !f.aliasOf);
   return food;
 }
 // One builder for every page: estimate < official ref < user override; custom foods are base.
@@ -70,7 +77,7 @@ export function priceOf(food, id) {
   return { rawId, rawPrice: (raw && raw.priceCNYPer500g) || 0 };
 }
 // UX-12: quick-add chips under the search box. Recents (≤8) first, then most-used (≤8); empty or thin history is padded with curated up to 8.
-export const CURATED_CHIPS = ['eggUSDA', 'riceCooked', 'thighRoasted', 'broccoliUSDA', 'oatsDry', 'tofuFirm', 'milk', 'tunaLight']; // R10-D1: verified twins
+export const CURATED_CHIPS = ['egg', 'riceCooked', 'thighRoasted', 'broccoli', 'oatsDry', 'tofuFirm', 'milk', 'tunaLight']; // R10-D1: verified twins
 export function quickChips(recents = [], useCount = {}, has = () => true) {
   const out = [];
   const add = id => { if (has(id) && !out.includes(id)) out.push(id); };

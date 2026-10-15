@@ -1,7 +1,7 @@
 // localStorage wrapper: prefix, schema version + migrations registry, injectable backend, no DOM/alert.
 import { localDate } from './dates.js';
 export const PREFIX = 'culiang.v1.';
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 const mem = new Map();
 export const memoryBackend = {
   getItem: k => (mem.has(k) ? mem.get(k) : null),
@@ -41,6 +41,13 @@ export const MIGRATIONS = {
     const from = get('breakFrom', null);
     if (from != null && get('breakState', null) == null) set('breakState', { from, until: today });
     remove('breakFrom');
+  },
+  3: () => { // A74: price override on an alias id moves to the canonical id when that has none
+    const p = get('prices', null); if (!p) return;
+    const ALIAS = { eggUSDA: 'egg', broccoliUSDA: 'broccoli' };
+    let ch = false;
+    for (const [a, c] of Object.entries(ALIAS)) if (a in p) { if (!(c in p)) p[c] = p[a]; delete p[a]; ch = true; }
+    if (ch) set('prices', p);
   },
 };
 // A13: one backup copy (overwritten); if the backup cannot be written, abort without bumping version.

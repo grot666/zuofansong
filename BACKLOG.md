@@ -1,11 +1,49 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (08:25, real queue; arch-aligned): **A64 + A69** (engineer, in progress) → **A74** (P1 user-visible: duplicate egg/broccoli twins, per-id price split) → A65 → A66 → A68 (alias agreement tests via A74) → A75 → A67 → A61 → A70 → A71–A73 → A76/A77. Feature freeze ~09:30. Older queues: see the Status sections below.
+Next (08:55, real queue): **A67** → A61 → A70 → **A75** → A77 → A79 → A71–A73 → A76 → A80/A81; A78 post-freeze. **Feature freeze ~09:30 SGT**: after that, test/docs items only (A75, A79 test, A80, A81, A71). No new P0/P1 this round.
 **Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 **Research R13 @08:30 (v0.10.52):** new items **R13-1** (A65 lever order + fixtures, P1), **R13-2** (A66 store map for all foods, P1), **R13-3** (fiber dip 1500/140 — 先调查、本条不改行为, P2), **R13-4** (takeaway/drink conclusions, P3). See “R13 update” at the end and docs/RESEARCH-R13.md.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @9b73550 (v0.10.57), 2026-10-15 ~08:55 SGT: arch review
+Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+A69 v0.10.53, A74 v0.10.54, A65 v0.10.55, A66 v0.10.56, A68 v0.10.57).
+**Feature freeze ~09:30 SGT.** After that, pick test/docs items only; any P1 feature gap waits for the post-freeze queue unless it is a bug.
+- **A64 + A69 ✅:** ✅ (@9b73550) `test/a64.test.js` pins the peas line (no literal `${`); the fiber note shows the floor.
+- **A74 ✅ (egg/broccoli):** ✅ (@9b73550)
+  - Search: 鸡蛋 → `egg, guanbing`; 西兰花 → `broccoli`.
+  - Price: probe 1800/140 seed 0 costs ¥312.8 for `{egg:50}`, `{eggUSDA:50}` and both. The base week is ¥215.8.
+  - Migration v3 moves `prices.eggUSDA/broccoliUSDA`.
+  - **Gaps:**
+    - spinach/kiwi are not aliased (search still shows 2 菠菜 and 2 猕猴桃 with different numbers). → A78.
+    - The v3 migration hard-codes an `ALIAS` map that duplicates the data `aliasOf`. → A81.
+- **A65 ✅:** ✅ (@9b73550) reserve = Σ lever fat on 20/20 seeds (e.g. 31.9 g / 4 levers, 20.8 g / 2). `reserveFatG` is null without a planned day; the social meal is never touched.
+- **A66 ✅:** ✅ (@9b73550)
+  - lettuce, kelp, shiitake, enoki and mushroom are `fresh` and trip 2; tunaLight is pantry and trip 1.
+  - All STORE ids exist and every class is in `STORES`.
+  - 30 takeaway/canteen/drink foods have no `store` (an implicit exemption). → A80.
+- **A68 ✅:** ✅ (@9b73550) keys go through `shopId` (`thighRoasted:500` → chickenThigh, left 227), multi-pack uses ceil, pantry rice is skipped.
+  - **Gap:** two `packs` keys that resolve to the same shopping id (`egg` + `eggUSDA`) collide, and the last key wins. `{eggUSDA:300, egg:600}` → left 535; `{egg:600, eggUSDA:300}` → left 235. → A79.
+- **A67 boundary:** `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
+- **A75 still open:** `test/r11-6.test.js` still omits foods3 (0 references); greenTea is still unverified with an exact FDC id.
+
+- **A78 Finish A74: alias or rename the spinach/kiwi twins (P2; post-freeze unless trivial)**
+  - Why: 菠菜 shows `spinach` (CFCT 28 kcal, unverified) and `spinachUSDA` (FDC 23 kcal); 猕猴桃 shows `kiwi` and `kiwiUSDA` with different protein/fiber. Same physical food, two answers.
+  - AC: the unverified side gets `aliasOf` → the verified id, with nutrients from the verified side and no id renames. `matchFoods` returns one entry each. A user-facing DECISIONS line covers the value change for existing logs.
+  - Tests: extend `test/a74.test.js` with 菠菜 and 猕猴桃 → one entry each, and `totals` equal for both ids.
+- **A79 Leftover `packs` keys that collide on one shopping id (P2, test-first)**
+  - Why: see the A68 gap above. The result depends on object key order.
+  - AC: when several keys map to one `shopId`, a deterministic rule picks the size (prefer the canonical/shop id's own key, else the largest). The settings write normalises the key to `shopId`.
+  - Tests: both key orders give the same `left`.
+- **A80 Make storage class "closed" explicit for non-shopping foods (P3, test)**
+  - Why: 30 foods (takeaway, canteen, drinks) have no `store`. `storeOf` silently maps undefined to 'keeps'. A new grocery food without a store would also pass unnoticed.
+  - AC: data test asserts every food in a shopping category (not 外卖/食堂/饮品; list them in one constant) has `store ∈ STORES`.
+  - Tests: as stated, failing message lists the ids.
+- **A81 Migration v3 alias map must match data `aliasOf` (P3, test)**
+  - Why: `store.js` hard-codes `{eggUSDA:'egg', broccoliUSDA:'broccoli'}`, so A78 can add aliases the migration doesn't know about.
+  - AC: a test asserts that the migration's map ⊇ every `aliasOf` pair in data. Each new alias either adds a v4 step or the test documents why no price move is needed.
+  - Tests: `store.test.js`.
 
 ### Status @8a0fb00 (v0.10.52), 2026-10-15 ~08:25 SGT: arch review (R11-6)
 `npm test` (serial) passes on a fresh clone; count in the commit report. Reviewed a3b24c3 and 8a0fb00 (R11-6 sources) against the R11-6 AC; the arch run 0f08c9f (A64–A73) is already on HEAD.
@@ -111,6 +149,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Why: plan-page computes the trip split (`x.cost * x.g1 / x.g`) and filters rows; nothing tests that trip costs add up. `listLines` (R10-S1, ≤ 32 on the fixture) ignores trip-2 rows: grid max is 33, 34 with split rows. Copy "周五起用" is hard-coded next to `TRIP2_FROM = 4`.
   - Where: `js/core/plan/shopping.js` new `tripLists(list)` → `{trip1, trip2, small, pantry}` rows `{id, name, g, cost, frozen}`; `listLines(list)` counts rendered rows; plan-page renders only.
   - AC: Σ trip1.cost + Σ trip2.cost = Σ list.cost (±¥0.01); trip-2 heading uses `DAYS[TRIP2_FROM]`; `listLines` = rendered row count.
+  - Boundary (@9b73550): reuse `storeOf`/`isPerishable`/`shopId`; never re-derive trips from tags.
   - Tests: grid 1800/140 seeds 0–5 cost conservation; R10-S1 fixture line count re-pinned deliberately (DECISIONS line).
 - (A61, item text below, stays open at P2: re-measure with the numbers in this status; copy "约 89%" in CHANGELOG 0.10.41 → measured range.)
 - **A70 release.mjs: re-test after the retry rebase; one conflict-marker helper (P2)**

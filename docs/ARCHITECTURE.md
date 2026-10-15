@@ -253,3 +253,11 @@ New items: A64–A73 in BACKLOG.md.
   - Search hides aliases; `twinOf` derives from `aliasOf`.
   - Migration v3 moves `prices[alias]`.
 - **Invariant:** any per-food user state (prices, packs, storage class) is keyed by the canonical id after resolution, so today, plan, shopping and leftovers agree on one physical food.
+
+## 14. Review @9b73550 (v0.10.57, ~08:55 SGT): aliases, storage class, levers
+- **Aliases:** `aliasOf` is resolved in `makeIndex`, and `food.all()` hides aliases. `shopId(id) = twinOf(COOKED_TO_RAW(id))` is the single key for shopping, leftovers and (A67) trips.
+  - Any per-food user map (`prices`, `packs`) must normalise its keys through it, with a deterministic collision rule (A79).
+  - The migration alias map must match the data (A81).
+- **Storage:** `data/storage.js` holds a closed set `fresh|frozen|keeps|pantry`. Trip 2 = `fresh` ∧ (fish, seafood, leafy, 菌菇, 海藻). Exempt categories must be listed explicitly (A80).
+- **聚餐:** `preAllocate` reports only concrete levers on the planned day; reserve = Σ lever fat, and there is no number without a plan.
+- **Feature freeze ~09:30 SGT:** after that, the queue is tests and docs.

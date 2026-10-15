@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.61
+- A70 release script re-tests after a code-bearing retry rebase; single conflict-marker helper
+
 ## v0.10.60
 - R14-1 peas side 120 g (never trades fit); A61 measured fiber-days test (92.9%)
 

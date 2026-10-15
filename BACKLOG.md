@@ -180,7 +180,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Boundary (@9b73550): reuse `storeOf`/`isPerishable`/`shopId`; never re-derive trips from tags.
   - Tests: grid 1800/140 seeds 0–5 cost conservation; R10-S1 fixture line count re-pinned deliberately (DECISIONS line).
 - (A61, item text below, stays open at P2: re-measure with the numbers in this status; copy "约 89%" in CHANGELOG 0.10.41 → measured range.)
-- **A70 release.mjs: re-test after the retry rebase; one conflict-marker helper (P2)**
+- ✅ **A70 release.mjs: re-test after the retry rebase; one conflict-marker helper (P2)**
   - Why: on a rejected push the script rebases and pushes **without** re-running `npm test`; the rebase can bring in non-docs commits. `hasConflictMarkers` is exported and tested but `main` uses `git grep` instead.
   - Where: `scripts/release.mjs`.
   - AC: after the retry rebase, if `git diff --name-only ORIG_HEAD HEAD` contains anything outside `*.md`, run `npm test` again and abort (commit stays local, message says so) on red; conflict check uses `hasConflictMarkers` over `git ls-files` content (or git grep only, delete the helper — one implementation).

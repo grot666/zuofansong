@@ -28,18 +28,22 @@ export function markBacklog(md, id) {
   if (!re.test(md)) throw new Error(`BACKLOG: no open item "- **${id} …"`);
   return md.replace(re, `- ✅ **${id}`);
 }
+// A70: a rebase that brought in anything outside *.md needs a fresh npm test before pushing.
+export const needsRetest = paths => paths.some(p => p && !/\.md$/.test(p));
 export const hasConflictMarkers = text => /^(<<<<<<<|>>>>>>>) /m.test(text) || /^=======$/m.test(text) && /^<<<<<<< /m.test(text);
 
 const sh = (cmd, opts = {}) => execSync(cmd, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...opts }).trim();
 const die = msg => { console.error(`release: ${msg}`); process.exit(1); };
 const test = () => spawnSync('npm', ['test', '--silent'], { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' });
+// A70: one conflict-marker implementation (hasConflictMarkers) over tracked text files.
+const markedFiles = () => sh('git ls-files').split('\n').filter(f => f && /\.(m?js|md|html|css|json|ya?ml)$/.test(f)).filter(f => { try { return hasConflictMarkers(readFileSync(f, 'utf8')); } catch { return false; } });
 const FILES = ['js/core/version.js', 'sw.js', 'CHANGELOG.md', 'PROGRESS.md', 'BACKLOG.md'];
 
 async function main([v, cn, en, id, msg]) {
   if (!v || !cn || !en || !id || !msg || !/^\d+\.\d+\.\d+$/.test(v)) die('usage: npm run release -- <x.y.z> "<cn>" "<en>" <ID|-> "<msg>"');
   if (sh('git status --porcelain')) die('dirty tree: commit the feature first');
   if (spawnSync('git', ['pull', '-q', '--rebase'], { stdio: 'inherit' }).status !== 0) { spawnSync('git', ['rebase', '--abort']); die('pull --rebase failed (conflict?); aborted, nothing changed'); }
-  const marked = sh('git grep -lE "^(<<<<<<<|>>>>>>>) " || true'); if (marked) die(`conflict markers in: ${marked}`);
+  const marked = markedFiles(); if (marked.length) die(`conflict markers in: ${marked.join(' ')}`);
   const cur = readFileSync('js/core/version.js', 'utf8').match(/VERSION = '([\d.]+)'/)[1];
   if (cur === v) die(`VERSION is already ${v}`);
   let t = test(); if (t.status !== 0) die(`tests red before release; nothing changed\n${(t.stdout.match(/^not ok .*$/gm) || []).join('\n')}`);
@@ -54,7 +58,8 @@ async function main([v, cn, en, id, msg]) {
   // Teammates push docs concurrently: on a rejected push, rebase once (fail-closed on conflicts/markers) and retry.
   if (spawnSync('git', ['push', '-q'], { stdio: 'inherit' }).status !== 0) {
     if (spawnSync('git', ['pull', '-q', '--rebase'], { stdio: 'inherit' }).status !== 0) { spawnSync('git', ['rebase', '--abort']); die('push rejected and rebase failed; release commit is local only'); }
-    if (sh('git grep -lE "^(<<<<<<<|>>>>>>>) " || true')) die('conflict markers after rebase; not pushed');
+    if (markedFiles().length) die('conflict markers after rebase; not pushed');
+    if (needsRetest(sh('git diff --name-only ORIG_HEAD HEAD').split('\n'))) { t = test(); if (t.status !== 0) die(`tests red after the retry rebase; release commit is local only, not pushed\n${(t.stdout.match(/^not ok .*$/gm) || []).join('\n')}`); }
     if (spawnSync('git', ['push', '-q'], { stdio: 'inherit' }).status !== 0) die('push failed twice; release commit is local only');
   }
   const sha = sh('git rev-parse HEAD'); console.log(sh('git log --oneline -1'));

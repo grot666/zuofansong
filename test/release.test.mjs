@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { commitSubject, bumpVersionSrc, bumpSw, insertChangelog, insertProgress, progressLine, markBacklog, hasConflictMarkers } from '../scripts/release.mjs';
+import { commitSubject, bumpVersionSrc, bumpSw, insertChangelog, insertProgress, progressLine, markBacklog, hasConflictMarkers, needsRetest } from '../scripts/release.mjs';
 test('A57 commitSubject never doubles (vX)', () => {
   assert.equal(commitSubject('fix: x (v1.2.3)', '1.2.3'), 'fix: x (v1.2.3)');
   assert.equal(commitSubject('fix: x', '1.2.3'), 'fix: x (v1.2.3)');
@@ -27,4 +27,8 @@ test('A57 BACKLOG mark is exact and fails closed on an unknown id', () => {
 test('A57 conflict markers detected', () => {
   assert.ok(hasConflictMarkers('a\n<<<<<<< Updated upstream\nb\n=======\nc\n>>>>>>> Stashed changes\n'));
   assert.ok(!hasConflictMarkers('a\n=======\nb\n'));
+});
+test('A70 needsRetest: docs-only rebase skips, any code path re-tests', () => {
+  assert.equal(needsRetest(['BACKLOG.md']), false); assert.equal(needsRetest(['BACKLOG.md', 'docs/ARCHITECTURE.md', '']), false);
+  assert.equal(needsRetest(['js/core/x.js']), true); assert.equal(needsRetest(['BACKLOG.md', 'test/a.test.js']), true);
 });

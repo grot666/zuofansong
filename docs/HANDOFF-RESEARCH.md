@@ -9,14 +9,15 @@ Base: `main` v0.10.59+. Research rounds R1–R15: `docs/RESEARCH.md` (R1–R4), 
 - Twins: A74 egg/broccoli done; spinach/kiwi → A78 (AC ready, direction: unverified id aliases the FDC twin).
 
 ## Open items by priority
+Post-freeze batch: R15-1, R15-3, A78 (+ R16-1). R15-2 is copy-only (OK in freeze).
 1. **P1 R12-1** — takeaway/canteen lunch → rebalance dinner+snack (top product gap; AC + fixtures in BACKLOG R12 section). Not started.
 2. ✅ **R14-1 shipped** (v0.10.60), re-probed 09:35: 1500/140 90.5%, 1800/140 96.4%, 1400/110 94.0%. Open tail: **P2 A85** — 240 g/day peas cap (1500/140 still hits 315 g).
 3. **P2 R15-2** — r17 step "挤干" → press in a sieve with a spoon (TFCC).
 4. **P2 A78** — spinach/kiwi aliasOf → FDC twins; A81 migration map entries.
 5. ✅ A61 verified by arch; numbers above.
 6. **P3 R12-4 / R15-3** — jimaocai → 平台 #460; woodEar #580, kelp #605 cites + pins.
-7. **P3 R15-1** — A75 residuals (greenTea 0.22, 外食/饮品 reason rule, chayedan proxy note).
+7. **P3 R16-1** — 便利店 items (PROMPT §6 gap; scan of PROMPT.md vs v0.10.62 found no other gap).
+8. **P3 R15-1** — A75 residuals (greenTea 0.22, 外食/饮品 reason rule, chayedan proxy note).
 
 ## Open questions
-- No `PROMPT.md` in the repo — if the owner's brief lives elsewhere, put it in `docs/`.
 - 平台 edition not verified; USDA FoodKeeper blocked from the bot box, so storage classes are judgment calls.

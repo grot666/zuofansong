@@ -32,6 +32,7 @@ function trayCard(week = []) {
   <div>${SAUCES.map(x => `<label style="display:inline-block;margin-right:8px"><input type="checkbox" data-sauce="${x.id}" ${off.has(x.id) ? '' : 'checked'} style="width:auto;min-height:auto"> ${x.name}</label>`).join('')}</div>
   <p class="mut">酱油、蚝油含盐高，可换低钠酱油。护腕：不颠锅、不用力剁切，重物双手端。若手腕疼痛请遵医生/康复师建议。</p></section>`;
 }
+const li = (x, g, c) => `<li><label style="margin:0"><input type="checkbox" style="width:auto;min-height:auto"> ${food(x.id)?.verified ? '' : '≈'}${x.name} ${g >= 1000 ? r1(g / 500) + ' 斤' : g + ' g'}${x.frozen ? ' <span class="mut">冷冻保存</span>' : ''} <span class="mut">≈¥${r1(c)}</span></label></li>`;
 function render() {
   const p = getProfile();
   const t = computeTargets(p);
@@ -52,7 +53,7 @@ function render() {
     <p class="mut">膳食纤维 ${Math.round(d.tot.fiber)} g${d.stapleSwap ? `（${d.spCap ? '烤红薯本周已够 3 天' : '为补纤维'}，主食由${food(d.stapleSwap)?.name}换成${food(d.staple)?.name}）` : ''}${d.fiberSide ? ' · 午晚餐各加青豆 ${PEAS_SIDE_G} g' : ''}${d.vegMult > 1 ? ` · 蔬菜按 ${d.vegMult} 份` : ''}</p>${d.fiberNote ? `<p class="warn">${d.fiberNote}</p>` : ''}
     <button class="sec" data-day="${i}">把这天记入今日</button></details>`).join('')}
   <section class="card" id="list"><h2>购物清单（生重）</h2><p>估算合计 <b>≈¥${Math.round(cost)}</b> ${cost > budget ? `<span class="warn">仍超出预算 ¥${Math.round(cost - budget)}：可调高预算，或多用鸡蛋、豆腐</span>` : '在预算内 ✓'}</p>
-  <ul class="list">${list.filter(x => !x.pantry && !x.small).map(x => `<li><label style="margin:0"><input type="checkbox" style="width:auto;min-height:auto"> ${food(x.id)?.verified ? '' : '≈'}${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'} <span class="mut">≈¥${r1(x.cost)}</span></label></li>`).join('')}</ul>${list.some(x => x.small) ? `<p class="mut">少量，可省略/用库存：${list.filter(x => x.small).map(x => `${x.name} ${x.g} g`).join('、')}</p>` : ''}${list.some(x => x.pantry) ? `<p class="mut">常备（干货/调料，按需补）：${list.filter(x => x.pantry).map(x => `${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'}`).join('、')}</p>` : ''}<p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>
+  <h3>第一次（周日/周一）</h3><ul class="list">${list.filter(x => !x.pantry && !x.small && x.g1 > 0).map(x => li(x, x.g1, x.g2 ? x.cost * x.g1 / x.g : x.cost)).join('')}</ul>${list.some(x => x.g2 > 0 && !x.small) ? `<h3>周三/周四补买（生鲜，周五起用）</h3><ul class="list">${list.filter(x => x.g2 > 0 && !x.small).map(x => li(x, x.g2, x.cost * x.g2 / x.g)).join('')}</ul>` : ''}${list.some(x => x.small) ? `<p class="mut">少量，可省略/用库存：${list.filter(x => x.small).map(x => `${x.name} ${x.g} g`).join('、')}</p>` : ''}${list.some(x => x.pantry) ? `<p class="mut">常备（干货/调料，按需补）：${list.filter(x => x.pantry).map(x => `${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'}`).join('、')}</p>` : ''}<p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>
   <section class="card" id="prep"><h2>周日备餐（约 60 分钟）</h2><ol>
   <li>电饭煲煮 2–3 天的杂粮饭；煮好 1 小时内分盒冷藏，第 3 天及以后的分份直接冷冻。</li>
   <li>本周蛋白：${proteinsUsed.join('、')}。鸡腿/鸡胸一次腌好（生抽+料酒+姜），分成前 3 天的量。</li>

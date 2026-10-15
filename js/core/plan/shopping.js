@@ -4,16 +4,23 @@ import { FIBER_SIDE } from './fiber.js';
 // R10-S1: shelf-stable staples and condiments go to one "常备" line; verified twins merge under the everyday name.
 export const PANTRY_IDS = new Set(['rice', 'brownRice', 'millet', 'oats', 'oatsDry', 'tunaLight', 'tunaAlbacore', 'soy', 'oyster', 'oil', 'oliveOil', 'garlic', 'ginger', 'whey']);
 export const SMALL_G = 50;
+// R11-3: two trips. Perishable fish/seafood/leafy greens needed from day TRIP2_FROM (周五) on are bought on trip 2 (周三/周四);
+// frozen fish (tag 冷冻) stays on trip 1 with "冷冻保存". No shelf-life numbers (unsourced).
+export const TRIP2_FROM = 4;
+const tags = f => f?.tags || [];
+export const isFrozen = f => tags(f).includes('冷冻');
+export const isPerishable = f => tags(f).some(t => ['鱼', '海鲜', '绿叶菜'].includes(t));
 export function shoppingList(days, food) {
   const agg = {};
-  for (const d of days) for (const m of d.meals) for (const [id, g] of m.items) {
+  days.forEach((d, di) => { for (const m of d.meals) for (const [id, g] of m.items) {
     const [rawId, f] = COOKED_TO_RAW[id] || [id, 1];
     const [key, f2] = twinOf(rawId, food);
-    const a = agg[key] || (agg[key] = { g: 0, cost: 0 });
-    a.g += g / f / f2; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
-  }
+    const a = agg[key] || (agg[key] = { g: 0, g2: 0, cost: 0 });
+    a.g += g / f / f2; if ((d.day ?? di) >= TRIP2_FROM) a.g2 += g / f / f2; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
+  } });
   return Object.entries(agg).map(([id, a]) => { const f = food(id); const g = Math.round(a.g); const pantry = PANTRY_IDS.has(id) || ['调味', '油脂'].includes(f?.cat);
-    return { id, name: f?.name || id, cat: f?.cat || '', g, cost: f ? a.cost : 0, pantry, small: !pantry && g < SMALL_G }; })
+    const fr = isFrozen(f), per = !pantry && !fr && isPerishable(f), g2 = per ? Math.round(a.g2) : 0;
+    return { id, name: f?.name || id, cat: f?.cat || '', g, cost: f ? a.cost : 0, pantry, small: !pantry && g < SMALL_G, perishable: per, frozen: fr, g1: g - g2, g2 }; })
     .sort((a, b) => a.pantry - b.pantry || a.small - b.small || a.cat.localeCompare(b.cat) || b.g - a.g);
 }
 // R10-S1: lines the user actually shops for (pantry items and the "少量" group count as one line each).

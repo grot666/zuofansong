@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.51
+- R11-4 opened-pack leftover hints (user pack sizes)
+
 ## v0.10.50
 - R11-3 two-trip shopping list (perishables for Fri–Sun on trip 2; frozen fish trip 1)
 

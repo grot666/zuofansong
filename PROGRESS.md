@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 08:08 SGT — v0.10.51: R11-4 opened-pack leftover hints (user pack sizes)
 - 2026-10-15 08:02 SGT — v0.10.50: R11-3 two-trip shopping list (perishables for Fri–Sun on trip 2; frozen fish trip 1)
 - 2026-10-15 08:00 SGT — v0.10.49: R11-5 聚餐/hotpot mode: fat pre-allocation, protein-first order, dip fat, neutral next-day line
 - 2026-10-15 07:57 SGT — v0.10.48: A59 sweet potato on ≤1 batch by construction (test); staple swaps 0 on grid

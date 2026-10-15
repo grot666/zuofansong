@@ -1,6 +1,6 @@
 # 做饭松 — Architecture
 
-Status: reflects `main` at be0b7ab (v0.10.61). §1–§7 refreshed @be0b7ab (2026-10-15 ~09:20 SGT); §9–§16 are per-round review notes. Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
+Status: reflects `main` at f26e81f (v0.10.62; §17). Earlier: be0b7ab (v0.10.61). §1–§7 refreshed @be0b7ab (2026-10-15 ~09:20 SGT); §9–§16 are per-round review notes. Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
 Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · 261eab3 (v0.10.28: A47–A53, §11) · 3cd4958 (v0.10.43: A54–A63, BACKLOG only) · 1073021 (v0.10.51: A64–A73, §12) · 8a0fb00 (v0.10.52: A74–A77, §13) · 9b73550 (v0.10.57: A78–A81, §14) · 537d8f0 (v0.10.59: A82–A83, §15) · **be0b7ab (v0.10.61, 2026-10-15 ~09:20 SGT: R14-1 + A61 + A70 verified; new → A84–A87, §16)**.
 
 ## 1. Principles
@@ -292,3 +292,8 @@ Design decisions this round:
 - **One table per concept.** Week-day names (A86) and shopping-id normalisation (A87) each get one exported definition that pages and core import.
 
 New items: A84–A87 in BACKLOG.md.
+
+## 17. Review @f26e81f (v0.10.62, ~09:45 SGT): pack keys; freeze
+- **Pack sizes (A79):** `packs` is user state keyed by food id, and core resolves it through `shopId`. If the shopping id has its own key, that key wins; otherwise the largest size wins, independent of key order. Writes go under `shopId`. A88 moves the write into a pure `setPack` that also drops older colliding keys.
+- **Invariant (extends §14):** every per-food user map (`prices`, `packs`) has one resolution rule in core, and the same rule is used for both reads and writes.
+- **Freeze:** since ~09:30 SGT the queue is tests and docs only (A84, A77, A81, A71, A82/A83, A87, A86, A76, R15-2, A88). Behaviour items (A85, A78, R15-1, R15-3) come after the freeze.

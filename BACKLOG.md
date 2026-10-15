@@ -1,13 +1,36 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (09:20, arch @be0b7ab): **A84** (pin R14-1/A61 floors, 10 min) → **A77** (r3/r15 `broccoliUSDA` → `broccoli` + test) → A79 → A81 → A71 → A82/A83 → A87 → A86 → A76 → R15-2 (TFCC copy only); post-freeze: **A85** (peas ladder + 240 g/day cap) → A78 → R15-1/R15-3 (data value changes) → A72 → A73. **Feature freeze ~09:30 SGT**: after that, only tests/docs/no-value-change data. R14-1/A61/A67/A70/A75 ✅; A80 closed (already tested). Earlier (09:10, PM 09:07): R14-1 → A61 → A70 → A77 → A79 → A80/A81/A71 (tests/docs after 09:30). Earlier: **R14-1** (P1 peas side 120 g; only if it ships before 09:30) → A61 → A70 → A77 → A79 → A71–A73 → A76 → A80/A81 → A82/A83; A78 (+R14-3) post-freeze. **Feature freeze ~09:30 SGT**: after that, only test/docs items (A70, A79, A80, A81, A71, A82, A83). A67/A75 ✅.
+Next (09:45, arch @f26e81f, **feature freeze in effect since ~09:30 SGT**): A84 → A77 → A81 → A71 → A82/A83 → A87 → A86 → A76 → R15-2 (copy only) → A88. **Post-freeze (behaviour):** A85 → A78 → R15-1 → R15-3 → A72 → A73. A79 ✅ (v0.10.62).
 **Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 **Research R13 @08:30 (v0.10.52):** new items **R13-1** (A65 lever order + fixtures, P1), **R13-2** (A66 store map for all foods, P1), **R13-3** (fiber dip 1500/140 — 先调查、本条不改行为, P2), **R13-4** (takeaway/drink conclusions, P3). See “R13 update” at the end and docs/RESEARCH-R13.md.
 **Research R14 @08:55 (v0.10.57):** new **R14-1** (P1 peas side 120 g — fiber 1500/140 69→90.5%), **R14-2** (P3 greenTea + ≈ test rules), **R14-3** (P2 spinach/kiwi alias collapse + A77). See “R14 update” at the end.
 **Research R15 @09:20 (v0.10.59):** R14-2/A75 done (residuals → **R15-1** P3); A78 AC ready — **A78 direction supersedes R14-3**; new **R15-2** (P2 TFCC: r17 "挤干" → press in sieve), **R15-3** (P3 woodEar/kelp/jimaocai 平台 cites). R13-3 closed. See “R15 update” at the end and docs/HANDOFF-RESEARCH.md.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @f26e81f (v0.10.62), 2026-10-15 ~09:45 SGT: arch review (final for this session)
+Serial `npm test`: **241/241** on a fresh clone (88 files). Reviewed be0b7ab..f26e81f: A79 (036d406, f26e81f) plus the R15 and R14-1 docs. No new P0/P1 bugs.
+- **A79 ✅**
+  - `leftovers` folds `packs` keys through `shopId`. If the shopping id has its own key, that key wins; otherwise the largest size wins. The result doesn't depend on key order.
+  - `test/a79.test.js` checks both key orders for `egg`+`eggUSDA` (own key wins: left 180) and `eggUSDA`+`eggBoiled` (largest wins: 600 → left 180).
+  - The settings screen (`js/views/foods.js:24–26`) saves under `shopId` and deletes the original key.
+  - **Gap:** the settings write path is untested UI code. Older stored collisions (e.g. `eggBoiled` plus `egg`) are never cleaned up, although core now resolves them. → A88.
+- **Still open:**
+  - A84 (no pin test yet).
+  - A77: r3 and r15 still use `broccoliUSDA`.
+- **Feature freeze in effect (~09:30 SGT):** queue = tests and docs only. Behaviour changes (A85, A78, R15-1, R15-3) are post-freeze.
+
+- **A88 Pure `setPack` in core; test the settings write path (P3, test; freeze-safe)**
+  - Why: the settings screen does the A79 key normalisation inline in `views/foods.js`. Nothing tests it, and older colliding keys stay in storage.
+  - AC:
+    - `setPack(packs, id, g, food)` lives in `js/core/plan/shopping.js`. It returns a new object with the value under `shopId(id)` and drops **every** key that resolves to the same `shopId`. An empty or ≤0 value clears it.
+    - `views/foods.js` calls it.
+    - Prefill reads the same resolved value `leftovers` would use.
+  - Tests:
+    - `setPack({eggBoiled:600, eggUSDA:500}, 'egg', 300)` → `{egg:300}`.
+    - `setPack({egg:300}, 'eggUSDA', '')` → `{}`.
+    - `leftovers` with the result equals `leftovers` called with `{egg:300}`.
 
 ### Status @be0b7ab (v0.10.61), 2026-10-15 ~09:20 SGT: arch review
 Serial `npm test`: **240/240** (87 files) on the arch clone. Reviewed c7356e6..be0b7ab: R14-1 + A61 (f7ef0c6, 5bc32dd, v0.10.60), A70 (472faab, be0b7ab, v0.10.61) and R15 docs (2302556, 3d09580, 9ca620d). ARCHITECTURE §2–§6 refreshed to v0.10.60 (they had stayed at v0.10.51), §16 added.

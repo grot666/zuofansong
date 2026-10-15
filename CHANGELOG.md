@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.58
+- A75 hardened source-citation tests; greenTea verified
+
 ## v0.10.57
 - A68 leftover hints: shopId keys, multi-pack, pantry skipped, week recipe ids
 

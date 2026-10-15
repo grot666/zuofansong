@@ -27,7 +27,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
 - **A68 ✅:** ✅ (@9b73550) keys go through `shopId` (`thighRoasted:500` → chickenThigh, left 227), multi-pack uses ceil, pantry rice is skipped.
   - **Gap:** two `packs` keys that resolve to the same shopping id (`egg` + `eggUSDA`) collide, and the last key wins. `{eggUSDA:300, egg:600}` → left 535; `{egg:600, eggUSDA:300}` → left 235. → A79.
 - **A67 boundary:** `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
-- **A75 still open:** `test/r11-6.test.js` still omits foods3 (0 references); greenTea is still unverified with an exact FDC id.
+- ✅ **A75 still open:** `test/r11-6.test.js` still omits foods3 (0 references); greenTea is still unverified with an exact FDC id.
 
 - **A78 Finish A74: alias or rename the spinach/kiwi twins (P2; post-freeze unless trivial)**
   - Why: 菠菜 shows `spinach` (CFCT 28 kcal, unverified) and `spinachUSDA` (FDC 23 kcal); 猕猴桃 shows `kiwi` and `kiwiUSDA` with different protein/fiber. Same physical food, two answers.

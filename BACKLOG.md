@@ -1,13 +1,39 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (08:58, user 08:58): A67 → A61 → A70 → A75 → A77 → A79; R14-1 if before 09:30. Freeze 09:30. Earlier: **A67** → A61 → A70 → **A75** → A77 → A79 → A71–A73 → A76 → A80/A81; A78 post-freeze. **Feature freeze ~09:30 SGT**: after that, test/docs items only (A75, A79 test, A80, A81, A71). No new P0/P1 this round.
+Next (09:15, arch @537d8f0): **R14-1** (P1 peas side 120 g; only if it ships before 09:30) → A61 → A70 → A77 → A79 → A71–A73 → A76 → A80/A81 → A82/A83; A78 (+R14-3) post-freeze. **Feature freeze ~09:30 SGT**: after that, only test/docs items (A70, A79, A80, A81, A71, A82, A83). A67/A75 ✅.
 **Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 **Research R13 @08:30 (v0.10.52):** new items **R13-1** (A65 lever order + fixtures, P1), **R13-2** (A66 store map for all foods, P1), **R13-3** (fiber dip 1500/140 — 先调查、本条不改行为, P2), **R13-4** (takeaway/drink conclusions, P3). See “R13 update” at the end and docs/RESEARCH-R13.md.
 **Research R14 @08:55 (v0.10.57):** new **R14-1** (P1 peas side 120 g — fiber 1500/140 69→90.5%), **R14-2** (P3 greenTea + ≈ test rules), **R14-3** (P2 spinach/kiwi alias collapse + A77). See “R14 update” at the end.
 **Research R15 @09:20 (v0.10.59):** R14-2/A75 done (residuals → **R15-1** P3); A78 AC ready — **A78 direction supersedes R14-3**; new **R15-2** (P2 TFCC: r17 "挤干" → press in sieve), **R15-3** (P3 woodEar/kelp/jimaocai 平台 cites). R13-3 closed. See “R15 update” at the end and docs/HANDOFF-RESEARCH.md.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @537d8f0 (v0.10.59), 2026-10-15 ~09:15 SGT: arch review
+Serial `npm test`: **238/238** on a fresh clone. Reviewed 9b73550..537d8f0: A75 (c5d6282, dcacb54, v0.10.58), A67 (518828a, 537d8f0, v0.10.59), and R14 docs.
+**Feature freeze ~09:30 SGT.** After that, only test/docs items: A70, A79, A80, A81, A71, A82, A83. No new P0/P1 bugs this round.
+- **A75 ✅**
+  - Rules run over FOODS + FOODS2 + FOODS3 (`ALL3`):
+    - `verified` ⇒ source starts with `USDA FDC N` or `营养所查询平台 #N`.
+    - An unverified food that cites an id must say 近似, ≈, CFCT or 估算.
+    - Each FDC id is cited by at most one non-alias verified food.
+  - `PLATFORM_PINS` pins every 平台 food (±0.5), and greenTea is `verified:true`.
+- **A67 ✅**
+  - `tripLists(list)` only splits `shoppingList` rows by `g1`/`g2`. It does not re-derive trips, so trip 2 still comes from `isPerishable`/`storeOf`/`shopId` inside `shoppingList`.
+  - Trip costs add up to the non-pantry, non-small total on seeds 0–7. On a 108-week grid the list total equals `week.cost`.
+  - `listLines` now counts trip-2 rows. The heading uses `TRIP2_FROM_DAY`, and plan-page no longer hard-codes 周五起用.
+  - **Gaps:**
+    - The `listLines` assertion in `test/a67.test.js` restates the implementation (tautological). It should count rendered `<li>` rows. → A83.
+    - Counting trip-2 rows raises line counts. The grid (1500/1800/2200 × 110/140/170 × seeds 0–11) reaches **35**, while R10-S1 pins ≤ 32 only on one fixture. → A82.
+
+- **A82 R10-S1 line cap after A67: decide and pin on a grid (P3, test/docs; post-freeze OK)**
+  - Why: the R10-S1 "≤ 32 lines" target was set before trip-2 rows counted. Grid max is now 35, but the test only checks one fixture.
+  - AC: DECISIONS records the new cap (e.g. ≤ 36 with split rows, or ≤ 32 unique items). A grid test pins it over 1500/1800/2200 × 110/140/170 × seeds 0–11.
+  - Tests: `r10s1.test.js` grid loop. The failing message names the seed and targets.
+- **A83 Make the A67 line-count test non-tautological (P3, test)**
+  - Why: `listLines` is asserted against the same formula it implements.
+  - AC: render the list section with the plan-page template helper (or a pure `listHtml(trips)` in core) and assert that `listLines` equals the number of `<li>` and group lines. Per-trip subtotals sum to the displayed 估算合计 (±¥1 after rounding).
+  - Tests: one seed fixture plus a 1-item fixture.
 
 ### Status @9b73550 (v0.10.57), 2026-10-15 ~08:55 SGT: arch review
 Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+A69 v0.10.53, A74 v0.10.54, A65 v0.10.55, A66 v0.10.56, A68 v0.10.57).
@@ -83,7 +109,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
     - planWeek cost is identical for `{egg:50}` and `{eggUSDA:50}`.
     - The migration moves `prices.eggUSDA`.
     - Every alias shares storage class/`packs` with its canonical food (closes the A66/A68 boundary).
-- **A75 Harden the source-citation test (P2)**
+- ✅ **A75 Harden the source-citation test (P2)** — verified @537d8f0
   - Why: see "Test gaps" above.
   - AC: `test/r11-6.test.js` (or `data.test.js`) runs over FOODS + FOODS2 + FOODS3. Rules:
     - `verified:true` ⇒ source **starts with** `USDA FDC \d+` or `营养所查询平台 #\d+`.
@@ -147,7 +173,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Where: `js/core/foods.js` new `shopId(id, food)` = `COOKED_TO_RAW` raw id → `twinOf` base; `js/views/foods.js` 包装 writes `packs[shopId(id)]`; `js/core/plan/shopping.js` `leftovers`; `js/plan-page.js` passes week recipe ids.
   - AC: `leftovers` skips `pantry` items; leftover = `ceil(g / pack) * pack − g`, hidden when < `SMALL_G`; packs stored under a cooked/twin id are read through `shopId` (back-compat, no migration needed); plan-page passes `week.flatMap(d => [d.vegL?.id, d.vegD?.id])`.
   - Tests: `packs {thighRoasted: 500}` → hint for chickenThigh; `{rice: 5000}` → none; chickenBreast need 367 g, pack 300 → left 233; a week that already uses the qianzhang recipe gets a different recipe in the UI call.
-- **A67 Trip lists and per-trip costs in core (P2)**
+- ✅ **A67 Trip lists and per-trip costs in core (P2)** — verified @537d8f0
   - Why: plan-page computes the trip split (`x.cost * x.g1 / x.g`) and filters rows; nothing tests that trip costs add up. `listLines` (R10-S1, ≤ 32 on the fixture) ignores trip-2 rows: grid max is 33, 34 with split rows. Copy "周五起用" is hard-coded next to `TRIP2_FROM = 4`.
   - Where: `js/core/plan/shopping.js` new `tripLists(list)` → `{trip1, trip2, small, pantry}` rows `{id, name, g, cost, frozen}`; `listLines(list)` counts rendered rows; plan-page renders only.
   - AC: Σ trip1.cost + Σ trip2.cost = Σ list.cost (±¥0.01); trip-2 heading uses `DAYS[TRIP2_FROM]`; `listLines` = rendered row count.

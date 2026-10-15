@@ -261,3 +261,8 @@ New items: A64–A73 in BACKLOG.md.
 - **Storage:** `data/storage.js` holds a closed set `fresh|frozen|keeps|pantry`. Trip 2 = `fresh` ∧ (fish, seafood, leafy, 菌菇, 海藻). Exempt categories must be listed explicitly (A80).
 - **聚餐:** `preAllocate` reports only concrete levers on the planned day; reserve = Σ lever fat, and there is no number without a plan.
 - **Feature freeze ~09:30 SGT:** after that, the queue is tests and docs.
+
+## 15. Review @537d8f0 (v0.10.59, ~09:15 SGT): citations and trips
+- **Citations (A75):** one rule set over all food files. A verified source starts with the id, an approximate one says so, each FDC id belongs to one canonical food, and `PLATFORM_PINS` pins every 平台 food.
+- **Trips (A67):** `shoppingList` decides the split (`g1`/`g2` via `isPerishable`/`storeOf`/`shopId`). `tripLists` only reshapes rows and costs, and the page renders only. Line-count targets are pinned on a grid, not one fixture (A82/A83).
+- **Feature freeze ~09:30 SGT:** after that, the queue is tests and docs.

@@ -46,7 +46,7 @@ Serial `npm test`: **240/240** (87 files) on the arch clone. Reviewed c7356e6..b
 - **A77 still open, now with a concrete failure:** r3 and r15 reference `broccoliUSDA` (alias). See A77.
 - **Hygiene (this commit):** reworded the two "✅ … still open" lines in Status @9b73550 and dropped the duplicated R13-4 line at the end of R13 update.
 
-- **A84 Pin the R14-1 / A61 numbers that were measured (P2, test, 10 min; freeze-safe)**
+- ✅ **A84 Pin the R14-1 / A61 numbers that were measured (P2, test, 10 min; freeze-safe)**
   - Why: `fiber-share` asserts ≥ 85% overall and ≥ 70% per target against a measured 92.9% and 84.5%. R14-1's fixture floors are not in any test, so most of the R14-1 gain could regress silently.
   - AC: `fiber-share` floors become overall ≥ 90% and each target ≥ 80%. A new R14-1 test (rotate, seeds 0–11, no budget) asserts 1500/140 ≥ 90.0%, 1800/140 ≥ 96.0% and 1400/110 ≥ 93.5% (measured 90.5/96.4/94.0), with 0 fit misses each. Failure messages print the measured value.
   - Tests: as stated. Keep the wall time under 4 s, like plangrid (fiber-share alone runs ~1.3 s).

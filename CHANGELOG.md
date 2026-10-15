@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.63
+- A84 pins R14-1/A61 fiber floors (≥90% overall, ≥80% per target; 90.0/96.0/93.5%)
+
 ## v0.10.62
 - A79 deterministic leftover pack size on key collisions
 

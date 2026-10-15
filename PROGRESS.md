@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 09:47 SGT — v0.10.63: A84 pins R14-1/A61 fiber floors (≥90% overall, ≥80% per target; 90.0/96.0/93.5%)
 ## FINAL SUMMARY (2026-10-15 ~09:50 SGT)
 
 **Mission.** 做饭松 (粗粮减脂厨房) is an offline-first PWA for fat loss on Chinese whole-grain home cooking. It turns a profile into kcal/protein targets and a weekly plan `f(targets, seed, opts)` covering 3 meals + snack. It also gives a two-trip shopping list, Sunday batch prep, a log with a fat wallet and protein gap, and 聚餐 mode. Every recipe step is 护腕 (TFCC)-safe. UI is Chinese; code is English.

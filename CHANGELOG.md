@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.62
+- A79 deterministic leftover pack size on key collisions
+
 ## v0.10.61
 - A70 release script re-tests after a code-bearing retry rebase; single conflict-marker helper
 

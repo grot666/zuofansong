@@ -96,7 +96,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
   - Why: 菠菜 shows `spinach` (CFCT 28 kcal, unverified) and `spinachUSDA` (FDC 23 kcal); 猕猴桃 shows `kiwi` and `kiwiUSDA` with different protein/fiber. Same physical food, two answers.
   - AC: the unverified side gets `aliasOf` → the verified id, with nutrients from the verified side and no id renames. `matchFoods` returns one entry each. A user-facing DECISIONS line covers the value change for existing logs.
   - Tests: extend `test/a74.test.js` with 菠菜 and 猕猴桃 → one entry each, and `totals` equal for both ids.
-- **A79 Leftover `packs` keys that collide on one shopping id (P2, test-first)**
+- ✅ **A79 Leftover `packs` keys that collide on one shopping id (P2, test-first)**
   - Why: see the A68 gap above. The result depends on object key order.
   - AC: when several keys map to one `shopId`, a deterministic rule picks the size (prefer the canonical/shop id's own key, else the largest). The settings write normalises the key to `shopId`.
   - Tests: both key orders give the same `left`.

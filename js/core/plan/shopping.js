@@ -27,8 +27,17 @@ export function shoppingList(days, food) {
     return { id, name: f?.name || id, cat: f?.cat || '', g, cost: f ? a.cost : 0, pantry, small: !pantry && g < SMALL_G, perishable: per, frozen: fr, g1: g - g2, g2 }; })
     .sort((a, b) => a.pantry - b.pantry || a.small - b.small || a.cat.localeCompare(b.cat) || b.g - a.g);
 }
-// R10-S1: lines the user actually shops for (pantry items and the "少量" group count as one line each).
-export const listLines = list => list.filter(x => !x.pantry && !x.small).length + (list.some(x => x.small) ? 1 : 0) + (list.some(x => x.pantry) ? 1 : 0);
+// A67: the rendered list split into trips, per-trip cost in core (page renders only).
+// trip1 = g1 share of every non-pantry, non-small item; trip2 = g2 share; cost split by grams.
+export const DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+export const TRIP2_FROM_DAY = DAY_NAMES[TRIP2_FROM];
+export function tripLists(list) {
+  const row = (x, g) => ({ id: x.id, name: x.name, g, cost: x.g ? x.cost * g / x.g : 0, frozen: x.frozen });
+  const main = list.filter(x => !x.pantry && !x.small);
+  return { trip1: main.filter(x => x.g1 > 0).map(x => row(x, x.g1)), trip2: main.filter(x => x.g2 > 0).map(x => row(x, x.g2)), small: list.filter(x => x.small), pantry: list.filter(x => x.pantry) };
+}
+// R10-S1/A67: lines the user actually shops for = rendered rows (trip rows; pantry and "少量" one line each).
+export const listLines = list => { const t = tripLists(list); return t.trip1.length + t.trip2.length + (t.small.length ? 1 : 0) + (t.pantry.length ? 1 : 0); };
 
 export function checkWeek(days, { kcal, protein }) {
   return days.map(d => ({ day: d.day, kcalOk: Math.abs(d.tot.kcal - kcal) <= kcal * 0.05, proteinOk: d.tot.protein >= protein - 0.5 }));

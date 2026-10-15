@@ -1,7 +1,7 @@
 # 做饭松 — Architecture
 
-Status: reflects `main` at 1073021 (v0.10.51). Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
-Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · 261eab3 (v0.10.28: A47–A53, §11) · 3cd4958 (v0.10.43: A54–A63, BACKLOG only) · **1073021 (v0.10.51, 2026-10-15 ~08:15 SGT: A56–A60/A62 + R11-3/4/5 verified; new → A64–A73, §12)**.
+Status: reflects `main` at be0b7ab (v0.10.61). §1–§7 refreshed @be0b7ab (2026-10-15 ~09:20 SGT); §9–§16 are per-round review notes. Owner of this doc: architecture bot. Code changes are tracked as BACKLOG items `A*`.
+Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23–A27) · be96ed1 (v0.8.7: A28–A32) · e99d68d (v0.9.5: A33–A39) · 9390563 (v0.10.10: A40–A46) · 261eab3 (v0.10.28: A47–A53, §11) · 3cd4958 (v0.10.43: A54–A63, BACKLOG only) · 1073021 (v0.10.51: A64–A73, §12) · 8a0fb00 (v0.10.52: A74–A77, §13) · 9b73550 (v0.10.57: A78–A81, §14) · 537d8f0 (v0.10.59: A82–A83, §15) · **be0b7ab (v0.10.61, 2026-10-15 ~09:20 SGT: R14-1 + A61 + A70 verified; new → A84–A87, §16)**.
 
 ## 1. Principles
 - Static GitHub Pages, plain HTML/CSS/ES modules, **no build step**, no runtime deps, no network calls except same-origin assets.
@@ -13,56 +13,58 @@ Reviews: 6ab7969 (v0.6.1) · 2f32a1a (v0.6.2: A17–A22) · 836ac40 (v0.7.1: A23
 - Data modules (`data/*.js`) are JS (not JSON) so they work offline and in Node without fetch (DECISIONS 04:00).
 - **Every page entry does the same boot:** `bootStore()` → render → `registerSW()` (✅ v0.6.0, enforced by `test/version.test.js`).
 
-## 2. Module layout @v0.10.51 (A6 ✅, A22 ✅, A24 ✅, A45 ✅, A50 ✅, A53 ✅, A57 ✅)
+## 2. Module layout @v0.10.61 (A6 ✅, A22 ✅, A24 ✅, A45 ✅, A50 ✅, A53 ✅, A57 ✅, A64–A68 ✅, A74 ✅)
 ```
 index.html            SPA shell, hash routes #today #plate #veg #rice #foods #me (+ A20 non-module escape hatch)
 plan.html             weekly plan; in-page sections #menu #list #prep (UX-7); R-11 trayCard per weekday
 review.html           每周复盘 (A42 canDeepen reasons)
-sw.js                 service worker (CACHE = 'zfs-' + VERSION); ASSETS lists every js/core/plan/*.js + core/social.js, core/tuna.js
+sw.js                 service worker (CACHE = 'zfs-' + VERSION); ASSETS lists every js/core/plan/*.js + core/social.js, core/tuna.js, data/storage.js (A66)
 manifest.webmanifest, icon.svg, .nojekyll, css/app.css (--nav-h + safe-area padding, UX-5; .ctl 2-col grid at 375 px, UX-375)
 js/boot.js            bootStore(), toast(msg,{action,ms}), shouldShowUpdate (UX-8), getProfile(), registerSW()
 js/nav.js             NAV (5 items, UX-11), COOK_TOOLS sub-nav, navHtml/navHref/markNav
 js/app.js             index router only: hash → views[name].{view(), view.bind()}
 js/ui.js              index page context: foodIndexFromStore, profile(), getLog/setLog, today(), PRESET_TEMPLATES
-js/views/             today (+ 聚餐 card, R11-5), me, foods (+ 包装 pack size, R11-4), rice, plate, veg (A30: no data/foods* or makeIndex imports)
-js/plan-page.js       plan page (planWeek, mealScores, regenWeek undo, maxPrepMin, breakfastPref, two-trip list R11-3, leftovers R11-4, trayPlan)
+js/views/             today (+ 聚餐 card: socialLevers on the planned day, A65), me, foods (+ 包装 pack size written under shopId, A68), rice, plate, veg (A30: no data/foods* or makeIndex imports)
+js/plan-page.js       plan page, render only: planWeek, mealScores, regenWeek undo, maxPrepMin, breakfastPref, fiberDayLine (A64), tripLists + TRIP2_FROM_DAY (A67), leftovers(…, weekRecipeIds, food) (A68), trayPlan. Still holds its own `DAYS` table (A86)
 js/review-page.js     review page (weekReview, plateauAdvice, canDeepen → reviews / profile / breakState)
 js/core/
   version.js   VERSION + CHANGELOG (bumped only by scripts/release.mjs)   profile.js  DEFAULT_PROFILE, normalizeProfile, paceCheck, saveProfile, onboardStep (A29)
-  store.js     culiang.v1.* + KNOWN_KEYS + migrations + afterImport (A41)   foods.js  makeIndex, foodIndexFromStore, totals, priceOf, COOKED_TO_RAW, SHOP_ALIAS, twinOf (A53)
+  store.js     culiang.v1.* + KNOWN_KEYS + migrations 1–3 + afterImport (A41)   foods.js  makeIndex (resolves `aliasOf`, A74), foodIndexFromStore, totals, priceOf, matchFoods (hides aliases), COOKED_TO_RAW, SHOP_ALIAS, twinOf, shopId (A68)
   dates.js     localDate/addDays/dayNum, backupDue (G3), todayIndex
   plan.js      facade (8 lines) → plan/{select,portion,fiber,day,budget,shopping}.js + COOKED_TO_RAW/SHOP_ALIAS/twinOf
   plan/select.js   BREAKFASTS (opts.breakfast rotate|oats), PROTEINS, STAPLES (4, one per 2-day batch), rankVeg/rankProteins, pickReuse (A40/A46), selectWeek
   plan/portion.js  portionCore (closed-form search), FITS (A28), ADDONS, powderAddons, STAPLE_MAX_G (R11-1), feasibility          94 lines
-  plan/fiber.js    FIBER_MIN (= core FIBER_TARGET.min), fiberNote, FIBER_ALT, SP cap constants, FIBER_SIDE (peas, PEAS_SIDE_G per meal)
-  plan/day.js      portionDay (A47 no-protein path), dayWith (peas side), generateWeek (batch staple A55, no 3-run R11-2, SP cap), tuna cap
+  plan/fiber.js    FIBER_MIN (= core FIBER_TARGET.min), fiberNote (floor, A69), FIBER_ALT, SP cap constants, FIBER_SIDE (peas, PEAS_SIDE_G per meal), fiberDayLine (A64)   19 lines
+  plan/day.js      portionDay (A47 no-protein path), dayWith (peas side, R14-1 fit guard: never trade an ok day for fiber), generateWeek (batch staple A55, no 3-run R11-2, SP cap), tuna cap
   plan/budget.js   applyBudget, planWeek (R9-1 real-cost loop, A34 unfit, budget-revert)
-  plan/shopping.js shoppingList (twins R10-S1, pantry/small, perishable/frozen + g1/g2 trips R11-3), listLines, leftovers (R11-4), checkWeek, regenWeek, planTips, meatNote, parseBudget, distinctVeg, weekFiber
-  tuna.js      TUNA weekly limits (A50; shared by plan/portion + review)     social.js  聚餐 mode: preAllocate, nextDayTargets, socialCopy, HOTPOT_* data, BANNED_WORDS (R11-5)
-  fiber.js     FIBER_TARGET {min 25, goal 28, max 30}, FIBER_RANGE, PEAS_SIDE_G, SWAP_DEFS → computeSwaps(food), suggestFiber (A54)
+  plan/shopping.js shoppingList (twins R10-S1, pantry/small, g1/g2 trips R11-3 from storeOf/isPerishable/isFrozen A66), tripLists + DAY_NAMES/TRIP2_FROM_DAY (A67), listLines (rendered rows), leftovers (shopId, ceil packs, A68), weekRecipeIds, checkWeek, regenWeek, planTips, meatNote, parseBudget, distinctVeg, weekFiber   89 lines
+  tuna.js      TUNA weekly limits (A50; shared by plan/portion + review)     social.js  聚餐 mode: LEVERS/socialLevers, preAllocate({meal, day, food}) (A65), nextDayTargets, socialCopy, HOTPOT_*/DIPS data (A72), BANNED_WORDS (R11-5)
+  fiber.js     FIBER_TARGET {min 25, goal 28, max 30}, FIBER_RANGE, PEAS_SIDE_G = 120 (R14-1), SWAP_DEFS → computeSwaps(food), suggestFiber (A54); module-level SWAPS from base data (A73)
   scores.js    mealScores (G1)              review.js   weekReview, plateau / plateauAdvice, reviewDue
   protein.js   proteinGap, gutRisk, proteinFill   retention.js compact/compactStore (A11, A26)
   breaks.js, sleep.js, portion.js, targets.js (canDeepen A42), grains.js, fat.js, weight.js, sauces.js (trayPlan R-11)
-data/foods.js, foods2.js, foods3.js, recipes.js, sauces.js, prices.js
+data/foods.js, foods2.js, foods3.js (each wrapped by withStore), storage.js (STORES fresh|frozen|keeps|pantry, STORE map, withStore — A66), recipes.js, sauces.js, prices.js
 scripts/release.mjs   A57 release helper (`npm run release -- <ver> "<cn>" "<en>" <ID|-> "<msg>"`), pure helpers tested in test/release.test.mjs
-test/  79 files, 220 tests @v0.10.51 (`npm test` = CI = `node --test --test-concurrency=1 test/`)
+test/  87 files, 240 tests @v0.10.61 (`npm test` = CI = `node --test --test-concurrency=1 test/`)
 .github/workflows/ci.yml  workflow `ci`: node --check + serial node --test on push/PR
 ```
 Dependency rule: `UI (pages, views, ui.js, nav.js) → boot → core → data`. Core never imports boot/UI; data imports nothing. `scripts/` may import core for helpers but nothing imports `scripts/` except its own test.
 Plan split (A45/A53): UI and tests import only `js/core/plan.js`; every `plan/*.js` file < 100 lines. SW ASSETS lists the facade and all six split files (A15 test).
 
 Remaining coupling / drift (open A*):
-- **plan-page.js holds untested logic**: the fiber line per day (A64 bug lives here), the trip-1/trip-2 cost split `x.cost * x.g1 / x.g` and row filters (A67), and the leftover call without `weekRecipeIds` (A68). Rule: anything that computes a number or chooses copy moves into `js/core/*` as a pure function with a test; pages only join strings.
-- Storage class for the two-trip list is inferred from free-text `tags` (`鱼`/`海鲜`/`绿叶菜`, `冷冻`), not a closed data field (A66).
+- ✅ @v0.10.59: plan-page no longer computes the fiber line (A64), trip costs (A67) or leftover keys (A68); storage class is the closed `store` field (A66). Rule stays: anything that computes a number or chooses copy is a pure `js/core/*` function with a test; pages only join strings.
+- Week-day names exist three times: `DAY_NAMES` (plan/shopping.js), an inline array in `planTips` (same file), `DAYS` (plan-page.js) (A86).
+- Shopping-id normalisation has two implementations: `shoppingList` inlines `COOKED_TO_RAW` → `twinOf`, `leftovers`/views use `shopId`. They agree on all 147 ids today; nothing pins it (A87).
+- `weekRecipeIds` matches recipe names inside meal titles (day objects carry no recipe ids). No name is a substring of another today (34 recipes), so it is correct but fragile; a recipe id on the meal would remove the string match.
 - `core/social.js` carries food data (HOTPOT_*, DIPS) that belongs in `data/` and duplicates `sesamePaste` numbers (A72).
 - `core/fiber.js` imports data lists at module load (A73, see §1).
 
 ## 3. Storage schema — `localStorage`, prefix `culiang.v1.`
-All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSION = 2`. Keys @v0.10.51 (no migration since 2; R11-4/R11-5 keys are additive and default-safe):
+All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSION = 3`. Keys @v0.10.61 (no new key since v0.10.51; migration 3 = A74 alias price move):
 
 | key | shape | written by |
 |---|---|---|
-| `version` | int schema version (2) | store.migrate, store.importAll |
+| `version` | int schema version (3) | store.migrate, store.importAll |
 | `profile` | partial profile, normalized via `normalizeProfile` on read | me, review (deficitPct), boot (break restore) |
 | `weights` | `[{date:'YYYY-MM-DD', weight:kg}]` sorted asc, one per date | me |
 | `customFoods` | `[{id:'c<ts>', name, cat:'自定义', tags, kcal, protein, fat, carbs, fiber, verified:false, source:'用户'}]` | foods |
@@ -81,7 +83,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `backup.preMigration` | export envelope, one copy, overwritten per migration; **not** exported/importable | store.migrate |
 | `logArchive.YYYY-MM` | `{date: {kcal,protein,fat,carbs,fiber,cost,water,n}}` daily totals for logs >180 d (A11, v0.6.6) | core/retention.compactStore on index load |
 | `backup.preImport` | export envelope taken before a replace-import; restored by 撤销上次导入 (A17, v0.6.4); not exported | store.importAll / undoImport |
-| `prices` | `{foodId: CNY per 500 g}` user overrides (v0.6.7) | foods |
+| `prices` | `{foodId: CNY per 500 g}` user overrides (v0.6.7); alias ids moved to the canonical id by migration 3 (A74) | foods |
 | `wRange` | weight chart weeks 4 \| 8 \| 12 \| 0 (all) (v0.6.8) | me |
 | `lastExport` | 'YYYY-MM-DD' of the last JSON export (G3, v0.7.9) | me, today |
 | `backupSnooze` | 'YYYY-MM-DD' until which the backup hint is hidden (G3) | today |
@@ -89,7 +91,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `foodUse` | {id: count} quick-add use counts for chips (UX-12, v0.8.6) | today, foods |
 | `onboardStep` | 2–3, onboarding step to resume after reload; removed on skip/完成 (A29, v0.9.0) | today |
 | `maxPrepMin` | 0/5/10, plan veg prep-time limit (R9-10, v0.10.5) | plan |
-| `packs` | {foodId: g} user pack sizes for leftover hints (R11-4) | foods, plan |
+| `packs` | {shopId: g} user pack sizes for leftover hints (R11-4); written under `shopId`, old cooked/twin keys read through `shopId` (A68); key collisions → A79 | foods, plan |
 | `social` | {date, meal, type} 聚餐 mode for one day (R11-5) | today |
 | `breakfastPref` | rotate/oats, plan breakfast preference (opts.breakfast, v0.10.42) | plan |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |
@@ -103,10 +105,11 @@ Rules:
 5. Writers of `profile` read-modify-write the **stored** object (`S.get('profile', {})`) via `mergeProfileEdit`, never the normalized one (A21 ✅; UX-6 `saveProfile` and UX-10 `saveOnboardStep` follow it).
 6. Use-count / preference keys (`foodUse`, `templateUse`, `updateSeen`, `lastExport`, `backupSnooze`, `breakfastPref`, `packs`, `social`) are exported and imported like everything else. Keys that describe *this device's* state are not; today that is only `backup.*`.
 7. Per-day UI state (`social`, `undo`) carries its own `date` and is ignored when stale; clearing writes `null` (not removed). Readers must treat `null`, a stale date and an unknown `type` as "off".
-8. Keys holding food ids for *shopping* (`packs`) must be keyed by the shopping id (`COOKED_TO_RAW` raw id → `twinOf` base), the same id `shoppingList` emits (A68).
+8. Keys holding food ids for *shopping* (`packs`) must be keyed by `shopId(id, food)` (`COOKED_TO_RAW` raw id → `twinOf`/`aliasOf` base), the same id `shoppingList` emits (A68; one implementation → A87).
+9. Per-food user maps keyed by an alias id (`prices`) move to the canonical id in a migration; the migration's alias table must cover every data `aliasOf` (A81; today it hard-codes eggUSDA/broccoliUSDA).
 
 ### Migrations ✅ (A2, A13)
-- `MIGRATIONS = {1: noop, 2: ({today}) => breakFrom → breakState}`; `migrate({today})` loops `version+1 … SCHEMA_VERSION`.
+- `MIGRATIONS = {1: noop, 2: ({today}) => breakFrom → breakState, 3: prices[alias] → prices[canonical] when the canonical has none (A74)}`; `migrate({today})` loops `version+1 … SCHEMA_VERSION`.
 - Upgrading from ≥1 first writes `backup.preMigration`; **if that write fails, migrate returns early without bumping `version`** (A13b ✅).
 - Each migration idempotent; tested with `memoryBackend`.
 - ✅ A18 (v0.6.4): the abort and non-persistent storage are surfaced by `bootStore()`.
@@ -117,14 +120,14 @@ Export envelope `{app:'zuofansong', schema, exportedAt, data}` (skips `backup.*`
 ### Errors / persistence ✅ (A18)
 `set()` returns false + emits `storage-error`; boot shows the banner, including migrate-abort and memory-backend fallback.
 
-## 4. Service worker @v0.10.51 (A7, A15, A20 ✅) — strategy unchanged since v0.6; only ASSETS grew (plan/fiber.js, plan/day.js, tuna.js, social.js)
+## 4. Service worker @v0.10.61 (A7, A15, A20 ✅) — strategy unchanged since v0.6 (diff 1073021..be0b7ab touches only `CACHE` and ASSETS + data/storage.js)
 - `CACHE === 'zfs-' + VERSION` (tested); install precaches ASSETS with `new Request(u, {cache:'reload'})` + `skipWaiting`; activate deletes other caches + `clients.claim`.
 - Navigations: network-first 3 s → cached page (ignoreSearch) → `index.html`. Assets: stale-while-revalidate kept alive with `waitUntil`; miss + offline → `Response.error()`, never HTML. Only `ok && basic` cached.
 - `sw.test.js` enforces disk ⊆ ASSETS ⊆ disk, no dups (A15) — caught `js/nav.js` / `js/core/scores.js` in v0.8.x and the four `js/core/plan/*.js` files at A45.
 - A20 escape hatch: a non-module inline script in each page offers 清除离线缓存并重新加载 (unregisters SW, deletes caches, never touches localStorage).
 - Update toast (UX-8): shown once per new version; `updateSeen` stores the version already shown.
 
-## 5. Weekly plan @v0.10.51 (A9, A16, A19, A23, A25, A33–A47, A51, A54, A55, A59, G1, G2, UX-9, R9-10, R10-F1, R11-1/2/3/4, PERF-1 ✅)
+## 5. Weekly plan @v0.10.61 (A64–A68, R14-1, A9, A16, A19, A23, A25, A33–A47, A51, A54, A55, A59, G1, G2, UX-9, R9-10, R10-F1, R11-1/2/3/4, PERF-1 ✅)
 ```
 selectWeek(food, recipes, {seed, proteins, dinnerProteins, maxPrepMin, reuse, breakfast}) → skeleton[7] {day, bf, pDinner, pLunch=dinner(d-1), staple, vegL|null, vegD|null}
 portionDay(skel, {kcal, protein}, food, {powderScoops, noTuna, addonUse}) → {day, meals, tot, proteinG, stapleG, bfMult, kiwiG, addon, fit}
@@ -138,24 +141,25 @@ regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // week = f(targets, seed
 - Measured @4a688c5: A43 guard median < 25 ms (7 runs), grid p95 < 40 ms (30 mixed). CI runs tests serially so the guard measures the planner, not contention (v0.10.23).
 - `fit` ∈ `FITS` = `ok` | `kcal-high` | `kcal-low` | `protein-low` (A28).
 - Lunch/dinner show `mealScores` (G1). Plan page also shows distinct veg count, meat notes (R9-8), trayPlan (R-11), weekFiber line (R10-F2), per-day `fiberNote` / stapleSwap (R10-F1).
-- Shopping (R10-S1 ✅): `twinOf` merges `*USDA` → base id (+ `SHOP_ALIAS` eggWhite/oatsDry, A53); `PANTRY_IDS` + `small` (<50 g) collapse into 常备/少量; `listLines` ≤ 32 on the fixture (grid max 33 @v0.10.51, 34 counting split rows — A67).
+- Shopping (R10-S1 ✅): `twinOf` merges `*USDA` → base id (+ `SHOP_ALIAS` eggWhite/oatsDry, A53); `PANTRY_IDS` + `small` (<50 g) collapse into 常备/少量; `listLines` = rendered rows incl. trip-2 rows since A67; R10-S1 pins ≤ 32 on one fixture, grid max is 35 (A82/A83).
 - Staples (A55, R11-1, R11-2, A59): one staple per 2-day rice-cooker batch, decided per batch in `generateWeek`; `STAPLES` (4) rotate over 4 batches so 烤红薯 lands on ≤ 1 batch by construction; day.js SP cap (≤ 3 days) is the backstop; `STAPLE_MAX_G.sweetPotatoBaked = 175` per meal; no staple 3 days running. `FIBER_ALT` staple swaps are near-dormant (5/3024 grid days, budget runs only — A71).
-- Fiber (A54, R10-F1, R11-2): target constants only in `core/fiber.js`; a day still < 25 g may add the peas side (`FIBER_SIDE`, 80 g per lunch **and** dinner) — 28.7% of grid days. Full grid (8 targets × seeds 0–8 × {rotate, oats} × budget {none, .8, .5}) = 86.7% of days ≥ 25 g; 1500/140 rotate 65% (A61).
+- Fiber (A54, R10-F1, R11-2, R14-1): target constants only in `core/fiber.js`; a day still < 25 g may add the peas side (`FIBER_SIDE`, `PEAS_SIDE_G` = 120 g per lunch **and** dinner since v0.10.60), only if it does not turn an ok day into a fit miss. `test/fiber-share.test.js` (A61; 8 targets × seeds 0–5 × budget {none, .8}) prints 92.9% overall, min 1617/160 84.5%, 1500/140 88.1%; asserts ≥ 85% / ≥ 70% (A84 tightens). Days with > 240 g peas (side + r27 青豆玉米粒) and the 1400/160 fit cost → A85.
 - Breakfast (v0.10.42, A62): `opts.breakfast` 'rotate' | 'oats' from `breakfastPref`; part of the memo key; covered by plangrid (oats seeds 0–2) + A44 snapshot.
-- Two trips (R11-3): each list item carries `perishable` (tags 鱼/海鲜/绿叶菜, not pantry, not frozen), `frozen` (tag 冷冻) and `g1 + g2 = g`, where g2 = grams needed on day ≥ `TRIP2_FROM` (4 = 周五). The cost split per trip is done in plan-page (A67).
-- Leftovers (R11-4): `leftovers(list, packs, recipes, weekRecipeIds)` → `{id, left, recipeId}` when need < user pack size; no default pack sizes in data.
-- 聚餐 (R11-5) is a **today-view overlay**, not a plan input: the plan for that date is unchanged; `preAllocate(targets, {meal})` splits day fat by fixed shares (0.25/0.35/0.40) and moves half of the other meals' fat to the social meal (A65: the number is not reconciled with what the plan actually serves).
+- Two trips (R11-3, A66, A67): each list item carries `perishable` (`store` fresh ∧ tag in 鱼/海鲜/绿叶菜/菌菇/海藻, not pantry, not frozen), `frozen` (`store` frozen or tag 冷冻) and `g1 + g2 = g`, where g2 = grams needed on day ≥ `TRIP2_FROM` (4 = 周五). `tripLists(list)` → `{trip1, trip2, small, pantry}` splits cost by grams; Σ trip costs = Σ non-pantry, non-small cost (pantry/small ≈ ¥14–18/wk on 1400–1800 grids, shown only in the 估算合计).
+- Leftovers (R11-4, A68): `leftovers(list, packs, recipes, weekRecipeIds, food)` → `{id, name, left, recipeId, recipeName}`; keys via `shopId`, pantry skipped, left = ceil(g/pack)·pack − g, hidden < `SMALL_G`; no default pack sizes in data.
+- 聚餐 (R11-5, A65) is a **today-view overlay**, not a plan input: the plan for that date is unchanged; `preAllocate(targets, {meal, day, food})` returns concrete `LEVERS` on the planned non-social meals (egg→蛋清, milk→milkSkim, porkLoin/thigh→breast, 千张→北豆腐, oil > `MIN_OIL_G`) at equal protein; `reserveFatG` = Σ lever fat, null without a planned day.
 
-## 6. Testing (A1, A8, A32/A43, A44, A46, A48, A56, A58, A60, A62 ✅)
-- `npm test` = CI = `node --test --test-concurrency=1 test/` (A48). **220 tests in 79 files @v0.10.51**, all pass serially on a clean clone (~32 s, 08:11 SGT).
+## 6. Testing (A1, A8, A32/A43, A44, A46, A48, A56, A58, A60–A62, A64–A69, A74, A75 ✅)
+- `npm test` = CI = `node --test --test-concurrency=1 test/` (A48). **240 tests in 87 files @v0.10.61**, all pass serially on the arch clone (~34 s, 09:18 SGT).
 - Perf guards (A56): a32/A43 samples are divided by a CPU-calibration factor locally so plain parallel `node --test test/` passes on a busy box; CI (`CI=true`) or `PERF=1` keeps the raw 25/40 ms limits. plangrid/plangrid-det keep a 4 s wall guard.
 - Unit tests per core module; feature tests are named after their backlog id (`a23`, `g1`…`g3`, `r8`, `r11-3`…`r11-5`, `ux4`…`ux14`), so "is X covered" is a filename lookup.
 - Grid invariants (A44/A51/A58/A62): `plangrid.test.js` (rotate seeds 0–5, oats 0–2; pairing, fit flags, batch staple, no 3-run, SP cap on every budget incl .5×, `spCap ⇒ staple ≠ SP`, `fiberSide ⇒` peas in lunch+dinner), `plangrid-det.test.js` (determinism), A44 snapshot pins staple:fiberSide:breakfast per day.
-- Data (`data.test.js`): ids, source/verified, kcal≈4P+4C+9F, recipe ingredients exist, UX-14 wrist rule.
+- Data (`data.test.js`): ids, source/verified, kcal≈4P+4C+9F, recipe ingredients exist, UX-14 wrist rule. Citations (A75, `r11-6.test.js`): over FOODS+FOODS2+FOODS3, verified ⇒ source starts with `USDA FDC n`/`营养所查询平台 #n`, one canonical food per FDC id, `PLATFORM_PINS` for all 7 平台 foods. Storage (`a66.test.js`): every non-外食/饮品 food has `store ∈ STORES` (covers A80). Aliases (`a74.test.js`).
 - Store/keys: migrations, envelope, replace-import + undo, persistence, KNOWN_KEYS ↔ §3 table (`keys.test.js`, A14 — **this file's §3 table is parsed by a test**: keep the `| \`key\` |` row format).
 - Text-level / lint: `version.test.js` (CACHE/VERSION, boot order, SW fallback), `sw.test.js` (ASSETS ⊆ disk ⊆ ASSETS), `ux4.test.js` (shared nav), `lint.test.js` (A60: no `assert` hidden after a trailing `//`), bounded-loop grep (A46), `release.test.mjs` (A57 pure helpers).
 - Copy: R11-5 `BANNED_WORDS` is checked on social copy only; other pages' neutral-copy rule is reviewed by hand.
-- Gaps @v0.10.51: **no test renders page strings** — the literal `${PEAS_SIDE_G}` shipped in v0.10.38 and sits on 28.7% of plan days (A64); the cost split per trip lives in UI (A67); one vacuous test (`r11-4` "rounded threshold", empty body, A69); `FIBER_ALT` path has no pinned fixture (A71).
+- Feature tests since v0.10.51: `a64` (fiberDayLine + template-in-quote lint), `a65` (聚餐 levers), `a66` (store field), `a67` (trip costs), `a68` (leftovers), `a74` (aliases), `fiber-share` (A61 share, prints the per-target table).
+- Gaps @v0.10.61: still **no test renders page strings** (A83 for the list section); the A61 floors (85/70) sit far below the measured 92.9/84.5, and R14-1's own fixture floors are not pinned (A84); `FIBER_ALT` path has no pinned fixture (A71); recipes r3/r15 reference the alias `broccoliUSDA` and no test catches it (A77).
 
 ### §4 coverage map
 | PROMPT §4 item | test today | gap |
@@ -176,7 +180,7 @@ regenWeek({seed}) → {seed: seed+1, prevSeed: seed}   // week = f(targets, seed
 ## 7. CI / Pages / release
 - `.github/workflows/ci.yml` ✅: push to main + PR; Node 20; `node --check` every tracked js; `node --test --test-concurrency=1 test/` (serial for stable A43).
 - Pages: branch deploy from `main` `/` (enabled 05:03). CI is the gate; engineer checks it before declaring an iteration done.
-- Release (A57 ✅, v0.10.44): only via `npm run release` (scripts/release.mjs) on a clean tree: pull --rebase (abort on conflict) → conflict-marker grep → `npm test` → bump version.js/sw.js/CHANGELOG/PROGRESS (newest first)/BACKLOG ✅ → `npm test` again (revert on red) → commit (no doubled `(vX)`) → push, one rebase-and-retry on rejection → wait for the `ci` run of that SHA (exit 2 if not success). Gap: the retry path pushes without re-testing what the rebase brought in (A70).
+- Release (A57 ✅, v0.10.44): only via `npm run release` (scripts/release.mjs) on a clean tree: pull --rebase (abort on conflict) → conflict-marker grep → `npm test` → bump version.js/sw.js/CHANGELOG/PROGRESS (newest first)/BACKLOG ✅ → `npm test` again (revert on red) → commit (no doubled `(vX)`) → push, one rebase-and-retry on rejection → wait for the `ci` run of that SHA (exit 2 if not success). A70 ✅ (v0.10.61): the retry rebase re-runs `npm test` when it brought in any non-`*.md` path (`needsRetest`), and conflict markers are checked by the single `hasConflictMarkers` helper over tracked text files.
 - Docs-only commits (arch/research/PM) go straight to main with `git pull --rebase`; they never touch version.js/sw.js.
 - Hygiene: an accidental nested clone `zuofansong/` was untracked and git-ignored in 6ab7969; `node --check $(git ls-files)` is unaffected.
 
@@ -266,3 +270,25 @@ New items: A64–A73 in BACKLOG.md.
 - **Citations (A75):** one rule set over all food files. A verified source starts with the id, an approximate one says so, each FDC id belongs to one canonical food, and `PLATFORM_PINS` pins every 平台 food.
 - **Trips (A67):** `shoppingList` decides the split (`g1`/`g2` via `isPerishable`/`storeOf`/`shopId`). `tripLists` only reshapes rows and costs, and the page renders only. Line-count targets are pinned on a grid, not one fixture (A82/A83).
 - **Feature freeze ~09:30 SGT:** after that, the queue is tests and docs.
+
+## 16. Review @be0b7ab (v0.10.61, ~09:20 SGT): peas side 120 g, fiber share, release retest, §1–§7 refresh
+Commits reviewed: `c7356e6` (docs(arch) @537d8f0) → `be0b7ab`: R14-1 + A61 (f7ef0c6, v0.10.60), A70 release.mjs (472faab, v0.10.61) and R15 research docs. `npm test` 240/240 serial. §2–§7 above now describe v0.10.61 (they had stayed at v0.10.51 through §13–§15).
+Probe (script not committed; 12 seeds × 7 days per row, no budget; PEAS_SIDE_G mutated in the probe process only):
+
+| target · breakfast | ≥ 25 g @80 g → @120 g | fit misses @80 → @120 | days > 240 g peas @120 |
+|---|---|---|---|
+| 1500/140 rotate · oats | 69.0 → 90.5% · 77.4 → 91.7% | 0 → 0 | 3 · 4 (max 315 g) |
+| 1800/140 rotate · oats | 95.2 → 96.4% · 88.1 → 89.3% | 0 → 0 | 0 |
+| 1400/110 rotate · oats | 83.3 → 94.0% · 88.1 → 95.2% | 0 → 0 | 0 |
+| 1617/160 rotate · oats | 78.6 → 89.3% · 82.1 → 95.2% | 0 → 0 | 3 · 4 (max 315 g) |
+| 1400/160 rotate · oats | 27.4 → 53.6% · 38.1 → 50.0% | 9 → 11 · 8 → 10 | 6 · 6 |
+
+- R14-1's research numbers reproduce exactly (1500/140 90.5%, 1800/140 96.4%, 1400/110 94.0%).
+- The fit guard is per candidate: it rejects a 120 g side that breaks an ok day but has no smaller fallback, so 1400/160 seed 5 day 1 (fine with 80 g) now ships `kcal-high` with the side, and seed 0 day 4 misses by knock-on. 315 g/day = 2 × 120 g side + r27 青豆玉米粒; R14-1's "≤ 240 g" rider was parked with the edamame alternation.
+
+Design decisions this round:
+- **Planner levers are ladders, not single sizes.** A side/portion knob that can break fit tries the large step, then the old step, before giving up (A85). A fit guard that only says "no" quietly loses days the previous size handled.
+- **Pin what was measured.** When a change is justified by grid numbers, the test floors sit just under those numbers (A84). 85%/70% floors under a 92.9%/84.5% measurement would let most of R14-1 regress unnoticed.
+- **One table per concept.** Week-day names (A86) and shopping-id normalisation (A87) each get one exported definition that pages and core import.
+
+New items: A84–A87 in BACKLOG.md.

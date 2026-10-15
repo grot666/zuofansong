@@ -1,13 +1,49 @@
 # BACKLOG (top = next)
 
 Original items 1–10 — all ✅ (Pages enabled 05:03; tests in CI + local; single VERSION; foods 137; tuna counter, bedtime/caffeine, plateau, templates ×0.5/×1/×1.5, weekly review, r9/r24 renamed — v0.2–v0.6.0).
-Next (09:10, PM 09:07): R14-1 → A61 → A70 → A77 → A79 → A80/A81/A71 (tests/docs after 09:30). Earlier: **R14-1** (P1 peas side 120 g; only if it ships before 09:30) → A61 → A70 → A77 → A79 → A71–A73 → A76 → A80/A81 → A82/A83; A78 (+R14-3) post-freeze. **Feature freeze ~09:30 SGT**: after that, only test/docs items (A70, A79, A80, A81, A71, A82, A83). A67/A75 ✅.
+Next (09:20, arch @be0b7ab): **A84** (pin R14-1/A61 floors, 10 min) → **A77** (r3/r15 `broccoliUSDA` → `broccoli` + test) → A79 → A81 → A71 → A82/A83 → A87 → A86 → A76 → R15-2 (TFCC copy only); post-freeze: **A85** (peas ladder + 240 g/day cap) → A78 → R15-1/R15-3 (data value changes) → A72 → A73. **Feature freeze ~09:30 SGT**: after that, only tests/docs/no-value-change data. R14-1/A61/A67/A70/A75 ✅; A80 closed (already tested). Earlier (09:10, PM 09:07): R14-1 → A61 → A70 → A77 → A79 → A80/A81/A71 (tests/docs after 09:30). Earlier: **R14-1** (P1 peas side 120 g; only if it ships before 09:30) → A61 → A70 → A77 → A79 → A71–A73 → A76 → A80/A81 → A82/A83; A78 (+R14-3) post-freeze. **Feature freeze ~09:30 SGT**: after that, only test/docs items (A70, A79, A80, A81, A71, A82, A83). A67/A75 ✅.
 **Arch @08:15 (v0.10.51):** A56/A57/A58/A59/A60/A62 + R11-3/R11-4/R11-5 verified ✅. Next pick: **A64** (P0, literal `${PEAS_SIDE_G}` on 29% of plan days, 10 min) → **A69** (5 min) → **A65** → **A66** → **A68** → A67 → A61 → A70 → A71 → A72 → A73.
 **Research R13 @08:30 (v0.10.52):** new items **R13-1** (A65 lever order + fixtures, P1), **R13-2** (A66 store map for all foods, P1), **R13-3** (fiber dip 1500/140 — 先调查、本条不改行为, P2), **R13-4** (takeaway/drink conclusions, P3). See “R13 update” at the end and docs/RESEARCH-R13.md.
 **Research R14 @08:55 (v0.10.57):** new **R14-1** (P1 peas side 120 g — fiber 1500/140 69→90.5%), **R14-2** (P3 greenTea + ≈ test rules), **R14-3** (P2 spinach/kiwi alias collapse + A77). See “R14 update” at the end.
 **Research R15 @09:20 (v0.10.59):** R14-2/A75 done (residuals → **R15-1** P3); A78 AC ready — **A78 direction supersedes R14-3**; new **R15-2** (P2 TFCC: r17 "挤干" → press in sieve), **R15-3** (P3 woodEar/kelp/jimaocai 平台 cites). R13-3 closed. See “R15 update” at the end and docs/HANDOFF-RESEARCH.md.
 
 ## Architecture items (see docs/ARCHITECTURE.md §8) — top priority first
+
+### Status @be0b7ab (v0.10.61), 2026-10-15 ~09:20 SGT: arch review
+Serial `npm test`: **240/240** (87 files) on the arch clone. Reviewed c7356e6..be0b7ab: R14-1 + A61 (f7ef0c6, 5bc32dd, v0.10.60), A70 (472faab, be0b7ab, v0.10.61) and R15 docs (2302556, 3d09580, 9ca620d). ARCHITECTURE §2–§6 refreshed to v0.10.60 (they had stayed at v0.10.51), §16 added.
+**Feature freeze ~09:30 SGT.** Queue after that: tests/docs/no-value-change data only (A84, A77, A79, A81, A71, A82, A83, A87, A86, A76, R15-2). A85 is behaviour, and R15-1/R15-3 change food values → post-freeze.
+- **R14-1 ✅ (part):** `PEAS_SIDE_G = 120`; `dayWith` takes the side only if it does not turn an ok day into a miss. Research numbers reproduce exactly on 12 seeds, no budget: 1500/140 rotate 69.0 → 90.5%, 1800/140 95.2 → 96.4%, 1400/110 83.3 → 94.0%; 0 fit misses on those three. Edamame alternation is parked (DECISIONS).
+  - **Gaps:**
+    - Fit at 1400/160 (the G2 target) gets worse: misses 9 → 11 (rotate) and 8 → 10 (oats) over seeds 0–11. Seed 5 day 1 was fine with 80 g and is `kcal-high` with 120 g, because the guard has no smaller fallback. Seed 0 day 4 misses by knock-on. → A85.
+    - Days over 240 g of peas (2 × 120 g side + r27 青豆玉米粒, max 315 g): 1500/140 3/84 rotate and 4/84 oats; 1617/160 3 and 4; 1400/160 6 and 6. The R14-1 "≤ 240 g" rider is unmet. → A85.
+    - None of R14-1's fixture floors (≥ 90.0 / 96.0 / 93.5%) is pinned. → A84.
+- **A61 ✅:** `test/fiber-share.test.js` covers 8 targets × seeds 0–5 × budget {none, .8} and prints the table: 92.9% overall, 1400/110 95.2, 1500/140 88.1, 1617/160 84.5, 1800/130 94.0, 1800/140 98.8, 1800/160 92.9, 2000/100 95.2, 2200/160 94.0. Copy says 约 85–90% (version.js 0.10.41/0.10.60, CHANGELOG). Floors are 85/70. → A84.
+- **A70 ✅:** `needsRetest(paths)` (any non-`*.md` path) re-runs `npm test` after the retry rebase, using `git diff --name-only ORIG_HEAD HEAD`; on red the release commit stays local. The conflict check is one implementation, `hasConflictMarkers` over tracked text files (`git grep` removed). `release.test.mjs` covers docs-only and mixed path lists.
+- **A80 ✅ (no work needed):** `a66.test.js:10` already asserts it.
+- **A77 still open, now with a concrete failure:** r3 and r15 reference `broccoliUSDA` (alias). See A77.
+- **Hygiene (this commit):** reworded the two "✅ … still open" lines in Status @9b73550 and dropped the duplicated R13-4 line at the end of R13 update.
+
+- **A84 Pin the R14-1 / A61 numbers that were measured (P2, test, 10 min; freeze-safe)**
+  - Why: `fiber-share` asserts ≥ 85% overall and ≥ 70% per target against a measured 92.9% and 84.5%. R14-1's fixture floors are not in any test, so most of the R14-1 gain could regress silently.
+  - AC: `fiber-share` floors become overall ≥ 90% and each target ≥ 80%. A new R14-1 test (rotate, seeds 0–11, no budget) asserts 1500/140 ≥ 90.0%, 1800/140 ≥ 96.0% and 1400/110 ≥ 93.5% (measured 90.5/96.4/94.0), with 0 fit misses each. Failure messages print the measured value.
+  - Tests: as stated. Keep the wall time under 4 s, like plangrid (fiber-share alone runs ~1.3 s).
+- **A85 Peas side as a ladder [120, 80] plus a daily peas cap (P2, behaviour; post-freeze)**
+  - Why: see the R14-1 gaps above. The guard only rejects the 120 g side, so a day the 80 g side kept ok now misses or goes without. Recipe peas are not counted against the side, so a day can reach 315 g.
+  - Where: `js/core/plan/fiber.js` `FIBER_SIDE` (or a `PEAS_SIDE_STEPS = [120, 80]`), `js/core/plan/day.js` `dayWith`; `fiberDayLine` must print the side grams actually used (from the day's items), not the constant. Also fix the stale `PEAS_SIDE_G` comment in `core/fiber.js` ("on capped days" → "per lunch/dinner on a day still short").
+  - AC:
+    - `dayWith` tries each step in order and keeps the first that passes the fit guard and improves the score.
+    - The per-meal side is reduced so that total peas per day (side + recipe items) is ≤ `PEAS_DAY_MAX_G = 240`.
+    - At 1400/160, seeds 0–11, fit misses are ≤ the 80 g baseline (9 rotate, 8 oats).
+    - The A84 floors still pass. If the percentages move, re-pin them in DECISIONS.
+  - Tests: grid {1500/140, 1617/160, 1400/160} × seeds 0–11 × {rotate, oats}, no day > 240 g peas; `fiberDayLine` on a step-80 day says `青豆 80 g`.
+- **A86 One week-day name table (P3, refactor; freeze-safe)**
+  - Why: `['周一'…'周日']` is defined three times: `DAY_NAMES` in plan/shopping.js, an inline array in `planTips` (shopping.js:54), and `DAYS` in plan-page.js:20.
+  - AC: export `DAY_NAMES` once from `js/core/dates.js`. shopping.js (`TRIP2_FROM_DAY`, `planTips`) and plan-page import it. The plan.js facade keeps re-exporting `DAY_NAMES`, so `a67.test.js` still imports it.
+  - Tests: a lint/text test that `'周一', '周二'` appears exactly once under `js/`.
+- **A87 One shopping-id implementation (P3, refactor + guard test; freeze-safe)**
+  - Why: `shoppingList` inlines `COOKED_TO_RAW` → `twinOf`, while `leftovers` and `views/foods` use `shopId`. They agree on all 147 ids today (probe), but nothing pins that, and §3 rule 8 depends on it.
+  - AC: `foods.js` exports `shopKey(id, food) → [shopId, gramsFactor]`. `shoppingList` uses it, and `shopId = shopKey(…)[0]`.
+  - Tests: for every food id and `COOKED_TO_RAW` key, `shoppingList([{day:0, meals:[{items:[[id,100]]}]}], food)[0].id === shopId(id, food)`.
 
 ### Status @537d8f0 (v0.10.59), 2026-10-15 ~09:15 SGT: arch review
 Serial `npm test`: **238/238** on a fresh clone. Reviewed 9b73550..537d8f0: A75 (c5d6282, dcacb54, v0.10.58), A67 (518828a, 537d8f0, v0.10.59), and R14 docs.
@@ -53,8 +89,8 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
   - 30 takeaway/canteen/drink foods have no `store` (an implicit exemption). → A80.
 - **A68 ✅:** ✅ (@9b73550) keys go through `shopId` (`thighRoasted:500` → chickenThigh, left 227), multi-pack uses ceil, pantry rice is skipped.
   - **Gap:** two `packs` keys that resolve to the same shopping id (`egg` + `eggUSDA`) collide, and the last key wins. `{eggUSDA:300, egg:600}` → left 535; `{egg:600, eggUSDA:300}` → left 235. → A79.
-- ✅ **A67 boundary:** `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
-- ✅ **A75 still open:** `test/r11-6.test.js` still omits foods3 (0 references); greenTea is still unverified with an exact FDC id.
+- **A67 boundary** (✅ honoured @537d8f0): `tripLists` must reuse `storeOf`/`isPerishable`/`shopId`; it must not re-derive trips from tags. Added to the A67 AC.
+- **A75 was still open @9b73550** (✅ shipped v0.10.58, verified @537d8f0): `test/r11-6.test.js` omitted foods3 (0 references); greenTea was unverified with an exact FDC id.
 
 - **A78 Finish A74: alias or rename the spinach/kiwi twins (P2; post-freeze unless trivial)**
   - Why: 菠菜 shows `spinach` (CFCT 28 kcal, unverified) and `spinachUSDA` (FDC 23 kcal); 猕猴桃 shows `kiwi` and `kiwiUSDA` with different protein/fiber. Same physical food, two answers.
@@ -64,7 +100,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
   - Why: see the A68 gap above. The result depends on object key order.
   - AC: when several keys map to one `shopId`, a deterministic rule picks the size (prefer the canonical/shop id's own key, else the largest). The settings write normalises the key to `shopId`.
   - Tests: both key orders give the same `left`.
-- **A80 Make storage class "closed" explicit for non-shopping foods (P3, test)**
+- ✅ **A80 Make storage class "closed" explicit for non-shopping foods (P3, test)** — closed @be0b7ab: already covered by `test/a66.test.js` line 10 (every non-外食/饮品 food has `store ∈ STORES`, deepEqual lists the ids; the 30 store-less foods are exactly 外食 26 + 饮品 4). No further work.
   - Why: 30 foods (takeaway, canteen, drinks) have no `store`. `storeOf` silently maps undefined to 'keeps'. A new grocery food without a store would also pass unnoticed.
   - AC: data test asserts every food in a shopping category (not 外卖/食堂/饮品; list them in one constant) has `store ∈ STORES`.
   - Tests: as stated, failing message lists the ids.
@@ -120,7 +156,7 @@ Serial `npm test`: **234/234** on a fresh clone. Reviewed 8a0fb00..9b73550 (A64+
   - Why: 7 foods are `verified:true` while their source says the platform edition is unchecked. The ✓ badge overstates this.
   - AC: either record the edition (e.g. "中国食物成分表 标准版 第6版") and drop the note, or show a lighter badge for `sourceLevel:'platform-unversioned'`. Document the choice in DECISIONS.
   - Tests: no `verified:true` source contains "未核对".
-- **A77 Recipes reference canonical ids (P3, after A74)**
+- **A77 Recipes reference canonical ids (P3, after A74)** — @be0b7ab still open: **r3 and r15 use `broccoliUSDA`** (an alias since A74), so the AC test would fail today; switch them to `broccoli` (same values via alias, no plan change) and add the test. R15's "A78 keeps A77 true" holds only after this fix.
   - Why: the R11-6 AC "recipes use twins" is unmet (r5/r10/r16/r19 `egg`, r23 `broccoli`). After A74 the direction flips: recipes must reference canonical (non-alias) ids.
   - AC: data test asserts no recipe item id has `aliasOf`. Fix spinach/kiwi references if the canonical side changes.
   - Tests: as stated.
@@ -229,7 +265,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Why: see "Bug found" above. The per-week cap is still asserted (line 15), but the grid share isn't.
   - AC: the assertion is on its own line.
   - Tests: add a cheap guard test (`test/lint.test.js`) that fails if any `test/*.js` line contains `// …assert.` after code on the same line (regex `;\s*//.*\bassert\.`).
-- ✅ **A61** Make the fiber-days claim measurable and true (P2)** — still open @08:15; full grid now 86.7%, 1500/140 rotate 65%, 1617/160 75% (see Status @1073021)
+- ✅ **A61** Make the fiber-days claim measurable and true (P2)** — verified @be0b7ab (`test/fiber-share.test.js`: 92.9% overall, min 1617/160 84.5%, 1500/140 88.1%; copy 约 85–90%; floors → A84). Was still open @08:15; full grid now 86.7%, 1500/140 rotate 65%, 1617/160 75% (see Status @1073021)
   - Why: see (e). Copy and DECISIONS cite 89% and 94.2%, but the full-grid figure is ~87%, with one target at 73%.
   - AC:
     - `test/fiber-share.test.js` over the 8-target × seeds 0–5 × budget {none, .8} grid asserts overall ≥ 85% and each target ≥ 70%, printing the per-target table.
@@ -840,7 +876,6 @@ Oats breakfast checked at 1800/140/¥300 seeds 0–2: all days ok, cost ≤ rota
 - ✅ **R13-1** (P1) A65 addendum — lever order and fixtures.** Why: on 1800/140 seeds 0–5 the oil lever frees mean 0.2 g/day (planned meals already ≤ 5–6 g oil); egg→white frees median 11.6 g, milk→skim median 7.9 g on 28/42 days; fixed shares give 16 g that the plan can't reach (breakfast fat median 20.1 g). AC (adds to A65): levers applied to non-social meals (早餐/午餐 or 晚餐/加餐) in this order, each at equal protein, stopping when nothing applies: (1) whole egg (egg/eggUSDA/eggBoiled) → eggWhite, g × P_egg / 10.9; (2) milk → skim milk (new food `milkSkim` 34/3.37/0.08/4.96, source USDA FDC 171269, verified) same grams; (3) porkLoin → breastRoasted; (4) thighRoasted → breastRoasted; (5) qianzhang → tofuFirm; (6) oil above MIN_OIL_G; tofu→豆干 excluded (adds kcal). Each lever returns `{meal, from, to, fatG, kcalDelta}`; card lists them; `reserveFatG = Σ fatG` and freed kcal shown as "约 X kcal 也留给聚餐". Recipe steps stay TFCC-safe (egg-white scramble/boil only; no new chopping). Fixtures: portion table — eggUSDA 100→eggWhite 116 g frees 9.3 g fat, −83 kcal; milk 250 → skim frees 7.9 g, −68 kcal, +0.55 g P; thigh 150→breast 120 frees 7.9 g, −71 kcal; porkLoin 150→breast 98 frees 8.4 g; qianzhang 50→tofu 100 frees 3.2 g. Grid: 1800/140 seeds 0–5 → mean reserve within ±1 g of 23.1 (median 21.9), 1400/110 → mean 20.1 ±1 g (after milkSkim lands; without it subtract the milk row: 1800 mean 17.4). Tests: per-meal protein unchanged ±0.5 g; reserve = Σ levers ±0.5; no lever on the social meal; BANNED_WORDS passes.
 - ✅ **R13-2** (P1) A66 store map, ready for one PR.** AC: add `store` to every non-外食/饮品 food using the full list in RESEARCH-R13 §R13.2 (pantry / frozen / keeps / fresh; cooked ids inherit via COOKED_TO_RAW; † = judgment, note in DECISIONS); `PANTRY_IDS`, `isFrozen`, `isPerishable` read `store`; trip 2 = store `fresh` AND cat/tags in 鱼/海鲜/绿叶菜/菌菇/海藻 (so lettuce, mushrooms, kelp move to trip 2; meat/tofu stay trip 1 — explicit decision, not inferred). FoodKeeper was not reachable from the box (Access Denied) → no shelf-life numbers. Tests: every non-外食/饮品 food has store in the set; lettuce/kelp/enoki/shiitake/mushroom fresh; basa/sole/frozenVeg/peas/edamame frozen; tunaLight/rice/oats pantry; cabbage/napa/carrot/sweetPotato/winterMelon keeps; r11-3 fixture with lettuce on day 5 → g2 > 0; chickenBreast on day 5 → g2 = 0.
 - **R13-3 (P2) Fiber dip at 1500/140 — 先调查、本条不改行为.** Why: 12 seeds: 1500/140 rotate 69.0% days ≥ 25 g (oats 77.4%); 1800/140 rotate 95.2% but oats 88.1%; low days at 1500/140 still have white rice on 12/26 and peas already on 22/26; oats breakfast is only 4.2 g fiber. AC (investigation only, no behaviour change in this item): add `test/fiber-probe` (skipped in CI or report-only) that prints, per low day, which fiber alternatives were tried and why each lost (kcal fit / protein / batch A55 / SP cap); write findings to DECISIONS; then file one behaviour item. Candidate levers to measure: rice→brown on low days, oats 40→50 g with milk trimmed, kiwi 200 g, corn breakfast weight. Fixture: 1500/140 rotate seeds 0–11 must reproduce 69.0% ±0.5 before any change.
-- **R13-4** (P3) Takeaway/drink conclusions.** AC: greenTea `verified:true` (FDC 171917 matches); chayedan source adds "proxy FDC 173424", stays ≈; latte, milkTea and all composite dishes (fatsecret.cn R5.1 / 估算) stay ≈ with reason "组合菜，商家差异大，无 FDC/CFCT 对应". Test: every 外食 food has `verified:false`; greenTea (饮品) has `verified:true`.
 - **R13-4** (P3) Takeaway/drink conclusions.** AC: greenTea `verified:true` (FDC 171917 matches); chayedan source adds "proxy FDC 173424", stays ≈; latte, milkTea and all composite dishes (fatsecret.cn R5.1 / 估算) stay ≈ with reason "组合菜，商家差异大，无 FDC/CFCT 对应". Test: every 外食 food has `verified:false`; greenTea (饮品) has `verified:true`.
 ## R14 update (2026-10-15 ~08:55 SGT, needs-research vs v0.10.57 @ 9b73550 — see docs/RESEARCH-R14.md, DECISIONS 08:55)
 - ✅ **R14-1** (P1) Peas side 80 → 120 g per lunch/dinner.** Why (R13-3 probe, 12 seeds): % days ≥ 25 g fiber 1500/140 69.0 → 90.5, 1800/140 95.2 → 96.4, 1400/110 83.3 → 94.0; 0/84 fit misses each; cost within ±¥3/wk. Brown-forced (77.4), veg ×3 (70.2), kiwi 300 (72.6) lose. AC: `PEAS_SIDE_G = 120`; to limit monotony, when the previous day already had the side, use `edamame` (FDC 168411, frozen) as the side instead if it keeps fit (else peas); side is frozen, microwave/boil, no cutting (TFCC-safe); fiberDayLine shows the actual side food. Fixtures: 1500/140 rotate seeds 0–11 ≥ 90.0% days ≥ 25 g; 1800/140 ≥ 96.0%; 1400/110 ≥ 93.5%; checkWeek all ok on those grids; no day with peas + edamame side > 240 g total. (If the edamame alternation changes the percentages, re-pin with the new numbers in DECISIONS.)

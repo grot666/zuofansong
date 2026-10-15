@@ -60,3 +60,12 @@ const isSide = (d, id, g) => d.fiberSide && FIBER_SIDE.some(([s, sg]) => s === i
 export const distinctVeg = (week, food) => new Set(week.flatMap(d => d.meals.flatMap(m => m.items.filter(([id, g]) => !isSide(d, id, g)).map(([id]) => id))).filter(id => food(id)?.cat === '蔬菜')).size;
 // R10-F2: 7-day average fiber (g/day) for the plan header.
 export const weekFiber = days => (days.length ? days.reduce((s, d) => s + (d.tot?.fiber || 0), 0) / days.length : 0);
+// R11-4: opened-pack leftovers. packs: user {id: pack g} (no default pack sizes: no official source).
+// Need < pack → "剩余约 X g", with a recipe that uses the item, preferring one not already in the week.
+export function leftovers(list, packs = {}, recipes = [], weekRecipeIds = []) {
+  return list.filter(x => packs[x.id] > 0 && x.g < packs[x.id]).map(x => {
+    const rs = recipes.filter(r => r.items.some(([id]) => id === x.id));
+    const r = rs.find(r => !weekRecipeIds.includes(r.id)) || rs[0];
+    return { id: x.id, name: x.name, left: Math.round(packs[x.id] - x.g), recipeId: r?.id || null, recipeName: r?.name || null };
+  });
+}

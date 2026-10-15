@@ -84,6 +84,7 @@ All access through `js/core/store.js` (`get/set` JSON, try/catch). `SCHEMA_VERSI
 | `foodUse` | {id: count} quick-add use counts for chips (UX-12, v0.8.6) | today, foods |
 | `onboardStep` | 2–3, onboarding step to resume after reload; removed on skip/完成 (A29, v0.9.0) | today |
 | `maxPrepMin` | 0/5/10, plan veg prep-time limit (R9-10, v0.10.5) | plan |
+| `packs` | {foodId: g} user pack sizes for leftover hints (R11-4) | foods, plan |
 | `social` | {date, meal, type} 聚餐 mode for one day (R11-5) | today |
 | `breakfastPref` | rotate/oats, plan breakfast preference (opts.breakfast, v0.10.42) | plan |
 | `onboardSeen` | bool, hides 示例目标 card (UX-1, v0.6.9) | today |

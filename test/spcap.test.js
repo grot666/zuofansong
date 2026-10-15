@@ -13,7 +13,8 @@ test('SP cap: ≤3 烤红薯 days/week, fiber ≥25 g on ≥75% of grid days, ev
     for (const budget of [undefined, 200]) {
       const w = planWeek({ kcal, protein }, food, RECIPES, { seed, budget }).week;
       assert.ok(w.filter(d => d.staple === SP_ID).length <= SP_MAX_PER_WEEK, `${kcal}/${protein}/${seed}/${budget}`);
-      for (const d of w) { n++; if (d.staple === SP_ID) sp++; if (d.tot.fiber >= FIBER_MIN) hi++; else assert.ok(d.fiberNote); if (d.spCap) assert.notEqual(d.staple, SP_ID); }
+      // R11-4: the fiber note uses the displayed (rounded) value, so 24.6 g shows no note
+      for (const d of w) { n++; if (d.staple === SP_ID) sp++; if (d.tot.fiber >= FIBER_MIN) hi++; else if (Math.round(d.tot.fiber) < FIBER_MIN) assert.ok(d.fiberNote); if (d.spCap) assert.notEqual(d.staple, SP_ID); }
     }
   }
   // A55 batch staple + R11-2 peas side on any short day: 88.6% on this grid (v0.10.43)

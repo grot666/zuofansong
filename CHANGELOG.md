@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.56
+- A66 closed store field (fresh/frozen/keeps/pantry); trip 2 reads it
+
 ## v0.10.55
 - A65 social reserve from concrete planned-day levers; milkSkim
 

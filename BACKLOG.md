@@ -97,7 +97,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
     - No plan/log → no number; copy says only "早餐、午餐少放油，蛋白照常".
     - `加餐` is part of the model (it is a meal in `portionDay`).
   - Tests: on 1800/140 and 1400/110 seeds 0–5, `reserveFatG === Σ levers.fatG` (±0.5 g) and each non-social meal's remaining fat ≥ its non-oil intrinsic fat; protein of every meal unchanged; BANNED_WORDS test still passes.
-- **A66 Storage class as a closed data field (P1)**
+- ✅ **A66 Storage class as a closed data field (P1)**
   - Why: two-trip classification infers from free-text tags; 生菜, 海带(鲜), fresh mushrooms go to trip 1; canned tuna only escapes via PANTRY_IDS. Any new food without the right tag silently lands on trip 1.
   - Where: `data/foods*.js` (new `store: 'fresh' | 'frozen' | 'keeps' | 'pantry'` on 蛋白/蔬菜/水果/主食), `js/core/plan/shopping.js` (`isPerishable`/`isFrozen`/`PANTRY_IDS` read `store`; tags stay for search).
   - AC: lettuce, kelp, shiitake/enoki/mushroom → `fresh`; basa/sole/frozenVeg/peas/edamame → `frozen`; tunaLight/tunaAlbacore/rice/oats → `pantry`; cabbage/napa/carrot/sweetPotato/winterMelon → `keeps`. Custom foods default `keeps` (trip 1). No shelf-life numbers.

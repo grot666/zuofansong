@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.49
+- R11-5 聚餐/hotpot mode: fat pre-allocation, protein-first order, dip fat, neutral next-day line
+
 ## v0.10.48
 - A59 sweet potato on ≤1 batch by construction (test); staple swaps 0 on grid
 

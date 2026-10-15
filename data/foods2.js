@@ -1,3 +1,4 @@
+import { withStore } from './storage.js';
 // Cooked / packaged items verified against USDA FoodData Central API (SR Legacy, per 100 g), 2026-10-15.
 // See docs research (grot666/culiang-jianzhi-chufang docs/RESEARCH.md R3.1, RESEARCH-R4.md R4.1).
 const U = (id, name, py, cat, fdc, kcal, protein, fat, carbs, fiber, price, tags, extra = {}) => ({ id, name, py, cat, kcal, protein, fat, carbs, fiber, priceCNYPer500g: price, tags, source: 'USDA FDC ' + fdc, verified: true, ease: 4, ...extra });
@@ -41,3 +42,4 @@ export const FOODS2 = [
 for (const f of FOODS2) if (['shrimpCooked', 'thighRoasted', 'eggUSDA', 'salmon'].includes(f.id)) f.tasty = true;
 // A37: reviewed — every 蛋白/主食/外食 food not flagged tasty above is explicitly not tasty.
 for (const f of FOODS2) if (['蛋白', '主食', '外食'].includes(f.cat) && typeof f.tasty !== 'boolean') f.tasty = false;
+withStore(FOODS2); // A66

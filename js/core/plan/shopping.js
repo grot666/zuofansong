@@ -8,8 +8,12 @@ export const SMALL_G = 50;
 // frozen fish (tag 冷冻) stays on trip 1 with "冷冻保存". No shelf-life numbers (unsourced).
 export const TRIP2_FROM = 4;
 const tags = f => f?.tags || [];
-export const isFrozen = f => tags(f).includes('冷冻');
-export const isPerishable = f => tags(f).some(t => ['鱼', '海鲜', '绿叶菜'].includes(t));
+export const isFrozen = f => f?.store === 'frozen' || tags(f).includes('冷冻');
+// A66: trip 2 = store 'fresh' AND fish/seafood/leafy/mushroom/seaweed (meat/tofu stay trip 1 — explicit, see DECISIONS).
+export const TRIP2_TAGS = ['鱼', '海鲜', '绿叶菜', '菌菇', '海藻'];
+export const isPerishable = f => f?.store === 'fresh' && tags(f).some(t => TRIP2_TAGS.includes(t));
+// Custom foods without a store class count as 'keeps' (trip 1).
+export const storeOf = f => f?.store || 'keeps';
 export function shoppingList(days, food) {
   const agg = {};
   days.forEach((d, di) => { for (const m of d.meals) for (const [id, g] of m.items) {
@@ -18,7 +22,7 @@ export function shoppingList(days, food) {
     const a = agg[key] || (agg[key] = { g: 0, g2: 0, cost: 0 });
     a.g += g / f / f2; if ((d.day ?? di) >= TRIP2_FROM) a.g2 += g / f / f2; a.cost += (g / f) * priceOf(food, id).rawPrice / 500;
   } });
-  return Object.entries(agg).map(([id, a]) => { const f = food(id); const g = Math.round(a.g); const pantry = PANTRY_IDS.has(id) || ['调味', '油脂'].includes(f?.cat);
+  return Object.entries(agg).map(([id, a]) => { const f = food(id); const g = Math.round(a.g); const pantry = storeOf(f) === 'pantry' || PANTRY_IDS.has(id) || ['调味', '油脂'].includes(f?.cat);
     const fr = isFrozen(f), per = !pantry && !fr && isPerishable(f), g2 = per ? Math.round(a.g2) : 0;
     return { id, name: f?.name || id, cat: f?.cat || '', g, cost: f ? a.cost : 0, pantry, small: !pantry && g < SMALL_G, perishable: per, frozen: fr, g1: g - g2, g2 }; })
     .sort((a, b) => a.pantry - b.pantry || a.small - b.small || a.cat.localeCompare(b.cat) || b.g - a.g);

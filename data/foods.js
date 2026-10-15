@@ -1,3 +1,4 @@
+import { withStore } from './storage.js';
 // Per 100 g edible portion. Raw unless noted. Sources: CFCT = 中国食物成分表 (标准版 第6版), USDA = FoodData Central.
 // priceCNYPer500g = Shanghai estimate (≈). fatClass: high = worthwhile fat, low = hidden/low-value fat.
 // yield = cooked/raw weight factor for grains (estimate).
@@ -55,7 +56,7 @@ export const FOODS = [
   F('winterMelon','冬瓜','donggua','蔬菜',13,0.4,0.2,3.0,2.9,1.5,['便宜'], {source:'USDA FDC 170069',verified:true,fdcVerifiedAt:'2026-10-15'}),
   F('loofah','丝瓜','sigua','蔬菜',20,1.2,0.2,4.35,1.1,5,[], {source:'USDA FDC 168414',verified:true,fdcVerifiedAt:'2026-10-15'}),
   F('zucchini','西葫芦','xihulu','蔬菜',17,1.21,0.32,3.11,1.0,3,[],{source:'USDA FDC 169291',verified:true}),
-  F('lettuce','生菜','shengcai','蔬菜',15,1.36,0.15,2.87,1.3,4,['生吃'],{source:'USDA FDC 169249',verified:true}),
+  F('lettuce','生菜','shengcai','蔬菜',15,1.36,0.15,2.87,1.3,4,['生吃','绿叶菜'],{source:'USDA FDC 169249',verified:true}),
   F('shiitake','香菇(鲜)','xianggu','蔬菜',34,2.24,0.49,6.79,2.5,8,['菌菇'], {source:'USDA FDC 169242',verified:true,fdcVerifiedAt:'2026-10-15'}),
   F('enoki','金针菇','jinzhengu','蔬菜',37,2.66,0.29,7.81,2.7,4,['菌菇'], {source:'USDA FDC 169382',verified:true,fdcVerifiedAt:'2026-10-15'}),
   F('woodEar','木耳(水发)','muer','蔬菜',27,1.5,0.2,6.0,2.6,6,['菌菇','高纤'], {fdcCompare:{id:169237,kcal:25,protein:0.48,note:'FDC 木耳(Jew’s ear, raw)未给纤维；水发木耳保留 CFCT 值并标≈'}}),
@@ -78,3 +79,4 @@ export const FOODS = [
 for (const f of FOODS) if (['seabass', 'shrimp', 'leanBeef', 'chickenThigh', 'egg', 'porkLoin'].includes(f.id)) f.tasty = true;
 // A37: reviewed — every 蛋白/主食/外食 food not flagged tasty above is explicitly not tasty.
 for (const f of FOODS) if (['蛋白', '主食', '外食'].includes(f.cat) && typeof f.tasty !== 'boolean') f.tasty = false;
+withStore(FOODS); // A66

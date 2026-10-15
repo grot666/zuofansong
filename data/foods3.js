@@ -1,3 +1,4 @@
+import { withStore } from './storage.js';
 // Shanghai takeaway / breakfast ESTIMATES (research R5.1, fatsecret.cn generic entries, 2026-10-15).
 // All verified:false -> UI shows ≈. Fiber is not given by source; set to a rough estimate (marked fiberEst).
 // Default portions are design assumptions, editable when logging.
@@ -52,3 +53,4 @@ export const FOODS3 = [
 for (const f of FOODS3) if (['hairtail', 'pomfret', 'canteenMeatSet', 'canteenPorkSet'].includes(f.id)) f.tasty = true;
 // A37: reviewed — every 蛋白/主食/外食 food not flagged tasty above is explicitly not tasty.
 for (const f of FOODS3) if (['蛋白', '主食', '外食'].includes(f.cat) && typeof f.tasty !== 'boolean') f.tasty = false;
+withStore(FOODS3); // A66

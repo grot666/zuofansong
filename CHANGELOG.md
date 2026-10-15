@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.55
+- A65 social reserve from concrete planned-day levers; milkSkim
+
 ## v0.10.54
 - A74 part 1: egg/broccoli USDA twins are aliases; schema v3 moves alias prices
 

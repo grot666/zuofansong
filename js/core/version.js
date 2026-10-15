@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.54';
+export const VERSION = '0.10.55';
 export const CHANGELOG = [
+  ['0.10.55', '聚餐预留脂肪改为按今天菜单的具体替换计算（蛋清、脱脂奶、鸡胸等），蛋白不变'],
   ['0.10.54', '鸡蛋、西兰花搜索只显示一条；两个条目共用价格'],
   ['0.10.53', '修复菜单页青豆克数显示为代码的问题；纤维不足提示不再把 24.x g 显示成约 25 g'],
   ['0.10.52', '山药、茭白标注营养所查询平台来源'],

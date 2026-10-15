@@ -89,7 +89,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
   - Where: `test/r11-4.test.js`, `js/core/plan/fiber.js` `fiberNote`.
   - AC: delete the empty test or replace it with a real one; `fiberNote(f)` prints `Math.floor(f*10)/10` (e.g. "约 24.8 g") or `Math.floor(f)`, never a value ≥ 25 when called. Threshold (`FIBER_MIN`) and the planner are untouched, so snapshots don't move.
   - Tests: `fiberNote(24.9)` does not contain "25 g（"; `lint.test.js` fails on a `test(` whose callback body has no `assert` (rough brace scan is fine).
-- **A65 聚餐 reserve derived from the actual day, not fixed shares (P1)**
+- ✅ **A65 聚餐 reserve derived from the actual day, not fixed shares (P1)**
   - Why: see "聚餐 reserve" above. Showing "聚餐预留约 16 g 脂肪" that following the plan cannot free undermines trust in every other number.
   - Where: `js/core/social.js` `preAllocate`; `js/views/today.js` `socialHtml`.
   - AC:

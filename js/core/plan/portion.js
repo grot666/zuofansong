@@ -89,6 +89,6 @@ export function portionCore(sk, { kcal, protein }, food, opts = {}) {
   const r = build(best.sg, best.pg, best.bm, best.kiwi, best.addon, best.vm);
   const off = (r.tot.kcal - kcal) / kcal;
   const fit = r.tot.protein < protein - 0.5 ? 'protein-low' : off > 0.05 ? 'kcal-high' : off < -0.05 ? 'kcal-low' : 'ok';
-  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, vegMult: best.vm, addon: best.addon, score: best.score, fit, fiberNote: Math.round(r.tot.fiber) < FIBER_MIN ? fiberNote(r.tot.fiber) : null };
+  return { day: sk.day, ...r, dinnerProtein: pDinner, staple, proteinG: best.pg, stapleG: best.sg, bfMult: best.bm, kiwiG: best.kiwi, vegMult: best.vm, addon: best.addon, score: best.score, fit, fiberNote: r.tot.fiber < FIBER_MIN ? fiberNote(r.tot.fiber) : null };
 }
 export const feasibility = ({ kcal, protein }) => (protein * 4 > 0.45 * kcal ? { reason: 'protein-high', pct: Math.round(protein * 4 / kcal * 100) } : null);

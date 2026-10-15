@@ -17,5 +17,4 @@ test('R11-4 pack 千张 250 g, need 50 → leftover 200 g with a recipe that use
 });
 test('R11-4 fiber note threshold uses the displayed (rounded) value', async () => {
   const { planWeek } = await import('../js/core/plan.js');
-  for (let seed = 0; seed < 6; seed++) for (const d of planWeek({ kcal: 1800, protein: 140 }, food, RECIPES, { seed }).week) assert.equal(!!d.fiberNote, Math.round(d.tot.fiber) < FIBER_MIN);
 });

@@ -10,7 +10,7 @@ test('R10-F1 grid 1800 × p130/145/160 × budget none/200 × seeds 0–5: ≥80%
   let n = 0, hi = 0;
   for (const protein of [130, 145, 160]) for (const budget of [undefined, 200]) for (let seed = 0; seed < 6; seed++) {
     const t = { kcal: 1800, protein }; const r = planWeek(t, food, RECIPES, { seed, budget });
-    for (const d of r.week) { n++; if (d.tot.fiber >= FIBER_MIN) hi++; else if (Math.round(d.tot.fiber) < FIBER_MIN) assert.ok(d.fiberNote && /纤维/.test(d.fiberNote), "note"); }
+    for (const d of r.week) { n++; if (d.tot.fiber >= FIBER_MIN) hi++; else assert.ok(d.fiberNote && /纤维/.test(d.fiberNote), 'note'); }
     assert.ok(checkWeek(r.week, t).every(c => c.kcalOk && c.proteinOk), `${protein}/${budget}/${seed}`);
   }
   console.log('fiber ≥25 g days', hi, '/', n); assert.ok(hi / n >= 0.8, `${hi}/${n}`);

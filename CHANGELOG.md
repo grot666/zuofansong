@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.52
+- R11-6 rest: yam/jiaobai cite 平台 #525/#519; every verified food cites an FDC or 平台 id
+
 ## v0.10.51
 - R11-4 opened-pack leftover hints (user pack sizes)
 

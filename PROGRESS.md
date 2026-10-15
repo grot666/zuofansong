@@ -1,5 +1,6 @@
 # PROGRESS
 
+- 2026-10-15 08:13 SGT — v0.10.52: R11-6 rest: yam/jiaobai cite 平台 #525/#519; every verified food cites an FDC or 平台 id
 - 2026-10-15 08:08 SGT — v0.10.51: R11-4 opened-pack leftover hints (user pack sizes)
 - 2026-10-15 08:02 SGT — v0.10.50: R11-3 two-trip shopping list (perishables for Fri–Sun on trip 2; frozen fish trip 1)
 - 2026-10-15 08:00 SGT — v0.10.49: R11-5 聚餐/hotpot mode: fat pre-allocation, protein-first order, dip fat, neutral next-day line

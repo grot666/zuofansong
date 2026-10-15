@@ -1,6 +1,7 @@
 // Single source of truth for app version + changelog. sw.js CACHE must equal 'zfs-' + VERSION (test/version.test.js).
-export const VERSION = '0.10.51';
+export const VERSION = '0.10.52';
 export const CHANGELOG = [
+  ['0.10.52', '山药、茭白标注营养所查询平台来源'],
   ['0.10.51', '可在食材页设置包装克数，菜单页提示剩余用量和可用的菜'],
   ['0.10.50', '购物清单分两次买：生鲜鱼虾和绿叶菜周三/周四再补买'],
   ['0.10.49', '今日页新增聚餐模式：火锅/中餐/烧烤，提前给晚餐留出脂肪，附点菜顺序和蘸料脂肪'],

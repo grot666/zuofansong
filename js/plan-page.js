@@ -1,4 +1,5 @@
 import { computeTargets } from './core/targets.js';
+import { fiberDayLine } from './core/plan/fiber.js';
 import { leftovers, parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek, weekFiber } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS, TRAY_BAKE } from '../data/sauces.js';
@@ -10,7 +11,7 @@ import { foodIndexFromStore } from './core/foods.js';
 import { mealScores } from './core/scores.js';
 const stars = sc => `<br><span class="mut">健康 ${sc.health} · 好做 ${sc.easy} · 便宜 ${sc.cheap} · 好吃 ${sc.tasty}（满分 5）</span>`;
 import { RECIPES } from '../data/recipes.js';
-import { FIBER_RANGE, FIBER_TARGET, PEAS_SIDE_G } from './core/fiber.js';
+import { FIBER_RANGE, FIBER_TARGET } from './core/fiber.js';
 
 bootStore();
 const food = foodIndexFromStore(S);
@@ -50,7 +51,7 @@ function render() {
   <p class="mut tip">本周用到 ${distinctVeg(week, food)} 种蔬菜（种类少 = 好买、少浪费）。</p>${planTips(plan).map(x => `<p class="mut tip">${x}</p>`).join('')}<div class="ctl"><button id="regen">换一套</button><label>每周预算（¥）<input type="number" id="budget" min="1" value="${budget}"></label><label>蔬菜做法用时<select id="prepMax">${[[0, '不限'], [5, '≤5 分钟'], [10, '≤10 分钟']].map(([v, l]) => `<option value="${v}"${v === maxPrep ? ' selected' : ''}>${l}</option>`).join('')}</select></label><label>早餐<select id="bfPref">${[['rotate', '三种轮换'], ['oats', '每天燕麦粥']].map(([v, l]) => `<option value="${v}"${v === bfPref ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div></section>
   ${week.map((d, i) => `<details class="card day"${i === ti ? ' open' : ''}><summary><h3>${DAYS[i]} · ${Math.round(d.tot.kcal)} kcal · 蛋白 ${Math.round(d.tot.protein)} g · 脂肪 ${Math.round(d.tot.fat)} g · 纤维 ${Math.round(d.tot.fiber)} g ${checks[i].kcalOk && checks[i].proteinOk ? '✓' : '<span class="warn">⚠</span>'}</h3></summary>
     <ul class="list">${d.meals.map(m => `<li><b>${m.name}</b> ${m.title}<br><span class="mut">${m.items.filter(([id]) => id !== 'oil').map(([id, g]) => `${food(id)?.verified ? '' : '≈'}${food(id)?.name || id} ${Math.round(g)} g`).join('、')}${m.items.find(([id]) => id === 'oil') ? `、油 ${r1(m.items.find(([id]) => id === 'oil')[1])} g` : ''}</span>${/午餐|晚餐/.test(m.name) ? stars(mealScores(m.items, food)) : ''}${meatNote(m) ? `<br><span class="warn">${meatNote(m)}</span>` : ''}</li>`).join('')}</ul>
-    <p class="mut">膳食纤维 ${Math.round(d.tot.fiber)} g${d.stapleSwap ? `（${d.spCap ? '烤红薯本周已够 3 天' : '为补纤维'}，主食由${food(d.stapleSwap)?.name}换成${food(d.staple)?.name}）` : ''}${d.fiberSide ? ' · 午晚餐各加青豆 ${PEAS_SIDE_G} g' : ''}${d.vegMult > 1 ? ` · 蔬菜按 ${d.vegMult} 份` : ''}</p>${d.fiberNote ? `<p class="warn">${d.fiberNote}</p>` : ''}
+    <p class="mut">${fiberDayLine(d, food)}</p>${d.fiberNote ? `<p class="warn">${d.fiberNote}</p>` : ''}
     <button class="sec" data-day="${i}">把这天记入今日</button></details>`).join('')}
   <section class="card" id="list"><h2>购物清单（生重）</h2><p>估算合计 <b>≈¥${Math.round(cost)}</b> ${cost > budget ? `<span class="warn">仍超出预算 ¥${Math.round(cost - budget)}：可调高预算，或多用鸡蛋、豆腐</span>` : '在预算内 ✓'}</p>
   <h3>第一次（周日/周一）</h3><ul class="list">${list.filter(x => !x.pantry && !x.small && x.g1 > 0).map(x => li(x, x.g1, x.g2 ? x.cost * x.g1 / x.g : x.cost)).join('')}</ul>${list.some(x => x.g2 > 0 && !x.small) ? `<h3>周三/周四补买（生鲜，周五起用）</h3><ul class="list">${list.filter(x => x.g2 > 0 && !x.small).map(x => li(x, x.g2, x.cost * x.g2 / x.g)).join('')}</ul>` : ''}${list.some(x => x.small) ? `<p class="mut">少量，可省略/用库存：${list.filter(x => x.small).map(x => `${x.name} ${x.g} g`).join('、')}</p>` : ''}${list.some(x => x.pantry) ? `<p class="mut">常备（干货/调料，按需补）：${list.filter(x => x.pantry).map(x => `${x.name} ${x.g >= 1000 ? r1(x.g / 500) + ' 斤' : x.g + ' g'}`).join('、')}</p>` : ''}${leftovers(list, S.get('packs', {}), RECIPES).map(x => `<p class="mut">${x.name}一包用不完，剩余约 ${x.left} g${x.recipeName ? `：可用于“${x.recipeName}”` : ''}。</p>`).join('')}<p class="mut">价格为上海超市/菜市场估价。鸡蛋按克，约 50 g/个。</p></section>

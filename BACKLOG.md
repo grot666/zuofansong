@@ -84,7 +84,7 @@ Range `a882db7..1073021` (v0.10.44–v0.10.51). `npm test` (serial = CI) passes 
     - The line is built by `fiberDayLine`: "膳食纤维 N g" + staple-swap reason + "青豆 80 g ×2 餐（补纤维）" when `fiberSide` + "蔬菜按 ×k 份"; plan-page only inserts it.
     - `PEAS_SIDE_G` comment in `core/fiber.js` says "per lunch/dinner on any day still short" (not "capped days").
   - Tests: `test/a64.test.js` — over plangrid seeds 0–2 × {rotate, oats} at 1800/140 and 1500/140, every `fiberDayLine` output contains no `${`, `undefined`, `NaN`; a fiberSide day contains `青豆 80 g ×2 餐`. `lint.test.js` adds: no line in `js/**/*.js` matches ``/[?:] '[^'`\n]*\$\{[^'`\n]*'/`` or the same with `"` (today exactly 1 hit: this bug).
-- **A69 Remove the vacuous R11-4 test; fix the "约 25 g" fiber note copy (P2, 5 min)**
+- ✅ **A69** Remove the vacuous R11-4 test; fix the "约 25 g" fiber note copy (P2, 5 min)**
   - Why: `test/r11-4.test.js` "fiber note threshold uses the displayed (rounded) value" has an empty body (passes vacuously) and its title contradicts DECISIONS (threshold change dropped). 250/3024 days still say "约 25 g" while below target.
   - Where: `test/r11-4.test.js`, `js/core/plan/fiber.js` `fiberNote`.
   - AC: delete the empty test or replace it with a real one; `fiberNote(f)` prints `Math.floor(f*10)/10` (e.g. "约 24.8 g") or `Math.floor(f)`, never a value ≥ 25 when called. Threshold (`FIBER_MIN`) and the planner are untouched, so snapshots don't move.

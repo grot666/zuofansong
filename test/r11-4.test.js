@@ -15,6 +15,9 @@ test('R11-4 pack 千张 250 g, need 50 → leftover 200 g with a recipe that use
   assert.deepEqual(leftovers(L, {}, RECIPES), []); // no packG → no hint
   assert.ok(KNOWN_KEYS.includes('packs'));
 });
-test('R11-4 fiber note threshold uses the displayed (rounded) value', async () => {
-  const { planWeek } = await import('../js/core/plan.js');
+// A69: the note never rounds a below-target day up to the target ("约 25 g" for 24.6 g); threshold unchanged.
+test('A69 fiberNote shows a below-target value, threshold unchanged', async () => {
+  const { fiberNote, FIBER_MIN } = await import('../js/core/plan/fiber.js');
+  for (const f of [24.1, 24.6, 24.99]) assert.ok(!fiberNote(f).includes(`约 ${FIBER_MIN} g`), String(f));
+  assert.match(fiberNote(24.6), /约 24 g/);
 });

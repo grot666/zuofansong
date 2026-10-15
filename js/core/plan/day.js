@@ -67,3 +67,5 @@ export function generateWeek(targets, food, recipes, opts = {}) {
   }
   return out;
 }
+// A65: planner opts from the store (plan page and the today-view 聚餐 card read the same week).
+export const planOptsFrom = (get, p = {}) => ({ seed: get('planSeed', 0), budget: get('weeklyBudget', 300), maxPrepMin: get('maxPrepMin', 0), breakfast: get('breakfastPref', 'rotate'), powderScoops: p.usesPowder ? Math.max(0, Math.floor(p.maxScoops || 0)) : 0 });

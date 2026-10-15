@@ -1,6 +1,6 @@
 import { computeTargets } from './core/targets.js';
 import { fiberDayLine } from './core/plan/fiber.js';
-import { leftovers, parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek, weekFiber } from './core/plan.js';
+import { planOptsFrom, leftovers, parseBudget, distinctVeg, meatNote, planTips, regenWeek, planWeek, shoppingList, checkWeek, weekFiber } from './core/plan.js';
 import { VERSION } from './core/version.js';
 import { SAUCES, SAUCE_ING, TRAY_STEPS, TRAY_BAKE } from '../data/sauces.js';
 import { sauceNutrition, rotateSauces, trayPlan } from './core/sauces.js';
@@ -39,7 +39,7 @@ function render() {
   const t = computeTargets(p);
   const seed = S.get('planSeed', 0);
   const budget = S.get('weeklyBudget', 300); const maxPrep = S.get('maxPrepMin', 0); const bfPref = S.get('breakfastPref', 'rotate');
-  const plan = planWeek(t, food, RECIPES, { seed, budget, maxPrepMin: maxPrep, breakfast: bfPref, powderScoops: p.usesPowder ? Math.max(0, Math.floor(p.maxScoops || 0)) : 0 }); const week = plan.week;
+  const plan = planWeek(t, food, RECIPES, planOptsFrom(S.get, p)); const week = plan.week;
   const checks = checkWeek(week, t);
   const list = shoppingList(week, food);
   const cost = list.reduce((s, x) => s + x.cost, 0);

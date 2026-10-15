@@ -11,7 +11,10 @@ import { quickChips, matchFoods, gramsFor } from '../core/foods.js';
 import { addDays, backupDue } from '../core/dates.js';
 import { reviewDue } from '../core/review.js';
 import { rerender, $, esc, r1, today, dayOffset, PLAN_DAY, PRESET_TEMPLATES, profile, allFoods, food, getLog, setLog, tplMult, templates, totals, bar, approx } from '../ui.js';
-import { preAllocate, socialCopy, SOCIAL_TYPES, NEXT_DAY_LINE } from '../core/social.js';
+import { preAllocate, socialCopy, leverLines, SOCIAL_TYPES, NEXT_DAY_LINE } from '../core/social.js';
+import { planWeek, planOptsFrom } from '../core/plan.js';
+import { todayIndex } from '../core/dates.js';
+import { RECIPES } from '../../data/recipes.js';
 
 function sleepHtml(l, p) {
   const hm = t => { const d = new Date(t); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
@@ -24,8 +27,9 @@ function sleepHtml(l, p) {
 function socialHtml(t) {
   const sc = S.get('social', null);
   if (sc && sc.date === today()) {
-    const r = preAllocate(t, { meal: sc.meal }); const c = socialCopy(sc.type, sc.meal, r.reserveFatG);
-    return `<section class="card" id="social"><h2>${c.title}</h2><p>${c.reserve}</p><p>${c.order}</p><p class="mut">${c.low}</p><p class="mut">${c.broth}</p><p class="mut">蘸料（可计量的脂肪）：${c.dip}。</p><p class="mut">${c.week}</p><button class="sec" id="socialOff">取消聚餐</button></section>`;
+    const day = planWeek(t, food, RECIPES, planOptsFrom(S.get, profile())).week[todayIndex(today())];
+    const r = preAllocate(t, { meal: sc.meal, day, food }); const c = socialCopy(sc.type, sc.meal, r.reserveFatG, r.freedKcal);
+    return `<section class="card" id="social"><h2>${c.title}</h2><p>${c.reserve}</p>${r.levers.length ? `<ul class="list">${leverLines(r, food).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}<p>${c.order}</p><p class="mut">${c.low}</p><p class="mut">${c.broth}</p><p class="mut">蘸料（可计量的脂肪）：${c.dip}。</p><p class="mut">${c.week}</p><button class="sec" id="socialOff">取消聚餐</button></section>`;
   }
   const y = sc && sc.date === dayOffset(-1) ? `<p class="mut">${NEXT_DAY_LINE}</p>` : '';
   return `<section class="card" id="social"><h2>今天有聚餐？</h2>${y}<div class="row" role="group" aria-label="聚餐类型">${Object.entries(SOCIAL_TYPES).map(([k, v]) => `<button class="sec" data-social="${k}">晚餐${v}</button>`).join('')}</div></section>`;

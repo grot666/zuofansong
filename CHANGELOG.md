@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v0.10.54
+- A74 part 1: egg/broccoli USDA twins are aliases; schema v3 moves alias prices
+
 ## v0.10.53
 - A64 plan-day fiber line (peas amount) + quoted-${ lint; A69 fiberNote floors value
 
